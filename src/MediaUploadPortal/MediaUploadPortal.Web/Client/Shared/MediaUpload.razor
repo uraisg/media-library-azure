@@ -1,0 +1,69 @@
+﻿@using System.Net.Http.Headers
+@using MimeMapping
+@inject HttpClient Http
+
+<h3>Upload Photos</h3>
+
+<label for="uploadFiles">Select Photo(s)</label>
+<InputFile id="uploadFiles" multiple OnChange="HandleSelection" />
+
+@if (selectedFiles != null)
+{
+    foreach (var file in selectedFiles)
+    {
+        var isLoading = file.Data.Position > 0;
+
+        <div class="file-row">
+            <!-- File info -->
+            <div>
+                <h2>@file.Name</h2>
+                Size: <strong>@file.Size bytes</strong>;
+                Last modified: <strong>@file.LastModified.ToShortDateString()</strong>;
+                Type: <strong>@file.Type</strong>
+                Relative Path: <strong>@file.RelativePath</strong>
+            </div>
+
+            <!-- Upload button -->
+            <button @onclick="() => LoadFile(file)" disabled="@isLoading">
+                @if (!isLoading)
+                {
+                    <span>Load</span>
+                }
+                else
+                {
+                    <span>Loaded @((100.0 * file.Data.Position / file.Size).ToString("0"))%</span>
+                }
+            </button>
+        </div>
+    }
+}
+
+@code {
+    IFileListEntry[] selectedFiles;
+
+    void HandleSelection(IFileListEntry[] files)
+    {
+        selectedFiles = files;
+    }
+
+    async Task LoadFile(IFileListEntry file)
+    {
+        file.OnDataRead += (sender, eventArgs) => InvokeAsync(StateHasChanged);
+
+        var ms = new MemoryStream();
+        await file.Data.CopyToAsync(ms);
+        var byteData = ms.ToArray();
+
+        var content = new ByteArrayContent(byteData, 0, byteData.Length);
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeUtility.GetMimeMapping(file.Name));
+        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            FileName = file.Name
+        };
+
+        var form = new MultipartFormDataContent { content };
+
+        var client = new HttpClient();
+        await client.PostAsync("REPLACE_WITH_DEPLOYED_MediaUploadPortal.Functions_URL", form);
+    }
+}

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>35d5de4d-2db2-41c0-a44d-940d3d890d6f</UserSecretsId>
+    <ApplicationInsightsResourceId>/subscriptions/cd85d402-93c1-4339-af18-42930460489c/resourceGroups/raz-photogallery-rg/providers/microsoft.insights/components/raz-photogallery-appinsights</ApplicationInsightsResourceId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.13.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Client\MediaUploadPortal.Web.Client.csproj" />
+    <ProjectReference Include="..\Shared\MediaUploadPortal.Web.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
+
+</Project>
