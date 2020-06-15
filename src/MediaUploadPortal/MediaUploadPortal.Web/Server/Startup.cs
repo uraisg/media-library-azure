@@ -26,7 +26,6 @@ namespace MediaUploadPortal.Web.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
-            services.AddSingleton(Configuration.GetSection("ClientAppSettings").Get<ClientAppSettings>());
             services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"]);
         }
 
