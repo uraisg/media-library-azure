@@ -1,6 +1,6 @@
 using System;
 
-namespace MediaLibrary.Internet.Webapp.Models
+namespace MediaLibrary.Internet.Web.Models
 {
     public class ErrorViewModel
     {

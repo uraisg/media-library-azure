@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace MediaLibrary.Internet.Webapp
+namespace MediaLibrary.Internet.Web
 {
     public class Program
     {

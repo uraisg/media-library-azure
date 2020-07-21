@@ -1,4 +1,5 @@
 appsettings.json
+*.secrets.txt
 
 ###################
 # compiled source #

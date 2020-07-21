@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30225.117
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaLibrary.Intranet.Tests", "MediaLibrary.Intranet.Tests\MediaLibrary.Intranet.Tests.csproj", "{A06E64F9-CE2B-4B79-8CFD-249E8D48087F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaLibrary.Intranet.Web", "MediaLibrary.Intranet.Web\MediaLibrary.Intranet.Web.csproj", "{B8BF5B60-36C4-4C54-AAAF-C80D66D94BD9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A06E64F9-CE2B-4B79-8CFD-249E8D48087F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A06E64F9-CE2B-4B79-8CFD-249E8D48087F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A06E64F9-CE2B-4B79-8CFD-249E8D48087F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A06E64F9-CE2B-4B79-8CFD-249E8D48087F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8BF5B60-36C4-4C54-AAAF-C80D66D94BD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8BF5B60-36C4-4C54-AAAF-C80D66D94BD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8BF5B60-36C4-4C54-AAAF-C80D66D94BD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8BF5B60-36C4-4C54-AAAF-C80D66D94BD9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C03E29B2-E50E-412C-B80D-E57DFB8607AA}
+	EndGlobalSection
+EndGlobal

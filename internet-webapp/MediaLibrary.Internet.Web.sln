@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30309.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaLibrary.Internet.Web", "MediaLibrary.Internet.Web\MediaLibrary.Internet.Web.csproj", "{6DBC7289-BB32-4C14-9665-138EC12D8923}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaLibrary.Internet.Tests", "MediaLibrary.Internet.Tests\MediaLibrary.Internet.Tests.csproj", "{28494FEC-BC87-4DC8-BF1E-CCF84D26FE40}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6DBC7289-BB32-4C14-9665-138EC12D8923}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DBC7289-BB32-4C14-9665-138EC12D8923}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DBC7289-BB32-4C14-9665-138EC12D8923}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DBC7289-BB32-4C14-9665-138EC12D8923}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28494FEC-BC87-4DC8-BF1E-CCF84D26FE40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28494FEC-BC87-4DC8-BF1E-CCF84D26FE40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28494FEC-BC87-4DC8-BF1E-CCF84D26FE40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28494FEC-BC87-4DC8-BF1E-CCF84D26FE40}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {04E54482-02DA-45F3-B154-1A4C6351626E}
+	EndGlobalSection
+EndGlobal
