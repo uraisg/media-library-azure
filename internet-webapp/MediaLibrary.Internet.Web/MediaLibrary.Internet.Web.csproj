@@ -1,12 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <UserSecretsId>aspnet-MediaLibrary.Internet.Web-790C3D0F-F0FC-423E-9413-CE719EFDA4E9</UserSecretsId>
+    <UserSecretsId>aspnet-WebApp_OpenIDConnect_DotNet-81EA87AD-E64D-4755-A1CC-5EA47F49B5D8</UserSecretsId>
+    <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="3.1.6" />
+    <Compile Remove="AppCreationScripts\**" />
+    <Compile Remove="ReadmeFiles\**" />
+    <Content Remove="AppCreationScripts\**" />
+    <Content Remove="ReadmeFiles\**" />
+    <EmbeddedResource Remove="AppCreationScripts\**" />
+    <EmbeddedResource Remove="ReadmeFiles\**" />
+    <None Remove="AppCreationScripts\**" />
+    <None Remove="ReadmeFiles\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Web" Version="0.1.1-preview" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="0.1.1-preview" />
   </ItemGroup>
 
 </Project>
