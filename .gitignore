@@ -2,8 +2,7 @@
 # files and folders containing secrets
 ######################################
 appsettings.json
-secrets.txt
-*.secrets.txt
+*secrets*.txt
 .secrets/
 
 ###################
