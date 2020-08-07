@@ -54,6 +54,7 @@ namespace MediaLibrary.Internet.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                IdentityModelEventSource.ShowPII = true;
             }
             else
             {
