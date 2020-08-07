@@ -45,6 +45,7 @@ namespace MediaLibrary.Internet.Web
 
             //Configuring appsettings section AzureAdB2C, into IOptions
             services.AddOptions();
+            services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.Configure<OpenIdConnectOptions>(Configuration.GetSection("AzureAdB2C"));
         }
 
