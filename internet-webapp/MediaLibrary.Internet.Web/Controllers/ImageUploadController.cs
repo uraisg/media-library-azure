@@ -11,12 +11,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
     public class ImageUploadController : Controller
     {
+        private readonly AppSettings _appSettings;
+
+        public ImageUploadController(IOptions<AppSettings> appSettings)
+        {
+            _appSettings = appSettings.Value;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -34,15 +42,15 @@ namespace MediaLibrary.Internet.Web.Controllers
 
                 MemoryStream uploadImage = new MemoryStream(data);
                 Stream extractMetadataImage = new MemoryStream(data);
-                Stream CVImage = new MemoryStream(data);
+                Stream imageStream = new MemoryStream(data);
 
                 //upload to a separate container to retrieve image URL
-                string imageURL = await ImageUploadToBlob(file.FileName, uploadImage);
+                string imageURL = await ImageUploadToBlob(file.FileName, uploadImage, _appSettings);
 
                 //extract image metadata
                 IReadOnlyList<MetadataExtractor.Directory> directory = ImageMetadataReader.ReadMetadata(extractMetadataImage);
                 //Get tagging from cognitive services
-                List<string> tag = await GetCSComputerVisionTagAsync(CVImage);
+                List<string> tag = await GetCSComputerVisionTagAsync(imageStream, _appSettings);
 
                 //create json for indexing
                 ImageObj json = new ImageObj();
@@ -53,7 +61,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
                 json.FileURL = imageURL;
                 string serialized = JsonConvert.SerializeObject(json);
-                await IndexUploadToBlob(JsonConvert.SerializeObject(json));
+                await IndexUploadToBlob(JsonConvert.SerializeObject(json), _appSettings);
 
                 return Ok(json);
             }
@@ -64,10 +72,10 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
         }
 
-        private static async Task<string> ImageUploadToBlob(string fileName, MemoryStream imageStream)
+        private static async Task<string> ImageUploadToBlob(string fileName, MemoryStream imageStream, AppSettings appSettings)
         {
-            string containerName = "{image-container-name}";
-            string storageConnectionString = "{storage-connection-string}";
+            var containerName = appSettings.MediaStorageContainer;
+            var storageConnectionString = appSettings.MediaStorageConnectionString;
 
             //create a blob container client
             BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString,containerName);
@@ -131,11 +139,11 @@ namespace MediaLibrary.Internet.Web.Controllers
             return results;
         }
 
-        private static async Task<List<string>> GetCSComputerVisionTagAsync(Stream image)
+        private static async Task<List<string>> GetCSComputerVisionTagAsync(Stream image, AppSettings appSettings)
         {
             //replace with computer vision key
-            string subscriptionKey = "{computer-vision-key}";
-            string endpoint = "{computer-vision-endpoint}";
+            string subscriptionKey = appSettings.ComputerVisionApiKey;
+            string endpoint = appSettings.ComputerVisionEndpoint;
 
             List<string> tagList = new List<string>();
 
@@ -156,10 +164,10 @@ namespace MediaLibrary.Internet.Web.Controllers
             return tagList;
         }
 
-        private static async Task IndexUploadToBlob(string json)
+        private static async Task IndexUploadToBlob(string json, AppSettings appSettings)
         {
-            string containerName = "{image-container-name}";
-            string storageConnectionString = "{storage-connection-string}";
+            string containerName = appSettings.MediaStorageContainer;
+            string storageConnectionString = appSettings.MediaStorageConnectionString;
 
             //create a blob container client
             BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
