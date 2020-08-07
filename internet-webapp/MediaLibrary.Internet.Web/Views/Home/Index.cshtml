@@ -11,16 +11,44 @@
 <img src="https://github.com/Azure-Samples/active-directory-aspnetcore-webapp-openidconnect-v2/raw/master/1-WebApp-OIDC/1-5-B2C/ReadmeFiles/sign-in.png
 "/>
 
-<form method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
-    <div class="form-group">
-        <div class="col-md-10">
-            <p>Upload images here:</p>
-            <input type="file" name="file" />
+<div class="row">
+    <form id="upload-form" method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="file">Upload images here</label>
+                <input type="file" name="file" id="file" required />
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-10">
-            <input type="submit" value="Upload" />
+        <div class="col-md-6">
+            <span class="help-block">Provide optional information to make future search easier</span>
+            <div class="form-group">
+                <label for="project">Project name</label>
+                <input type="text" name="project" id="project" class="form-control" placeholder="">
+            </div>
+            <div class="form-group">
+                <label for="event">Event name</label>
+                <input type="text" name="event" id="event" class="form-control" placeholder="">
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" name="location" id="location" class="form-control" placeholder="e.g., building name, road name">
+            </div>
+            <div class="form-group">
+                <label for="copyright">Copyright</label>
+                <input type="text" name="copyright" id="copyright" class="form-control" placeholder="Copyright owner">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-lg">Upload</button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
+</div>
+
+
+@section Scripts {
+    <script type="text/javascript">
+        $('#upload-form').submit(function () {
+            $(this).find('button[type=submit]').prop('disabled', true);
+        });
+    </script>
+}
