@@ -4,13 +4,13 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
   xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
   PolicySchemaVersion="0.3.0.0" 
-  TenantId="yourtenant.onmicrosoft.com" 
+  TenantId="apacgovpoc.onmicrosoft.com" 
   PolicyId="B2C_1A_MediaLibrary_TrustFrameworkExtensions" 
-  PublicPolicyUri="http://yourtenant.onmicrosoft.com/B2C_1A_MediaLibrary_TrustFrameworkExtensions">
+  PublicPolicyUri="http://apacgovpoc.onmicrosoft.com/B2C_1A_MediaLibrary_TrustFrameworkExtensions">
   
    
   <BasePolicy>
-    <TenantId>yourtenant.onmicrosoft.com</TenantId>
+    <TenantId>apacgovpoc.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_MediaLibrary_TrustFrameworkBase</PolicyId>
   </BasePolicy>
  <BuildingBlocks>
@@ -25,7 +25,7 @@
         <TechnicalProfile Id="login-NonInteractive">
           <InputClaims>
             <!--Sample action required: Change to your ProxyIdentityExperienceFramework App Id-->
-            <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="yourProxyIdentityExperienceFrameworkAppId" />
+            <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="c5a115be-27c0-489f-8b30-e378ef07c6ce" />
             <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="00000000-0000-0000-0000-000000000000" />
           </InputClaims>
         </TechnicalProfile>

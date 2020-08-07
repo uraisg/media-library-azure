@@ -5,12 +5,12 @@
   xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
   PolicySchemaVersion="0.3.0.0"
   TenantId="yourtenant.onmicrosoft.com"
-  PolicyId="B2C_1A_signup_signin"
-  PublicPolicyUri="http://yourtenant.onmicrosoft.com/B2C_1A_signup_signin">
+  PolicyId="B2C_1A_MediaLibrary_signup_signin"
+  PublicPolicyUri="http://yourtenant.onmicrosoft.com/B2C_1A_MediaLibrary_signup_signin">
 
   <BasePolicy>
     <TenantId>yourtenant.onmicrosoft.com</TenantId>
-    <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    <PolicyId>B2C_1A_MediaLibrary_TrustFrameworkExtensions</PolicyId>
   </BasePolicy>
 
   <RelyingParty>
@@ -25,7 +25,6 @@
         <OutputClaim ClaimTypeReferenceId="email" />
         <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub"/>
         <OutputClaim ClaimTypeReferenceId="tenantId" AlwaysUseDefaultValue="true" DefaultValue="{Policy:TenantObjectId}" />
-
       </OutputClaims>
       <SubjectNamingInfo ClaimType="sub" />
     </TechnicalProfile>
