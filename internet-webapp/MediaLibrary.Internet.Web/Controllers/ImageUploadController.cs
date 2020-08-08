@@ -31,8 +31,9 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         [HttpPost("FileUpload")]
-        public async Task<IActionResult> Index(IFormFile file)
+        public async Task<IActionResult> Index(UploadFormModel model)
         {
+            IFormFile file = model.File;
             if (file.Length > 0)
             {
                 MemoryStream ms = new MemoryStream();

@@ -1,4 +1,5 @@
-﻿@{
+﻿@model UploadFormModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -14,28 +15,30 @@
 <div class="row">
     <form id="upload-form" method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
         <div class="col-md-6">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label for="file">Upload images here</label>
-                <input type="file" name="file" id="file" required />
+                <label asp-for="File"></label>
+                <input asp-for="File" />
+                <span asp-validation-for="File" class="text-danger"></span>
             </div>
         </div>
         <div class="col-md-6">
             <span class="help-block">Provide optional information to make future search easier</span>
             <div class="form-group">
-                <label for="project">Project name</label>
-                <input type="text" name="project" id="project" class="form-control" placeholder="">
+                <label asp-for="Project"></label>
+                <input asp-for="Project" class="form-control">
             </div>
             <div class="form-group">
-                <label for="event">Event name</label>
-                <input type="text" name="event" id="event" class="form-control" placeholder="">
+                <label asp-for="Event"></label>
+                <input asp-for="Event" class="form-control">
             </div>
             <div class="form-group">
-                <label for="location">Location</label>
-                <input type="text" name="location" id="location" class="form-control" placeholder="e.g., building name, road name">
+                <label asp-for="LocationText"></label>
+                <input asp-for="LocationText" class="form-control">
             </div>
             <div class="form-group">
-                <label for="copyright">Copyright</label>
-                <input type="text" name="copyright" id="copyright" class="form-control" placeholder="Copyright owner">
+                <label asp-for="Copyright"></label>
+                <input asp-for="Copyright" class="form-control">
             </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-lg">Upload</button>
@@ -46,9 +49,5 @@
 
 
 @section Scripts {
-    <script type="text/javascript">
-        $('#upload-form').submit(function () {
-            $(this).find('button[type=submit]').prop('disabled', true);
-        });
-    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
