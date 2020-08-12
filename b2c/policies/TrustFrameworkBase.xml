@@ -293,6 +293,11 @@
         <UserInputType>TextBox</UserInputType>
       </ClaimType>
 
+      <ClaimType Id="accountEnabled">
+        <DisplayName>Account Enabled</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
     </ClaimsSchema>
 
     <ClaimsTransformations>
@@ -327,7 +332,7 @@
         </OutputClaims>
       </ClaimsTransformation>
 
-  <ClaimsTransformation Id="CreateAlternativeSecurityId" TransformationMethod="CreateAlternativeSecurityId">
+      <ClaimsTransformation Id="CreateAlternativeSecurityId" TransformationMethod="CreateAlternativeSecurityId">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="socialIdpUserId" TransformationClaimType="key" />
           <InputClaim ClaimTypeReferenceId="identityProvider" TransformationClaimType="identityProvider" />
@@ -344,7 +349,16 @@
         <OutputClaims>
           <OutputClaim ClaimTypeReferenceId="sub" TransformationClaimType="createdClaim" />
         </OutputClaims>
-    </ClaimsTransformation>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="GenerateNewPassword" TransformationMethod="CreateRandomString">
+        <InputParameters>
+          <InputParameter Id="randomGeneratorType" DataType="string" Value="GUID" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="newPassword" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
  
     </ClaimsTransformations>
 
@@ -576,15 +590,20 @@
             <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">true</Item>
           </Metadata>
           <IncludeInSso>false</IncludeInSso>
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="GenerateNewPassword" />
+          </InputClaimsTransformations>
           <InputClaims>
             <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" Required="true" />
           </InputClaims>
           <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="accountEnabled" DefaultValue="false" AlwaysUseDefaultValue="true" />
+
             <!-- Required claims -->
             <PersistedClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" />
             <PersistedClaim ClaimTypeReferenceId="newPassword" PartnerClaimType="password"/>
             <PersistedClaim ClaimTypeReferenceId="displayName" DefaultValue="unknown" />
-            <PersistedClaim ClaimTypeReferenceId="passwordPolicies" DefaultValue="DisablePasswordExpiration" />
+            <PersistedClaim ClaimTypeReferenceId="passwordPolicies" DefaultValue="DisablePasswordExpiration,DisableStrongPassword" />
   
             <!-- Optional claims. -->
             <PersistedClaim ClaimTypeReferenceId="givenName" />
@@ -789,8 +808,6 @@
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="objectId" />
             <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Verified.Email" Required="true" />
-            <OutputClaim ClaimTypeReferenceId="newPassword" Required="true" />
-            <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
             <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
             <OutputClaim ClaimTypeReferenceId="authenticationSource" />
             <OutputClaim ClaimTypeReferenceId="newUser" />
