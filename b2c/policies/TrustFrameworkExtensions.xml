@@ -47,7 +47,6 @@
         <InputParameters>
           <InputParameter Id="microsoft.com" DataType="string" Value="valid" />
           <InputParameter Id="outlook.com" DataType="string" Value="valid" />
-          <InputParameter Id="ura.gov.sg" DataType="string" Value="valid" />
           <InputParameter Id="errorOnFailedLookup" DataType="boolean" Value="false" />
         </InputParameters>
         <OutputClaims>
