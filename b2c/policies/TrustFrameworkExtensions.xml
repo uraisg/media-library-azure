@@ -13,12 +13,71 @@
     <TenantId>yourtenant.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_MediaLibrary_TrustFrameworkBase</PolicyId>
   </BasePolicy>
- <BuildingBlocks>
 
+
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="domainName">
+        <DataType>string</DataType>
+      </ClaimType>
+      
+      <ClaimType Id="domainStatus">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="validString">
+        <DataType>string</DataType>
+      </ClaimType>
+    </ClaimsSchema>
+
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="GetDomainFromEmail" TransformationMethod="ParseDomain">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="email" TransformationClaimType="emailAddress" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="domainName" TransformationClaimType="domain" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="LookupDomainStatus" TransformationMethod="LookupValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="domainName" TransformationClaimType="inputParameterId" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="microsoft.com" DataType="string" Value="valid" />
+          <InputParameter Id="outlook.com" DataType="string" Value="valid" />
+          <InputParameter Id="ura.gov.sg" DataType="string" Value="valid" />
+          <InputParameter Id="errorOnFailedLookup" DataType="boolean" Value="false" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="domainStatus" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CreateValidString" TransformationMethod="CreateStringClaim">
+        <InputParameters>
+          <InputParameter Id="value" DataType="string" Value="valid" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="validString" TransformationClaimType="createdClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      
+      <ClaimsTransformation Id="AssertDomainStatusIsValid" TransformationMethod="AssertStringClaimsAreEqual">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="domainStatus" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="validString" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringComparison" DataType="string" Value="ordinalIgnoreCase" />
+        </InputParameters>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
   </BuildingBlocks>
 
-  <ClaimsProviders>
 
+  <ClaimsProviders>
     <ClaimsProvider>
       <DisplayName>Local Account SignIn</DisplayName>
       <TechnicalProfiles>
@@ -36,12 +95,13 @@
     <ClaimsProvider>
       <DisplayName>Local Account</DisplayName>
       <TechnicalProfiles>
-      <TechnicalProfile Id="LocalAccountDiscoveryUsingEmailAddress-SignIn">
+        <TechnicalProfile Id="LocalAccountDiscoveryUsingEmailAddress-SignIn">
           <DisplayName>Sign-In with Email</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
             <Item Key="IpAddressClaimReferenceId">IpAddress</Item>
             <Item Key="ContentDefinitionReferenceId">api.localaccountpasswordreset</Item>
+            <Item Key="UserMessageIfClaimsTransformationStringsAreNotEqual">Sorry, please use a valid work e-mail address.</Item>
           </Metadata>
           <CryptographicKeys>
             <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
@@ -57,6 +117,7 @@
             <ValidationTechnicalProfile ReferenceId="AAD-UserReadUsingEmailAddress-NoError" />
           </ValidationTechnicalProfiles>
         </TechnicalProfile>
+
         <TechnicalProfile Id="AAD-UserReadUsingEmailAddress-NoError">
           <Metadata>
             <Item Key="Operation">Read</Item>
@@ -70,18 +131,25 @@
             <!-- Required claims -->
             <OutputClaim ClaimTypeReferenceId="objectId" />
             <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localAccountAuthentication" />
-  
+
             <!-- Optional claims -->
             <OutputClaim ClaimTypeReferenceId="userPrincipalName" />
             <OutputClaim ClaimTypeReferenceId="displayName" />
             <OutputClaim ClaimTypeReferenceId="otherMails" />
             <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" />
           </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="GetDomainFromEmail" />
+            <OutputClaimsTransformation ReferenceId="LookupDomainStatus" />
+            <OutputClaimsTransformation ReferenceId="CreateValidString" />
+            <OutputClaimsTransformation ReferenceId="AssertDomainStatusIsValid" />
+          </OutputClaimsTransformations>
           <IncludeTechnicalProfile ReferenceId="AAD-Common" />
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
   </ClaimsProviders>
+
 
   <UserJourneys>
     <UserJourney Id="SignUpOrSignIn">
@@ -114,25 +182,21 @@
         </OrchestrationStep>
  
         <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
-        
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>
 
     <UserJourney Id="ProfileEdit">
       <OrchestrationSteps>
-         <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+         <OrchestrationStep Order="1" Type="ClaimsExchange" ContentDefinitionReferenceId="api.signuporsignin">
           <ClaimsProviderSelections>
-            <!-- For sign-in with and without password-->
-            <ClaimsProviderSelection TargetClaimsExchangeId="SignIn-WithEmail" />
-            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+            <ClaimsProviderSelection ValidationClaimsExchangeId="SignIn-WithEmail" />
           </ClaimsProviderSelections>
           <ClaimsExchanges>
-            <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+            <ClaimsExchange Id="SignIn-WithEmail" TechnicalProfileReferenceId="LocalAccountDiscoveryUsingEmailAddress-SignIn" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
-        <!-- Check if the user has selected to sign in using one of the social providers -->
         <OrchestrationStep Order="2" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
@@ -141,47 +205,23 @@
             </Precondition>
           </Preconditions>
           <ClaimsExchanges>
-            <!--Sample: the sign-in with email claims exchange--> 
-            <ClaimsExchange Id="SignIn-WithEmail" TechnicalProfileReferenceId="LocalAccountDiscoveryUsingEmailAddress-SignIn" />
             <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
-        <!-- Show self-asserted page only if the directory does not have the user account already (i.e. we do not have an objectId). 
-          This can only happen when authentication happened using a social IDP. If local account was created or authentication done
-          using ESTS in step 2, then an user account must exist in the directory by this time. -->
         <OrchestrationStep Order="3" Type="ClaimsExchange">
-          <Preconditions>
-            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
-              <Value>objectId</Value>
-              <Action>SkipThisOrchestrationStep</Action>
-            </Precondition>
-          </Preconditions>
-          <ClaimsExchanges>
-            <ClaimsExchange Id="SelfAsserted-Social" TechnicalProfileReferenceId="SelfAsserted-Social" />
-          </ClaimsExchanges>
-        </OrchestrationStep>
-
-        <OrchestrationStep Order="4" Type="ClaimsExchange">
-          <Preconditions>
-            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
-              <Value>authenticationSource</Value>
-              <Value>socialIdpAuthentication</Value>
-              <Action>SkipThisOrchestrationStep</Action>
-            </Precondition>
-          </Preconditions>
           <ClaimsExchanges>
             <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
           </ClaimsExchanges>
         </OrchestrationStep>
  
-        <OrchestrationStep Order="5" Type="ClaimsExchange">
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="B2CUserProfileUpdateExchange" TechnicalProfileReferenceId="SelfAsserted-ProfileUpdate" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
-        <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
  
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
