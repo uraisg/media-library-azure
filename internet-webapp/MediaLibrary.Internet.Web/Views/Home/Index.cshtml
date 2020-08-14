@@ -1,4 +1,5 @@
-﻿@{
+﻿@model UploadFormModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -11,16 +12,42 @@
 <img src="https://github.com/Azure-Samples/active-directory-aspnetcore-webapp-openidconnect-v2/raw/master/1-WebApp-OIDC/1-5-B2C/ReadmeFiles/sign-in.png
 "/>
 
-<form method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
-    <div class="form-group">
-        <div class="col-md-10">
-            <p>Upload images here:</p>
-            <input type="file" name="file" />
+<div class="row">
+    <form id="upload-form" method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
+        <div class="col-md-6">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="File"></label>
+                <input asp-for="File" />
+                <span asp-validation-for="File" class="text-danger"></span>
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-10">
-            <input type="submit" value="Upload" />
+        <div class="col-md-6">
+            <span class="help-block">Provide optional information to make future search easier</span>
+            <div class="form-group">
+                <label asp-for="Project"></label>
+                <input asp-for="Project" class="form-control">
+            </div>
+            <div class="form-group">
+                <label asp-for="Event"></label>
+                <input asp-for="Event" class="form-control">
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationText"></label>
+                <input asp-for="LocationText" class="form-control">
+            </div>
+            <div class="form-group">
+                <label asp-for="Copyright"></label>
+                <input asp-for="Copyright" class="form-control">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-lg">Upload</button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
