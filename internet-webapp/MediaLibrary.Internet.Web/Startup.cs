@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.Logging;
@@ -43,10 +44,18 @@ namespace MediaLibrary.Internet.Web
 
             services.AddRazorPages();
 
+            //Add Authorization to identify user
+            services.AddAuthorization(Options =>
+            {
+                Options.AddPolicy("Authenticated", policy => policy.RequireClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"));
+            });
+            
+
             //Configuring appsettings section AzureAdB2C, into IOptions
             services.AddOptions();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.Configure<OpenIdConnectOptions>(Configuration.GetSection("AzureAdB2C"));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

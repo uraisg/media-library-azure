@@ -1,4 +1,7 @@
-﻿@model UploadFormModel
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@model UploadFormModel
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -10,8 +13,11 @@
     This sample shows how to build a .NET Core MVC Web app that uses OpenID Connect to sign in users in an Azure AD B2C tenant. It leverages the ASP.NET Core OpenID Connect middleware.
 </p>
 <img src="https://github.com/Azure-Samples/active-directory-aspnetcore-webapp-openidconnect-v2/raw/master/1-WebApp-OIDC/1-5-B2C/ReadmeFiles/sign-in.png
-"/>
+" />
 
+
+@if ((await AuthorizationService.AuthorizeAsync(User, "Authenticated")).Succeeded)
+{
 <div class="row">
     <form id="upload-form" method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
         <div class="col-md-6">
@@ -46,6 +52,7 @@
         </div>
     </form>
 </div>
+}
 
 
 @section Scripts {
