@@ -19,5 +19,9 @@ namespace MediaLibrary.Internet.Web.Models
         public List<string> Tag { get; set; }
         public DateTime UploadDate { get; set; }
         public string FileURL { get; set; }
+        public string Project { get; set; }
+        public string Event { get; set; }
+        public string LocationName { get; set; }
+        public string Copyright { get; set; }
     }
 }

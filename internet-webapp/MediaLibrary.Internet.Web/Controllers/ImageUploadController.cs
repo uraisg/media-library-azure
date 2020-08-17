@@ -8,14 +8,17 @@ using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
+    [Authorize]
     public class ImageUploadController : Controller
     {
         private readonly AppSettings _appSettings;
@@ -61,10 +64,16 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.Tag = tag;
                 json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
                 json.FileURL = imageURL;
+                json.Project = model.Project;
+                json.Event = model.Event;
+                json.LocationName = model.LocationText;
+                json.Copyright = model.Copyright;
                 string serialized = JsonConvert.SerializeObject(json);
                 await IndexUploadToBlob(JsonConvert.SerializeObject(json), _appSettings);
 
-                return Ok(json);
+                //return Ok(json);
+                ModelState.Clear();
+                return View("~/Views/Home/Index.cshtml");
             }
 
             else
