@@ -21,7 +21,7 @@ namespace MediaLibrary.Intranet.Web.Background
         private CrontabSchedule _schedule;
         private DateTime _nextRun;
         //Run every 1 hour
-        private string Schedule => "0 0 0/1 ? * * *";
+        private string Schedule => "0 0 0/1 * * *";
 
         private readonly AppSettings _appSettings;
 
