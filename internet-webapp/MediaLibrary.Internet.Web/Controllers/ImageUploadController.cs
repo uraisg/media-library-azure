@@ -15,6 +15,7 @@ using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -57,11 +58,11 @@ namespace MediaLibrary.Internet.Web.Controllers
                 List<string> tag = await GetCSComputerVisionTagAsync(imageStream, _appSettings);
 
                 //create json for indexing
-                ImageObj json = new ImageObj();
+                ImageEntity json = new ImageEntity();
                 json.Name = file.FileName;
                 json.DateTaken = GetTimestamp(directory);
-                json.Location = GetCoordinate(directory);
-                json.Tag = tag;
+                json.Location = JsonConvert.SerializeObject(GetCoordinate(directory));
+                json.Tag = string.Join(",",tag);
                 json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
                 json.FileURL = imageURL;
                 json.Project = model.Project;
@@ -69,7 +70,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.LocationName = model.LocationText;
                 json.Copyright = model.Copyright;
                 string serialized = JsonConvert.SerializeObject(json);
-                await IndexUploadToBlob(JsonConvert.SerializeObject(json), _appSettings);
+                await IndexUploadToTable(json, _appSettings);
 
                 //return Ok(json);
                 ModelState.Clear();
@@ -174,25 +175,19 @@ namespace MediaLibrary.Internet.Web.Controllers
             return tagList;
         }
 
-        private static async Task IndexUploadToBlob(string json, AppSettings appSettings)
+        private static async Task IndexUploadToTable(ImageEntity json, AppSettings appSettings)
         {
-            string containerName = appSettings.MediaStorageContainer;
+            string tableName = appSettings.MediaStorageTable;
             string storageConnectionString = appSettings.MediaStorageConnectionString;
 
-            //create a blob container client
-            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
+            //initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(storageConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
 
-            //create a blob
-            string fileName = Guid.NewGuid().ToString() + ".json";
-            BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
-
-            //convert string to stream
-            MemoryStream content = new MemoryStream();
-            StreamWriter writer = new StreamWriter(content);
-            writer.Write(json);
-            writer.Flush();
-            content.Position = 0;
-            await blobClient.UploadAsync(content, true);
+            TableOperation insertOperation = TableOperation.Insert(json);
+            TableResult result = await table.ExecuteAsync(insertOperation);
         }
     }
 }

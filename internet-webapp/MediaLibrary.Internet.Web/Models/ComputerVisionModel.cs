@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace MediaLibrary.Internet.Web.Models
 {
@@ -11,12 +12,17 @@ namespace MediaLibrary.Internet.Web.Models
         public List<double> coordinates { get; set; }
     }
 
-    public class ImageObj
+    public class ImageEntity: TableEntity
     {
+        public ImageEntity()
+        {
+            PartitionKey = DateTime.UtcNow.AddHours(8).Hour.ToString();
+            RowKey = Guid.NewGuid().ToString();
+        }
         public string Name { get; set; }
         public DateTime DateTaken { get; set; }
-        public CoordinateObj Location { get; set; }
-        public List<string> Tag { get; set; }
+        public string Location { get; set; }
+        public string Tag { get; set; }
         public DateTime UploadDate { get; set; }
         public string FileURL { get; set; }
         public string Project { get; set; }

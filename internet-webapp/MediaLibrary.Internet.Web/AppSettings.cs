@@ -10,6 +10,10 @@ namespace MediaLibrary.Internet.Web
         public string MediaStorageConnectionString { get; set; }
 
         public string MediaStorageContainer { get; set; }
+        public string MediaStorageTable { get; set; }
+
+        public string MediaStorageAccountName { get; set; }
+        public string MediaStorageAccountKey { get; set; }
 
         public string ComputerVisionEndpoint { get; set; }
 
