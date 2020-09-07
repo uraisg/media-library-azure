@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using MediaLibrary.Internet.Web.Background;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -57,7 +58,7 @@ namespace MediaLibrary.Internet.Web
             services.Configure<OpenIdConnectOptions>(Configuration.GetSection("AzureAdB2C"));
 
             services.AddControllers();
-
+            services.AddHostedService<ScheduledService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

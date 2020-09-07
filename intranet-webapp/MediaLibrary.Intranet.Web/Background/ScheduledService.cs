@@ -99,7 +99,6 @@ namespace MediaLibrary.Intranet.Web.Background
         private static async Task<InternetTableItems[]> GetInternetTableItems(string url,string partition)
         {
             var http = new HttpClient();
-            //for development
             string requestURL = url + partition;
             var response = await http.GetAsync(requestURL);
             var result = await response.Content.ReadAsStringAsync();
