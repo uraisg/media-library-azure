@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MediaLibrary.Internet.Webapp.Models;
+using MediaLibrary.Intranet.Web.Models;
 
-namespace MediaLibrary.Internet.Webapp.Controllers
+namespace MediaLibrary.Intranet.Web.Controllers
 {
     public class HomeController : Controller
     {
