@@ -68,7 +68,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             catch (StorageException e)
             {
-                return NotFound();
+                return NotFound(e);
                 throw;
             }
         }

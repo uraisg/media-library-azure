@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaLibrary.Intranet.Web.Background;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace MediaLibrary.Internet.Webapp
+namespace MediaLibrary.Intranet.Web
 {
     public class Startup
     {
@@ -24,6 +25,8 @@ namespace MediaLibrary.Internet.Webapp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
+            services.AddHostedService<ScheduledService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
