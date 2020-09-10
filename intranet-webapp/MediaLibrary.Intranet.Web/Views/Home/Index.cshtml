@@ -1,8 +1,122 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Media Library Portal";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section Styles {
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/azsearch.js@0.0.21/dist/AzSearch.css">
+    <style>
+        .searchResults__result h4 {
+            margin-top: 0px;
+            text-transform: uppercase;
+        }
+
+        .searchResults__result .resultDescription {
+            margin: 0.5em 0 0 0;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div id="facetPanel" class="col-sm-3 col-md-3 sidebar collapse">
+            <div id="clearFilters"></div>
+            <ul class="nav nav-sidebar">
+                <div className="panel panel-primary behclick-panel">
+
+                    <li>
+                        <div id="DateTakenFacet">
+                        </div>
+                    </li>
+                    <li>
+                        <div id="TagFacet">
+                        </div>
+                    </li>
+                    <li>
+                        <div id="UploadDateFacet">
+                        </div>
+                    </li>
+                    <li>
+                        <div id="ProjectFacet">
+                        </div>
+                    </li>
+                    <li>
+                        <div id="EventFacet">
+                        </div>
+                    </li>
+                    <li>
+                        <div id="LocationNameFacet">
+                        </div>
+                    </li>
+                    <li>
+                        <div id="CopyrightFacet">
+                        </div>
+                    </li>
+                </div>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-9 col-md-offset-3 results_section">
+            <div id="results" class="row placeholders">
+            </div>
+            <div id="pager" class="row">
+            </div>
+        </div>
+    </div>
 </div>
+<!-- Bootstrap core JavaScript
+    ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    @section Scripts {
+        <!-- Dependencies -->
+        <script src="https://cdn.jsdelivr.net/react/15.5.0/react.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/react/15.5.0/react-dom.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/redux/3.6.0/redux.min.js"></script>
+        <!-- Main -->
+        <script src="https://cdn.jsdelivr.net/npm/azsearch.js@0.0.21/dist/AzSearch.bundle.js"></script>
+        <script>
+        // WARNING
+        // For demonstration purposes only, do not use in a production environment. For simplicity, this is a single HTML page that has the query key to the search service.
+        // CORS (*) must be enabled in the index before using the demo app.
+
+        // Initialize and connect to your search service
+            var automagic = new AzSearch.Automagic({ index: "{REPLACE_WITH_AzSearch_INDEX_NAME}", queryKey: "{REPLACE_WITH_AzSearch_QUERY_KEY}", service: "{REPLACE_WITH_AzSearch_SERVICE_NAME}" });
+
+        const resultTemplate = `<div class="col-xs-12 col-sm-3 col-md-3 result_img" >
+                <img class="img-responsive result_img" src={{FileURL}} alt="image not found" />
+            </div><div class="col-xs-12 col-sm-9 col-md-9"><h4>{{Name}}</h4><div class="resultDescription">{{{Project}}}</div></div>`;
+
+        // add a results view using the template defined above
+        automagic.addResults("results", { count: true }, resultTemplate);
+
+        // Adds a pager control << 1 2 3 ... >>
+        automagic.addPager("pager");
+
+        automagic.addSearchBox("searchBox");
+
+        var startDate = new Date();
+        startDate.setFullYear(1975);
+        var endDate = new Date();
+        automagic.addRangeFacet("DateTakenFacet", "DateTaken", "date", startDate, endDate);
+        automagic.addCheckboxFacet("TagFacet", "Tag", "collection");
+        var startDate = new Date();
+        startDate.setFullYear(1975);
+        var endDate = new Date();
+        automagic.addRangeFacet("UploadDateFacet", "UploadDate", "date", startDate, endDate);
+        automagic.addCheckboxFacet("ProjectFacet", "Project", "string");
+        automagic.addCheckboxFacet("EventFacet", "Event", "string");
+        automagic.addCheckboxFacet("LocationNameFacet", "LocationName", "string");
+        automagic.addCheckboxFacet("CopyrightFacet", "Copyright", "string");
+
+
+        // Adds a button to clear any applied filters
+        automagic.addClearFiltersButton("clearFilters");
+        </script>
+    }
