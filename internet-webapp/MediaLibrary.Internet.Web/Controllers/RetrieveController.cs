@@ -96,7 +96,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             else
             {
                 return Unauthorized();
-            }            
+            }
         }
 
         [HttpPost]
