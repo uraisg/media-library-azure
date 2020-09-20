@@ -37,46 +37,54 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPost("FileUpload")]
         public async Task<IActionResult> Index(UploadFormModel model)
         {
-            IFormFile file = model.File;
-            if (file.Length > 0)
+            List<IFormFile> files = model.File;
+
+            if(files.Count > 0)
             {
-                MemoryStream ms = new MemoryStream();
-                file.CopyTo(ms);
+                foreach (IFormFile file in files)
+                {
+                    if (file.Length > 0)
+                    {
+                        MemoryStream ms = new MemoryStream();
+                        file.CopyTo(ms);
 
-                byte[] data = ms.ToArray();
+                        byte[] data = ms.ToArray();
 
-                MemoryStream uploadImage = new MemoryStream(data);
-                Stream extractMetadataImage = new MemoryStream(data);
-                Stream imageStream = new MemoryStream(data);
+                        MemoryStream uploadImage = new MemoryStream(data);
+                        Stream extractMetadataImage = new MemoryStream(data);
+                        Stream imageStream = new MemoryStream(data);
 
-                //upload to a separate container to retrieve image URL
-                string imageURL = await ImageUploadToBlob(file.FileName, uploadImage, _appSettings);
+                        //upload to a separate container to retrieve image URL
+                        string imageURL = await ImageUploadToBlob(file.FileName, uploadImage, _appSettings);
 
-                //extract image metadata
-                IReadOnlyList<MetadataExtractor.Directory> directory = ImageMetadataReader.ReadMetadata(extractMetadataImage);
-                //Get tagging from cognitive services
-                List<string> tag = await GetCSComputerVisionTagAsync(imageStream, _appSettings);
+                        //extract image metadata
+                        IReadOnlyList<MetadataExtractor.Directory> directory = ImageMetadataReader.ReadMetadata(extractMetadataImage);
+                        //Get tagging from cognitive services
+                        List<string> tag = await GetCSComputerVisionTagAsync(imageStream, _appSettings);
 
-                //create json for indexing
-                ImageEntity json = new ImageEntity();
-                json.Name = file.FileName;
-                json.DateTaken = GetTimestamp(directory);
-                json.Location = JsonConvert.SerializeObject(GetCoordinate(directory));
-                json.Tag = string.Join(",",tag);
-                json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
-                json.FileURL = imageURL;
-                json.Project = model.Project;
-                json.Event = model.Event;
-                json.LocationName = model.LocationText;
-                json.Copyright = model.Copyright;
-                string serialized = JsonConvert.SerializeObject(json);
-                await IndexUploadToTable(json, _appSettings);
-
-                //return Ok(json);
+                        //create json for indexing
+                        ImageEntity json = new ImageEntity();
+                        json.Name = file.FileName;
+                        json.DateTaken = GetTimestamp(directory);
+                        json.Location = JsonConvert.SerializeObject(GetCoordinate(directory));
+                        json.Tag = string.Join(",", tag);
+                        json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
+                        json.FileURL = imageURL;
+                        json.Project = model.Project;
+                        json.Event = model.Event;
+                        json.LocationName = model.LocationText;
+                        json.Copyright = model.Copyright;
+                        string serialized = JsonConvert.SerializeObject(json);
+                        await IndexUploadToTable(json, _appSettings);
+                    }
+                    else
+                    {
+                        return NoContent();
+                    }
+                }
                 ModelState.Clear();
                 return View("~/Views/Home/Index.cshtml");
             }
-
             else
             {
                 return NoContent();

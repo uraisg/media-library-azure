@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MediaLibrary.Internet.Web.Models
@@ -6,8 +7,8 @@ namespace MediaLibrary.Internet.Web.Models
     public class UploadFormModel
     {
         [Required]
-        [Display(Name = "Image to upload")]
-        public IFormFile File { get; set; }
+        [Display(Name = "Image(s) to upload")]
+        public List<IFormFile> File { get; set; }
         [Display(Name = "Project name")]
         public string Project { get; set; }
         [Display(Name = "Event name")]

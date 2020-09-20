@@ -18,5 +18,9 @@ namespace MediaLibrary.Internet.Web
         public string ComputerVisionEndpoint { get; set; }
 
         public string ComputerVisionApiKey { get; set; }
+
+        public string ApiName { get; set; }
+
+        public string ApiPassword { get; set; }
     }
 }
