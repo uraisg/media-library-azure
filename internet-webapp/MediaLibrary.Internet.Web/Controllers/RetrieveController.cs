@@ -8,12 +8,14 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using MediaLibrary.Internet.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -32,44 +34,68 @@ namespace MediaLibrary.Internet.Web.Controllers
         [ActionName("table")]
         public async Task<IActionResult> GetTable(string hour)
         {
-            string tableName = _appSettings.MediaStorageTable;
-            string storageConnectionString = _appSettings.MediaStorageConnectionString;
-
-            string partitionKey = hour;
-
-            List<ImageEntity> listEntities = new List<ImageEntity>();
-
-            //initialize table client
-            CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            CloudTable table = tableClient.GetTableReference(tableName);
-
-            //query by partition key
-            try
+            //check request header for authorization key
+            if (Request.Headers.ContainsKey("Authorization"))
             {
-                TableQuery<ImageEntity> partitionScanQuery = new TableQuery<ImageEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
+                var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
+                var credentialBytes = Convert.FromBase64String(authHeader.Parameter);
+                var credentials = Encoding.UTF8.GetString(credentialBytes).Split(new[] { ':' }, 2);
+                var username = credentials[0];
+                var password = credentials[1];
 
-                TableContinuationToken token = null;
+                bool nameMatch = username.Equals(_appSettings.ApiName);
+                bool passwordMatch = password.Equals(_appSettings.ApiPassword);
 
-                do
+                if(nameMatch && passwordMatch)
                 {
-                    TableQuerySegment<ImageEntity> segment = await table.ExecuteQuerySegmentedAsync(partitionScanQuery, token);
-                    token = segment.ContinuationToken;
-                    foreach (ImageEntity entity in segment)
+                    string tableName = _appSettings.MediaStorageTable;
+                    string storageConnectionString = _appSettings.MediaStorageConnectionString;
+
+                    string partitionKey = hour;
+
+                    List<ImageEntity> listEntities = new List<ImageEntity>();
+
+                    //initialize table client
+                    CloudStorageAccount storageAccount;
+                    storageAccount = CloudStorageAccount.Parse(storageConnectionString);
+                    CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                    CloudTable table = tableClient.GetTableReference(tableName);
+
+                    //query by partition key
+                    try
                     {
-                        listEntities.Add(entity);
+                        TableQuery<ImageEntity> partitionScanQuery = new TableQuery<ImageEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
+
+                        TableContinuationToken token = null;
+
+                        do
+                        {
+                            TableQuerySegment<ImageEntity> segment = await table.ExecuteQuerySegmentedAsync(partitionScanQuery, token);
+                            token = segment.ContinuationToken;
+                            foreach (ImageEntity entity in segment)
+                            {
+                                listEntities.Add(entity);
+                            }
+                        }
+                        while (token != null);
+
+                        //return array
+                        return Ok(listEntities);
+                    }
+                    catch (StorageException e)
+                    {
+                        return NotFound();
+                        throw;
                     }
                 }
-                while (token != null);
-
-                //return array
-                return Ok(listEntities);
+                else
+                {
+                    return Unauthorized();
+                }
             }
-            catch (StorageException e)
+            else
             {
-                return NotFound(e);
-                throw;
+                return Unauthorized();
             }
         }
 
@@ -77,28 +103,53 @@ namespace MediaLibrary.Internet.Web.Controllers
         [ActionName("image")]
         public async Task<IActionResult> GetImage()
         {
-            string requestbody;
-
-            var storageAccountName = _appSettings.MediaStorageAccountName;
-            var storageAccountKey = _appSettings.MediaStorageAccountKey;
-
-            //get request body
-            using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
+            //check request header for authorization key
+            if (Request.Headers.ContainsKey("Authorization"))
             {
-                requestbody = await reader.ReadToEndAsync();
+                var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
+                var credentialBytes = Convert.FromBase64String(authHeader.Parameter);
+                var credentials = Encoding.UTF8.GetString(credentialBytes).Split(new[] { ':' }, 2);
+                var username = credentials[0];
+                var password = credentials[1];
+
+                bool nameMatch = username.Equals(_appSettings.ApiName);
+                bool passwordMatch = password.Equals(_appSettings.ApiPassword);
+
+                if(nameMatch && passwordMatch)
+                {
+                    string requestbody;
+
+                    var storageAccountName = _appSettings.MediaStorageAccountName;
+                    var storageAccountKey = _appSettings.MediaStorageAccountKey;
+
+                    //get request body
+                    using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
+                    {
+                        requestbody = await reader.ReadToEndAsync();
+                    }
+
+                    //get the image url
+                    var json = JObject.Parse(requestbody);
+                    string imageUrl = (string)json["url"];
+
+                    //authenticate with blob and down image via URL
+                    StorageSharedKeyCredential credential = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
+                    BlobClient blobClient = new BlobClient(new System.Uri(imageUrl), credential);
+                    BlobDownloadInfo content = await blobClient.DownloadAsync();
+
+                    //return stream content
+                    return Ok(content.Content);
+                }
+                else
+                {
+                    return Unauthorized();
+                }
             }
-
-            //get the image url
-            var json = JObject.Parse(requestbody);
-            string imageUrl = (string)json["url"];
-
-            //authenticate with blob and down image via URL
-            StorageSharedKeyCredential credential = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);           
-            BlobClient blobClient = new BlobClient(new System.Uri(imageUrl),credential);
-            BlobDownloadInfo content = await blobClient.DownloadAsync();
-
-            //return stream content
-            return Ok(content.Content);
+            else
+            {
+                return Unauthorized();
+            }
+            
         }
     }
 }
