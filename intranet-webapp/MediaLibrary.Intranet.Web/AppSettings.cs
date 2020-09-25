@@ -14,5 +14,9 @@ namespace MediaLibrary.Intranet.Web
         public string MediaStorageIndexContainer { get; set; }
         public string InternetTableAPI { get; set; }
         public string InternetImageAPI { get; set; }
+
+        public string SearchServiceName { get; set; }
+        public string SearchServiceQueryApiKey { get; set; }
+        public string SearchIndexName { get; set; }
     }
 }
