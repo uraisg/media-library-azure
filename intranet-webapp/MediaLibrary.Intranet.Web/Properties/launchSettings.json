@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "MediaLibrary.Internet.Webapp": {
+    "MediaLibrary.Intranet.Webapp": {
       "commandName": "Project",
       "launchBrowser": true,
       "applicationUrl": "https://localhost:44391;http://localhost:5000",
