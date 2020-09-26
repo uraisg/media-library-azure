@@ -24,6 +24,10 @@ a {
   border-color: #1861ac;
 }
 
+.navbar-filler {
+  height: 3.5rem;
+}
+
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
