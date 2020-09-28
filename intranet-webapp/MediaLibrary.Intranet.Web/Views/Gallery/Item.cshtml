@@ -1,0 +1,160 @@
+﻿<div class="row justify-content-center px-3 py-3">
+    <a href="#">
+        <img id="main-media" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23d7d8d9%22%3E%3C%2Frect%3E%3C%2Fsvg%3E" class="img-thumbnail w-100 h-100" alt="" style="max-height: 60vh" data-fileinfoid="@ViewData["mediaId"]">
+    </a>
+</div>
+<div class="row metadata-container"></div>
+
+<template id="metadata-section">
+    <div class="col-12 border-bottom pb-3">
+        <h4 class="metadata-name"></h4>
+        <div class="metadata-geo d-inline-block mr-2">
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-geo-alt text-secondary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M12.166 8.94C12.696 7.867 13 6.862 13 6A5 5 0 0 0 3 6c0 .862.305 1.867.834 2.94.524 1.062 1.234 2.12 1.96 3.07A31.481 31.481 0 0 0 8 14.58l.208-.22a31.493 31.493 0 0 0 1.998-2.35c.726-.95 1.436-2.008 1.96-3.07zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z" />
+                <path fill-rule="evenodd" d="M8 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+            </svg>
+            <span></span>
+        </div>
+        <div class="metadata-taken d-inline-block mr-2">
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-camera text-secondary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M15 12V6a1 1 0 0 0-1-1h-1.172a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 9.173 3H6.828a1 1 0 0 0-.707.293l-.828.828A3 3 0 0 1 3.172 5H2a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z" />
+                <path fill-rule="evenodd" d="M8 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                <path d="M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z" />
+            </svg>
+            <span>Taken on </span>
+        </div>
+        <div class="metadata-uploaded d-inline-block mr-2">
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-upload text-secondary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                <path fill-rule="evenodd" d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
+            </svg>
+            <span>Uploaded on </span>
+        </div>
+    </div>
+    <div class="metadata-details col-md-6 pt-3">
+        <h5>Details</h5>
+        <dl class="row"></dl>
+    </div>
+    <div class="metadata-tags col-md-6 pt-3">
+        <h5>Tags</h5>
+        <div></div>
+    </div>
+</template>
+
+<template id="details-row">
+    <dt class="col-sm-3"></dt>
+    <dd class="col-sm-9"></dd>
+</template>
+
+<template id="tags-btn">
+    <button disabled="" type="button" class="btn btn-outline-dark btn-sm mb-2 mr-2"></button>
+</template>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(function () {
+            loadFileInfo();
+        });
+
+        function loadFileInfo() {
+            let img = document.querySelector("#main-media");
+            let fileInfoId = img.dataset.fileinfoid;
+            if (!fileInfoId) return;
+
+            fetch(`/api/media/${fileInfoId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new TypeError("Oops, we haven't got JSON!");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    img.alt = data['Name'];
+                    img.src = data['FileURL'];
+                    img.parentElement.href = img.src;
+
+                    renderMetadataSection(data);
+
+                    document.title = data['Name'] + ' ' + document.title;
+                })
+                .catch(error => {
+                    document.querySelector('.metadata-container').innerHTML = `
+                    <div class="alert alert-warning w-100">
+                        <strong>Sorry!</strong> We have problems finding the requested media details.
+                    </div>`;
+                    document.title = 'Oops! ' + document.title;
+                    console.error(error);
+                });
+        }
+
+        function renderMetadataSection(data) {
+            let template = document.querySelector('#metadata-section');
+            let clone = template.content.cloneNode(true);
+            let h4 = clone.querySelector("h4");
+            h4.textContent = data['Name'];
+
+            let geo = clone.querySelector(".metadata-geo span");
+            geo.textContent = formatLatLng(data['Location'].coordinates);
+
+            let taken = clone.querySelector(".metadata-taken span");
+            let uploaded = clone.querySelector(".metadata-uploaded span");
+            taken.textContent += formatDate(data['DateTaken']);
+            uploaded.textContent += formatDate(data['UploadDate']);
+
+            let details = clone.querySelector(".metadata-details dl");
+            details.appendChild(renderMediaDetails(data));
+
+            let tags = clone.querySelector(".metadata-tags div");
+            tags.appendChild(renderTagList(data['Tag']));
+
+            let target = document.querySelector('.metadata-container');
+            let targetClone = target.cloneNode(false);
+            targetClone.appendChild(clone);
+            target.parentNode.replaceChild(targetClone, target);
+        }
+
+        function formatLatLng(coords) {
+            let decimalPlaces = 5;
+            return coords[1].toFixed(decimalPlaces) + ', ' + coords[0].toFixed(decimalPlaces);
+        }
+
+        function formatDate(date) {
+            var options = { year: 'numeric', month: 'short', day: '2-digit' };
+            return new Intl.DateTimeFormat('en-GB', options).format(new Date(date));
+        }
+
+        function renderMediaDetails(data) {
+            let fragment = new DocumentFragment();
+            let template = document.querySelector('#details-row');
+            let attribs = new Map();
+            attribs.set('Project', 'Project');
+            attribs.set('Event', 'Event');
+            attribs.set('LocationName', 'Location');
+            attribs.set('Copyright', 'Copyright');
+            for (let [key, label] of attribs) {
+                let clone = template.content.cloneNode(true);
+                let dt = clone.querySelector('dt');
+                let dd = clone.querySelector('dd');
+                dt.textContent = label;
+                dd.textContent = data[key];
+                fragment.appendChild(clone);
+            };
+            return fragment;
+        }
+
+        function renderTagList(tags) {
+            let fragment = new DocumentFragment();
+            let template = document.querySelector('#tags-btn');
+            tags.forEach(function (tag) {
+                let btn = template.content.firstElementChild.cloneNode(true);
+                btn.textContent = tag;
+                fragment.appendChild(btn);
+            });
+            return fragment;
+        }
+    </script>
+}
