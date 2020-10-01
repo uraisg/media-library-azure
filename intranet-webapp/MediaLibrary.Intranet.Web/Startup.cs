@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaLibrary.Intranet.Web.Background;
+using MediaLibrary.Intranet.Web.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -27,6 +28,7 @@ namespace MediaLibrary.Intranet.Web
             services.AddControllersWithViews();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHostedService<ScheduledService>();
+            services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

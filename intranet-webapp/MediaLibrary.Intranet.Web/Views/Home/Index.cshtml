@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="~/css/media.css" />
 }
 
-@using (Html.BeginForm("Index", "Home", FormMethod.Post))
-{
+<form id="searchform" asp-controller="Home" asp-action="Index" method="post"></form>
+
     <table>
         <tr>
             <td></td>
@@ -26,7 +26,7 @@
             <td>
                 <!-- Display the search text box, with the search icon to the right of it.-->
                 <div class="searchBoxForm">
-                    @Html.TextBoxFor(m => m.SearchText, new { @class = "searchBox" }) <input value="" class="searchBoxSubmit" type="submit">
+                    <input asp-for="SearchText" form="searchform" class="searchBox" /> <input form="searchform" class="searchBoxSubmit" type="submit" />
                 </div>
             </td>
         </tr>
@@ -37,6 +37,11 @@
 
                     @if (Model != null && Model.ResultList != null)
                     {
+                        <h5 class="facetheader">Planning Area:</h5>
+                        <select asp-for="SpatialFilter" asp-items="new SelectList(Model.SpatialCategories)">
+                            <option value="">--all--</option>
+                        </select>
+
                         List<string> locations = Model.ResultList.Facets["LocationName"].Select(x => x.Value.ToString()).ToList();
 
                         if (locations.Count > 0)
@@ -179,4 +184,11 @@
             </td>
         </tr>
     </table>
+
+@section Scripts {
+    <script>
+        $('#SpatialFilter').on('change', (event) => {
+            location = '@Url.Action("Facet", "Home")?spatialFilter=' + event.target.value;
+        });
+    </script>
 }
