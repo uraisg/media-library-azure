@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using MediaLibrary.Intranet.Web.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -70,12 +71,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
         private dynamic ExpandMediaItem(Stream mediaItemStream, string id)
         {
-            dynamic result;
-            using (var sr = new StreamReader(mediaItemStream))
-            using (var jr = new JsonTextReader(sr))
-            {
-                result = JsonSerializer.CreateDefault().Deserialize<ExpandoObject>(jr);
-            }
+            dynamic result = JsonHelper.ReadJsonFromStream<ExpandoObject>(mediaItemStream);
 
             // Generate URLs to file and self
             string filename = Path.GetFileName(new Uri(result.FileURL).AbsolutePath);

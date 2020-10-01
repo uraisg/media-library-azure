@@ -9,6 +9,7 @@ using MediaLibrary.Intranet.Web.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
+using MediaLibrary.Intranet.Web.Common;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -16,14 +17,16 @@ namespace MediaLibrary.Intranet.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly AppSettings _appSettings;
+        private readonly IGeoSearchHelper _geoSearchHelper;
 
         private static SearchServiceClient _searchServiceName = null;
         private static ISearchIndexClient _searchIndexClient = null;
 
-        public HomeController(IOptions<AppSettings> appSettings, ILogger<HomeController> logger)
+        public HomeController(IOptions<AppSettings> appSettings, ILogger<HomeController> logger, IGeoSearchHelper geoSearchHelper)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
+            _geoSearchHelper = geoSearchHelper;
 
             InitSearch();
         }
@@ -48,7 +51,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 }
 
                 // Make the search call for the first page.
-                await RunQueryAsync(model, 0, 0, "", "");
+                await RunQueryAsync(model, 0, 0, "", "", "");
 
                 // Ensure temporary data is stored for the next call.
                 //TempData["page"] = 0;
@@ -70,6 +73,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 // Filters set by the model override those stored in temporary data.
                 string locationFilter;
                 string tagFilter;
+                string spatialFilter;
                 if (model.LocationFilter != null)
                 {
                     locationFilter = model.LocationFilter;
@@ -88,11 +92,20 @@ namespace MediaLibrary.Intranet.Web.Controllers
                     tagFilter = TempData["tagFilter"].ToString();
                 }
 
+                if (model.SpatialFilter != null)
+                {
+                    spatialFilter = model.SpatialFilter;
+                }
+                else
+                {
+                    spatialFilter = TempData["spatialFilter"].ToString();
+                }
+
                 // Recover the search text.
                 model.SearchText = TempData["searchfor"].ToString();
 
                 // Initiate a new search.
-                await RunQueryAsync(model, 0, 0, locationFilter, tagFilter);
+                await RunQueryAsync(model, 0, 0, locationFilter, tagFilter, spatialFilter);
             }
 
             catch
@@ -129,12 +142,13 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 // Recover the filters.
                 string locationFilter = TempData["locationFilter"].ToString();
                 string tagFilter = TempData["tagFilter"].ToString();
+                string spatialFilter = TempData["spatialFilter"].ToString();
 
                 // Recover the search text.
                 model.SearchText = TempData["searchfor"].ToString();
 
                 // Search for the new page.
-                await RunQueryAsync(model, page, leftMostPage, locationFilter, tagFilter);
+                await RunQueryAsync(model, page, leftMostPage, locationFilter, tagFilter, spatialFilter);
 
                 // Ensure Temp data is stored for next call, as TempData only stored for one call.
                 //TempData["page"] = (object)page;
@@ -160,7 +174,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        private async Task<ActionResult> RunQueryAsync(SearchData model, int page, int leftMostPage, string locationFilter, string tagFilter)
+        private async Task<ActionResult> RunQueryAsync(SearchData model, int page, int leftMostPage, string locationFilter, string tagFilter, string spatialFilter)
         {
             InitSearch();
 
@@ -175,6 +189,19 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 // One, or zero, facets apply.
                 facetFilter = $"{locationFilter}{tagFilter}";
+            }
+
+            spatialFilter = TransformSpatialFilter(spatialFilter);
+
+            if (facetFilter.Length > 0 && spatialFilter.Length > 0)
+            {
+                // Both facets apply.
+                facetFilter = $"{facetFilter} and {spatialFilter}";
+            }
+            else
+            {
+                // One, or zero, facets apply.
+                facetFilter = $"{facetFilter}{spatialFilter}";
             }
 
             var parameters = new SearchParameters
@@ -228,15 +255,39 @@ namespace MediaLibrary.Intranet.Web.Controllers
             // Calculate the number of page numbers to display.
             model.PageRange = Math.Min(model.PageCount - leftMostPage, GlobalVariables.MaxPageRange);
 
+            if (model.SpatialCategories == null)
+            {
+                model.SpatialCategories = _geoSearchHelper.GetNames();
+            }
+            
+
             // Ensure Temp data is stored for the next call.
             TempData["page"] = page;
             TempData["leftMostPage"] = model.LeftMostPage;
             TempData["searchfor"] = model.SearchText;
             TempData["locationFilter"] = locationFilter;
             TempData["tagFilter"] = tagFilter;
+            TempData["spatialFilter"] = spatialFilter;
 
             // Return the new view.
             return View("Index", model);
+        }
+
+        private string TransformSpatialFilter(string spatialFilter)
+        {
+            if (string.IsNullOrEmpty(spatialFilter))
+            {
+                return string.Empty;
+            }
+
+            _geoSearchHelper.GetDictionary().TryGetValue(spatialFilter, out var ret);
+
+            if (string.IsNullOrEmpty(ret))
+            {
+                return string.Empty;
+            }
+
+            return "geo.intersects(Location, geography'" + ret + "')";
         }
     }
 }

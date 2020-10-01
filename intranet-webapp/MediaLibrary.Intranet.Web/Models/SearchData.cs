@@ -39,6 +39,10 @@ namespace MediaLibrary.Intranet.Web.Models
 
         public string TagFilter { get; set; }
 
+        public string SpatialFilter { get; set; }
+
+        public List<string> SpatialCategories { get; set; }
+
         // The list of results.
         public DocumentSearchResult<MediaItem> ResultList;
     }
