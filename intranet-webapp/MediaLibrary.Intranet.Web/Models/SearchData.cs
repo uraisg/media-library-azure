@@ -15,6 +15,12 @@ namespace MediaLibrary.Intranet.Web.Models
         public static int PageRangeDelta => 2;
     }
 
+    public enum DisplayMode
+    {
+        List,
+        Map
+    }
+
     public class SearchData
     {
         // The text to search for.
@@ -34,6 +40,9 @@ namespace MediaLibrary.Intranet.Web.Models
 
         // Used when page numbers, or next or prev buttons, have been selected.
         public string Paging { get; set; }
+
+        // Used to determine how the results are rendered
+        public DisplayMode? Layout { get; set; }
 
         public string LocationFilter { get; set; }
 

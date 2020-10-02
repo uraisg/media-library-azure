@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Search;
 using Microsoft.Spatial;
+using Newtonsoft.Json;
 
 namespace MediaLibrary.Intranet.Web.Models
 {
@@ -24,7 +25,7 @@ namespace MediaLibrary.Intranet.Web.Models
         public DateTime UploadDate { get; set; }
 
         [IsSearchable, IsFilterable]
-        public string FileUrl { get; set; }
+        public string FileURL { get; set; }
 
         [IsSearchable, IsFilterable, IsFacetable]
         public string Project { get; set; }
@@ -37,5 +38,8 @@ namespace MediaLibrary.Intranet.Web.Models
 
         [IsSearchable, IsFilterable, IsFacetable]
         public string Copyright { get; set; }
+
+        [JsonProperty("metadata_storage_name")]
+        public string MetadataStorageName { get; set; }
     }
 }
