@@ -1,4 +1,5 @@
 ﻿@model MediaLibrary.Intranet.Web.Models.SearchData
+@inject IJsonHelper Json;
 
 @{
     ViewData["Title"] = "Home Page";
@@ -6,6 +7,9 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/media.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
 }
 
 <form id="searchform" asp-controller="Home" asp-action="Index" method="post"></form>
@@ -38,7 +42,7 @@
                     @if (Model != null && Model.ResultList != null)
                     {
                         <h5 class="facetheader">Planning Area:</h5>
-                        <select asp-for="SpatialFilter" asp-items="new SelectList(Model.SpatialCategories)">
+                        <select class="form-control" asp-for="SpatialFilter" asp-items="new SelectList(Model.SpatialCategories)">
                             <option value="">--all--</option>
                         </select>
 
@@ -80,22 +84,47 @@
                 <div id="resultsplace">
                     @if (Model != null && Model.ResultList != null)
                     {
-                        // Show the result count.
-                        <p class="sampleText">
-                            @Html.DisplayFor(m => m.ResultList.Count) Results
-                        </p>
+                        // Show the result count
+                        <div class="sampleText d-flex flex-row">
+                            <p>@Html.DisplayFor(m => m.ResultList.Count) results</p>
+                            <div class="flex-fill"></div>
+                            <div>
+                                <span class="mr-1">View as:</span>
+                                @if (Model.Layout == DisplayMode.List)
+                                {
+                                    <span class="mr-1"><strong>List</strong></span>
+                                    <span class="mr-1">
+                                        @Html.ActionLink("Map", "Page", "Home", new { paging = Model.CurrentPage, layout = DisplayMode.Map }, null)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="mr-1">
+                                        @Html.ActionLink("List", "Page", "Home", new { paging = Model.CurrentPage, layout = DisplayMode.List }, null)
+                                    </span>
+                                    <span class="mr-1"><strong>Map</strong></span>
+                                }
+                            </div>
+                        </div>
 
-                        @for (var i = 0; i < Model.ResultList.Results.Count; i++)
+                        if (Model.Layout == DisplayMode.Map)
                         {
-                            string tag = string.Join(", ", Model.ResultList.Results[i].Document.Tag);
+                            <div id="map"></div>
+                        }
+                        else
+                        {
+                            @for (var i = 0; i < Model.ResultList.Results.Count; i++)
+                            {
+                                string tag = string.Join(", ", Model.ResultList.Results[i].Document.Tag);
 
-                            string fullDescription = Model.ResultList.Results[i].Document.Project;
-                            fullDescription += $"\nLocation: {Model.ResultList.Results[i].Document.LocationName}";
-                            fullDescription += $"\nTags: {tag}";
+                                string fullDescription = Model.ResultList.Results[i].Document.Project;
+                                fullDescription += $"\nLocation: {Model.ResultList.Results[i].Document.LocationName}";
+                                fullDescription += $"\nTags: {tag}";
 
-                            // Display the hotel name and description.
-                            @Html.TextAreaFor(m => Model.ResultList.Results[i].Document.Name, new { @class = "box1" })
-                            @Html.TextArea($"desc{i}", fullDescription, new { @class = "box2" })
+                                // Display the hotel name and description.
+                                @Html.TextAreaFor(m => Model.ResultList.Results[i].Document.Name, new { @class = "box1" })
+                                @Html.TextArea($"desc{i}", fullDescription, new { @class = "box2" })
+                            }
                         }
                     }
                 </div>
@@ -186,9 +215,70 @@
     </table>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    @if (Model.Layout == DisplayMode.Map)
+    {
+    <text>
     <script>
-        $('#SpatialFilter').on('change', (event) => {
+        document.querySelector('#SpatialFilter').addEventListener('change', event => {
             location = '@Url.Action("Facet", "Home")?spatialFilter=' + event.target.value;
         });
+
+        if (document.querySelector('#map')) {
+            // Set up map
+            let center = L.bounds([1.56073, 104.11475], [1.16, 103.502]).getCenter();
+            let map = L.map('map').setView([center.x, center.y], 12);
+
+            let basemap = L.tileLayer('https://maps-{s}.onemap.sg/v3/Grey/{z}/{x}/{y}.png', {
+                detectRetina: true,
+                maxZoom: 18,
+                minZoom: 11,
+                attribution: '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;"/> New OneMap | Map data &copy; contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>'
+            });
+
+            map.setMaxBounds([[1.56073, 104.1147], [1.16, 103.502]]);
+
+            basemap.addTo(map);
+
+            // Search results
+            let results = [
+            @foreach (var item in Model.ResultList.Results) {
+                @:[@Json.Serialize(@item.Document.Location.Latitude),@Json.Serialize(@item.Document.Location.Longitude),@Json.Serialize(item.Document.Name),@Json.Serialize(Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(item.Document.MetadataStorageName) })),@Json.Serialize("/api/assets/" + System.IO.Path.GetFileName(new Uri(item.Document.FileURL).AbsolutePath))],
+            }
+            ];
+
+            // Create markers
+            let markers = L.markerClusterGroup();
+            for (let result of results) {
+                markers.addLayer(createMarker(...result));
+            }
+            map.addLayer(markers);
+
+            // Make sure popups are sized properly
+            document.querySelector('.leaflet-popup-pane').addEventListener('load', event => {
+                let tagName = event.target.tagName,
+                    popup = map._popup;
+                if (tagName === 'IMG' && popup && !popup._updated) {
+                    popup._updated = true;
+                    popup.update();
+                }
+            }, true);
+        }
+
+        function createMarker(lat, lng, title, url, img) {
+            let marker = L.circleMarker(L.latLng(lat, lng), {
+                radius: 5,
+                color: '#333333',
+                fillColor: '#004DA8',
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+            marker.bindPopup(`<a href="${url}" alt="${title}" target="_blank"><img class="popup-img" src="${img}" /></a>`);
+            return marker;
+        }
     </script>
+    </text>
+    }
 }

@@ -50,6 +50,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
                     model.SearchText = "";
                 }
 
+                // Set default result layout
+                if (model.Layout == null)
+                {
+                    model.Layout = DisplayMode.List;
+                }
+
                 // Make the search call for the first page.
                 await RunQueryAsync(model, 0, 0, "", "", "");
 
@@ -136,6 +142,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
                         break;
                 }
 
+                // Layout set by the model override the one stored in temporary data
+                model.Layout = model.Layout ?? (DisplayMode)TempData["layout"];
+
                 // Recover the leftMostPage.
                 int leftMostPage = (int)TempData["leftMostPage"];
 
@@ -212,7 +221,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 Facets = new List<string> { "LocationName,count:20", "Tag,count:20" },
 
                 // Enter media property names into this list, so only these values will be returned.
-                Select = new[] { "Name", "Project", "LocationName", "Tag" },
+                Select = new[] { "Name", "Project", "LocationName", "Tag", "Location", "FileURL", "metadata_storage_name" },
 
                 // Skip past results that have already been returned.
                 Skip = page * GlobalVariables.ResultsPerPage,
@@ -264,6 +273,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             // Ensure Temp data is stored for the next call.
             TempData["page"] = page;
             TempData["leftMostPage"] = model.LeftMostPage;
+            TempData["layout"] = model.Layout;
             TempData["searchfor"] = model.SearchText;
             TempData["locationFilter"] = locationFilter;
             TempData["tagFilter"] = tagFilter;

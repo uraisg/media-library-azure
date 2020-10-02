@@ -117,3 +117,15 @@ textarea.box3 {
     font-weight: bold;
     color: darkgreen;
 }
+
+/* Styles for map layout */
+
+#map  {
+    width: 648px;
+    height: 500px;
+}
+
+.popup-img {
+    max-width: 150px;
+    height: auto;
+}
