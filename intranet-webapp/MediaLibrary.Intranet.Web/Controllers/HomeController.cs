@@ -40,7 +40,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 _searchIndexClient = _searchServiceName.Indexes.GetClient(_appSettings.SearchIndexName);
         }
 
-        public async Task<ActionResult> Index(SearchData model)
+        public async Task<ActionResult> Index([FromQuery] SearchData model)
         {
             try
             {
@@ -57,12 +57,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 }
 
                 // Make the search call for the first page.
-                await RunQueryAsync(model, 0, 0, "", "", "");
-
-                // Ensure temporary data is stored for the next call.
-                //TempData["page"] = 0;
-                //TempData["leftMostPage"] = 0;
-                //TempData["searchfor"] = model.SearchText;
+                await RunQueryAsync(model);
             }
 
             catch (Exception ex)
@@ -70,106 +65,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 return View("Error", new ErrorViewModel { RequestId = "1" });
             }
             return View(model);
-        }
-
-        public async Task<ActionResult> Facet(SearchData model)
-        {
-            try
-            {
-                // Filters set by the model override those stored in temporary data.
-                string locationFilter;
-                string tagFilter;
-                string spatialFilter;
-                if (model.LocationFilter != null)
-                {
-                    locationFilter = model.LocationFilter;
-                }
-                else
-                {
-                    locationFilter = TempData["locationFilter"].ToString();
-                }
-
-                if (model.TagFilter != null)
-                {
-                    tagFilter = model.TagFilter;
-                }
-                else
-                {
-                    tagFilter = TempData["tagFilter"].ToString();
-                }
-
-                if (model.SpatialFilter != null)
-                {
-                    spatialFilter = model.SpatialFilter;
-                }
-                else
-                {
-                    spatialFilter = TempData["spatialFilter"].ToString();
-                }
-
-                // Recover the search text.
-                model.SearchText = TempData["searchfor"].ToString();
-
-                // Initiate a new search.
-                await RunQueryAsync(model, 0, 0, locationFilter, tagFilter, spatialFilter);
-            }
-
-            catch
-            {
-                return View("Error", new ErrorViewModel { RequestId = "2" });
-            }
-            return View("Index", model);
-        }
-
-        public async Task<ActionResult> Page(SearchData model)
-        {
-            try
-            {
-                int page;
-
-                switch (model.Paging)
-                {
-                    case "prev":
-                        page = (int)TempData["page"] - 1;
-                        break;
-
-                    case "next":
-                        page = (int)TempData["page"] + 1;
-                        break;
-
-                    default:
-                        page = int.Parse(model.Paging);
-                        break;
-                }
-
-                // Layout set by the model override the one stored in temporary data
-                model.Layout = model.Layout ?? (DisplayMode)TempData["layout"];
-
-                // Recover the leftMostPage.
-                int leftMostPage = (int)TempData["leftMostPage"];
-
-                // Recover the filters.
-                string locationFilter = TempData["locationFilter"].ToString();
-                string tagFilter = TempData["tagFilter"].ToString();
-                string spatialFilter = TempData["spatialFilter"].ToString();
-
-                // Recover the search text.
-                model.SearchText = TempData["searchfor"].ToString();
-
-                // Search for the new page.
-                await RunQueryAsync(model, page, leftMostPage, locationFilter, tagFilter, spatialFilter);
-
-                // Ensure Temp data is stored for next call, as TempData only stored for one call.
-                //TempData["page"] = (object)page;
-                //TempData["searchfor"] = model.SearchText;
-                //TempData["leftMostPage"] = model.LeftMostPage;
-            }
-
-            catch
-            {
-                return View("Error", new ErrorViewModel { RequestId = "2" });
-            }
-            return View("Index", model);
         }
 
         public IActionResult Privacy()
@@ -183,39 +78,16 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        private async Task<ActionResult> RunQueryAsync(SearchData model, int page, int leftMostPage, string locationFilter, string tagFilter, string spatialFilter)
+        private async Task<ActionResult> RunQueryAsync(SearchData model)
         {
             InitSearch();
 
-            string facetFilter = "";
-
-            if (locationFilter.Length > 0 && tagFilter.Length > 0)
-            {
-                // Both facets apply.
-                facetFilter = $"{locationFilter} and {tagFilter}";
-            }
-            else
-            {
-                // One, or zero, facets apply.
-                facetFilter = $"{locationFilter}{tagFilter}";
-            }
-
-            spatialFilter = TransformSpatialFilter(spatialFilter);
-
-            if (facetFilter.Length > 0 && spatialFilter.Length > 0)
-            {
-                // Both facets apply.
-                facetFilter = $"{facetFilter} and {spatialFilter}";
-            }
-            else
-            {
-                // One, or zero, facets apply.
-                facetFilter = $"{facetFilter}{spatialFilter}";
-            }
+            string filterExpression = GetFilterExpression(model.LocationFilter, model.TagFilter, model.SpatialFilter);
+            int page = model.Page ?? 0;
 
             var parameters = new SearchParameters
             {
-                Filter = facetFilter,
+                Filter = filterExpression,
 
                 // Return information on the text, and number, of facets in the data.
                 Facets = new List<string> { "LocationName,count:20", "Tag,count:20" },
@@ -242,6 +114,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             // This variable communicates the page number being displayed to the view.
             model.CurrentPage = page;
 
+            int leftMostPage = 0;
             // Calculate the range of page numbers to display.
             if (page == 0)
             {
@@ -269,18 +142,31 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 model.SpatialCategories = _geoSearchHelper.GetNames();
             }
             
-
-            // Ensure Temp data is stored for the next call.
-            TempData["page"] = page;
-            TempData["leftMostPage"] = model.LeftMostPage;
-            TempData["layout"] = model.Layout;
-            TempData["searchfor"] = model.SearchText;
-            TempData["locationFilter"] = locationFilter;
-            TempData["tagFilter"] = tagFilter;
-            TempData["spatialFilter"] = spatialFilter;
-
             // Return the new view.
             return View("Index", model);
+        }
+
+        private string GetFilterExpression(IList<string> locationFilter, IList<string> tagFilter, string spatialFilter)
+        {
+            var subexpressions = new List<string>();
+
+            if (locationFilter != null && locationFilter.Count > 0)
+            {
+                subexpressions.Add(string.Join(" or ", locationFilter.Select(location => $"LocationName eq '{location.Replace("'", "''")}'")));
+            }
+
+            if (tagFilter != null && tagFilter.Count > 0)
+            {
+                subexpressions.Add(string.Join(" or ", tagFilter.Select(tag => $"Tag/any(t: t eq '{tag.Replace("'", "''")}')")));
+            }
+
+            string spatialExpression = TransformSpatialFilter(spatialFilter);
+            if (!string.IsNullOrEmpty(spatialExpression))
+            {
+                subexpressions.Add(spatialExpression);
+            }
+
+            return string.Join(" and ", subexpressions);
         }
 
         private string TransformSpatialFilter(string spatialFilter)
