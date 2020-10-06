@@ -38,19 +38,21 @@ namespace MediaLibrary.Intranet.Web.Models
         // The number of page numbers to display - which can be less than MaxPageRange towards the end of the results.
         public int PageRange { get; set; }
 
+        public int? Page { get; set; }
+
         // Used when page numbers, or next or prev buttons, have been selected.
         public string Paging { get; set; }
 
         // Used to determine how the results are rendered
         public DisplayMode? Layout { get; set; }
 
-        public string LocationFilter { get; set; }
+        public IList<string> LocationFilter { get; set; }
 
-        public string TagFilter { get; set; }
+        public IList<string> TagFilter { get; set; }
 
         public string SpatialFilter { get; set; }
 
-        public List<string> SpatialCategories { get; set; }
+        public IList<string> SpatialCategories { get; set; }
 
         // The list of results.
         public DocumentSearchResult<MediaItem> ResultList;
