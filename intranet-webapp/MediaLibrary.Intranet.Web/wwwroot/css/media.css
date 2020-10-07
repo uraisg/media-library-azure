@@ -121,8 +121,8 @@ textarea.box3 {
 /* Styles for map layout */
 
 #map  {
-    width: 648px;
-    height: 500px;
+    width: 100%;
+    height: calc(100vh - 14rem);
 }
 
 .popup-img {
