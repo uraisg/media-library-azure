@@ -30,7 +30,12 @@
             <input type="hidden" asp-for="SearchText" form="filter-form">
             <input type="hidden" asp-for="Layout" form="filter-form">
         </form>
-        <h4 class="ooo mt-3">Filters</h4>
+        <h5 class="ooo mt-3">
+            Filters
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-filter" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+        </h5>
         <div class="flex-shrink overflow-auto">
             <div class="form-group">
                 <label class="filter-heading" asp-for="SpatialFilter">Planning Area</label>
@@ -74,26 +79,35 @@
             </div>
         </div>
         <div class="mt-2 text-right">
-            <button class="btn btn-primary btn-sm disabled" type="submit" form="filter-form">Apply</button>
+            <button class="btn btn-theme btn-sm disabled" type="submit" form="filter-form">Apply</button>
             <a class="btn btn-link btn-sm" href="@Url.Action("Index", "Home", new { searchtext = Model.SearchText, layout = Model.Layout }, null)" role="button">Reset</a>
         </div>
     </div>
     <div class="col-md-9">
         <form id="searchform" asp-controller="Home" asp-action="Index" method="get"></form>
-                        <div class="searchBoxForm">
-                    <input asp-for="SearchText" form="searchform" class="searchBox" autocomplete="off"/> <input form="searchform" class="searchBoxSubmit" type="submit" />
-                </div>
-        <div class="sampleText results-count d-flex flex-no-wrap justify-content-between align-items-center">
+        <div class="input-group mt-3">
+            <input asp-for="SearchText" form="searchform" class="form-control border border-right-0" placeholder="Search..." autocomplete="off">
+            <span class="input-group-append">
+                <button class="btn btn-theme border-left-0" type="button">
+                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+                        <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+                    </svg>
+                </button>
+            </span>
+        </div>
+
+        <div class="results-count d-flex flex-no-wrap justify-content-between align-items-center my-3">
             <span class="d-block">@Html.DisplayFor(m => m.ResultList.Count) results</span>
             <div>
                 <span class="mr-1">Layout:</span>
                 <div class="btn-group">
-                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-secondary @(@Model.Layout == DisplayMode.List ? "disabled" : "")" role="button">
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.List ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in list layout">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
                             <path fill-rule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z"/>
                         </svg>
                     </a>
-                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-secondary @(@Model.Layout == DisplayMode.Map ? "disabled" : "")" role="button">
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.Map ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in map layout">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-map" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in map layout">
                             <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98l4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"></path>
                         </svg>
@@ -211,6 +225,10 @@
             element.addEventListener('change', (e) => {
                 filterApplyBtn.classList.remove('disabled');
             });
+        });
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
         });
     </script>
     @if (Model.Layout == DisplayMode.Map)
