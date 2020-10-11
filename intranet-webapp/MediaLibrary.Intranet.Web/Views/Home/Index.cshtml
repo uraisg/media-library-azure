@@ -126,6 +126,18 @@
             @if (Model.Layout == DisplayMode.Map)
             {
                 <div id="map"></div>
+                <div id="map-data" class="d-none">
+                    @for (var i = 0; i < Model.ResultList.Results.Count; i++)
+                    {
+                        string name = Model.ResultList.Results[i].Document.Name;
+                        string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
+                        string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
+                        double lat = Model.ResultList.Results[i].Document.Location.Latitude;
+                        double lng = Model.ResultList.Results[i].Document.Location.Longitude;
+
+                        <span data-title="@name" data-url="@detailUrl" data-img="@imgSrc" data-lat="@lat" data-lng="@lng"></span>
+                    }
+                </div>
             }
             else if (Model.Layout == DisplayMode.List)
             {
@@ -159,7 +171,7 @@
                     string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
                     string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
 
-                    <a href="@detailUrl"><img src="@imgSrc" alt="@name "></a>
+                    <a href="@detailUrl"><img src="@imgSrc" alt="@name"></a>
                 }
                 </div>
             }
@@ -234,84 +246,12 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js"></script>
-    <script>
-        var filterInputs = document.querySelectorAll('.filter-sidebar input, .filter-sidebar select');
-        var filterApplyBtn = document.querySelector('.filter-sidebar button');
-        Array.prototype.forEach.call(filterInputs, function (element) {
-            element.addEventListener('change', (e) => {
-                filterApplyBtn.classList.remove('disabled');
-            });
-        });
-
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip();
-            $("#gallery").justifiedGallery({
-                lastRow: 'nojustify',
-                margins: 5
-            });
-        });
-    </script>
+    <script src="~/js/search.js" asp-append-version="true"></script>
     @if (Model.Layout == DisplayMode.Map)
     {
-    <text>
-    <script>
-        if (document.querySelector('#map')) {
-            // Set up map
-            let center = L.bounds([1.56073, 104.11475], [1.16, 103.502]).getCenter();
-            let map = L.map('map').setView([center.x, center.y], 12);
-
-            let basemap = L.tileLayer('https://maps-{s}.onemap.sg/v3/Grey/{z}/{x}/{y}.png', {
-                detectRetina: true,
-                maxZoom: 18,
-                minZoom: 11,
-                attribution: '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;"/> New OneMap | Map data &copy; contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>'
-            });
-
-            map.setMaxBounds([[1.56073, 104.1147], [1.16, 103.502]]);
-
-            basemap.addTo(map);
-
-            // Search results
-            let results = [
-            @foreach (var item in Model.ResultList.Results) {
-                @:[@Json.Serialize(@item.Document.Location.Latitude),@Json.Serialize(@item.Document.Location.Longitude),@Json.Serialize(item.Document.Name),@Json.Serialize(Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(item.Document.MetadataStorageName) })),@Json.Serialize("/api/assets/" + System.IO.Path.GetFileName(new Uri(item.Document.FileURL).AbsolutePath))],
-            }
-            ];
-
-            // Create markers
-            let markers = L.markerClusterGroup();
-            for (let result of results) {
-                markers.addLayer(createMarker(...result));
-            }
-            map.addLayer(markers);
-
-            // Make sure popups are sized properly
-            document.querySelector('.leaflet-popup-pane').addEventListener('load', event => {
-                let tagName = event.target.tagName,
-                    popup = map._popup;
-                if (tagName === 'IMG' && popup && !popup._updated) {
-                    popup._updated = true;
-                    popup.update();
-                }
-            }, true);
-        }
-
-        function createMarker(lat, lng, title, url, img) {
-            let marker = L.circleMarker(L.latLng(lat, lng), {
-                radius: 5,
-                color: '#333333',
-                fillColor: '#004DA8',
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            });
-            marker.bindPopup(`<a href="${url}" alt="${title}"><img class="popup-img" src="${img}" /></a>`);
-            return marker;
-        }
-            </script>
-        </text>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="~/js/map.js" asp-append-version="true"></script>
     }
 }
