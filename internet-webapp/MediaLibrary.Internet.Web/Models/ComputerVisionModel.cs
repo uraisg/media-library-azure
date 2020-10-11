@@ -16,7 +16,7 @@ namespace MediaLibrary.Internet.Web.Models
     {
         public ImageEntity()
         {
-            PartitionKey = DateTime.UtcNow.AddHours(8).Hour.ToString();
+            PartitionKey = DateTime.UtcNow.AddHours(8).Minute.ToString();
             RowKey = Guid.NewGuid().ToString();
         }
         public string Name { get; set; }
@@ -25,6 +25,7 @@ namespace MediaLibrary.Internet.Web.Models
         public string Tag { get; set; }
         public DateTime UploadDate { get; set; }
         public string FileURL { get; set; }
+        public string ThumbnailURL { get; set; }
         public string Project { get; set; }
         public string Event { get; set; }
         public string LocationName { get; set; }
