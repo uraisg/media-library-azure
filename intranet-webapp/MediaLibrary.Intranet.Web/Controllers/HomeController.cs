@@ -60,7 +60,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 await RunQueryAsync(model);
             }
 
-            catch (Exception ex)
+            catch (Exception)
             {
                 return View("Error", new ErrorViewModel { RequestId = "1" });
             }
