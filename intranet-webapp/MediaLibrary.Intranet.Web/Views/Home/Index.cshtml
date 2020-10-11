@@ -7,7 +7,7 @@
     ViewData["Title"] = "Home Page";
 
     var parms = new RouteValueDictionary()
-    {
+{
         { "searchtext", Model.SearchText },
         { "locationfilter", Model.LocationFilter },
         { "tagfilter", Model.TagFilter },
@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.8.1/css/justifiedGallery.min.css" />
 }
 
 <div class="row">
@@ -33,7 +34,7 @@
         <h5 class="ooo mt-3">
             Filters
             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-filter" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                <path fill-rule="evenodd" d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
             </svg>
         </h5>
         <div class="flex-shrink overflow-auto">
@@ -48,16 +49,16 @@
             <div class="form-group">
                 <label class="filter-heading" asp-for="SpatialFilter">Locations</label>
                 <ul class="list-unstyled">
-                @for (var i = 0; i < locations2.Count; i++)
-                {
-                    var facetLink = $"{locations2[i]} ({Model.ResultList.Facets["LocationName"][i].Count})";
-                    var facetId = $"location-{i}";
-                    var facetChecked = Model.LocationFilter?.Contains(locations2[i]);
-                    <li class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" name="LocationFilter" value="@locations2[i]" id="@facetId" checked="@facetChecked" form="filter-form" autocomplete="off">
-                        <label class="custom-control-label w-100" for="@facetId">@facetLink</label>
-                    </li>
-                }
+                    @for (var i = 0; i < locations2.Count; i++)
+                    {
+                        var facetLink = $"{locations2[i]} ({Model.ResultList.Facets["LocationName"][i].Count})";
+                        var facetId = $"location-{i}";
+                        var facetChecked = Model.LocationFilter?.Contains(locations2[i]);
+                        <li class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" name="LocationFilter" value="@locations2[i]" id="@facetId" checked="@facetChecked" form="filter-form" autocomplete="off">
+                            <label class="custom-control-label w-100" for="@facetId">@facetLink</label>
+                        </li>
+                    }
                 </ul>
             </div>
 
@@ -65,16 +66,16 @@
             <div class="form-group">
                 <label class="filter-heading" asp-for="SpatialFilter">Tags</label>
                 <ul class="list-unstyled">
-                @for (var i = 0; i < tags2.Count; i++)
-                {
-                    var facetLink = $"{tags2[i]} ({Model.ResultList.Facets["Tag"][i].Count})";
-                    var facetId = $"tag-{i}";
-                    var facetChecked = Model.TagFilter?.Contains(tags2[i]);
-                    <li class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" name="TagFilter" value="@tags2[i]" id="@facetId" checked="@facetChecked" form="filter-form" autocomplete="off">
-                        <label class="custom-control-label w-100" for="@facetId">@facetLink</label>
-                    </li>
-                }
+                    @for (var i = 0; i < tags2.Count; i++)
+                    {
+                        var facetLink = $"{tags2[i]} ({Model.ResultList.Facets["Tag"][i].Count})";
+                        var facetId = $"tag-{i}";
+                        var facetChecked = Model.TagFilter?.Contains(tags2[i]);
+                        <li class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" name="TagFilter" value="@tags2[i]" id="@facetId" checked="@facetChecked" form="filter-form" autocomplete="off">
+                            <label class="custom-control-label w-100" for="@facetId">@facetLink</label>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -90,8 +91,8 @@
             <span class="input-group-append">
                 <button class="btn btn-theme border-left-0" type="button">
                     <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
-                        <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+                        <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
+                        <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
                     </svg>
                 </button>
             </span>
@@ -102,9 +103,14 @@
             <div>
                 <span class="mr-1">Layout:</span>
                 <div class="btn-group">
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Grid }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.Grid ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in grid layout">
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-grid" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
+                        </svg>
+                    </a>
                     <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.List ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in list layout">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
-                            <path fill-rule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z"/>
+                            <path fill-rule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z" />
                         </svg>
                     </a>
                     <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.Map ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in map layout">
@@ -116,101 +122,112 @@
             </div>
         </div>
         <div>
-        @if (Model.Layout == DisplayMode.Map)
-        {
-            <div id="map"></div>
-        }
-        else
-        {
-            @for (var i = 0; i < Model.ResultList.Results.Count; i++)
+            @if (Model.Layout == DisplayMode.Map)
             {
-                string tag = string.Join(", ", Model.ResultList.Results[i].Document.Tag);
-                string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
-                string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
+                <div id="map"></div>
+            }
+            else if (Model.Layout == DisplayMode.List)
+            {
+                @for (var i = 0; i < Model.ResultList.Results.Count; i++)
+                {
+                    string tag = string.Join(", ", Model.ResultList.Results[i].Document.Tag);
+                    string name = Model.ResultList.Results[i].Document.Name;
+                    string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
+                    string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
 
-                string fullDescription = Model.ResultList.Results[i].Document.Project;
-                fullDescription += $"\nLocation: {Model.ResultList.Results[i].Document.LocationName}";
-                fullDescription += $"\nTags: {tag}";
+                    string fullDescription = Model.ResultList.Results[i].Document.Project;
+                    fullDescription += $"\nLocation: {Model.ResultList.Results[i].Document.LocationName}";
+                    fullDescription += $"\nTags: {tag}";
 
-                // Display the hotel name and description.
-                @* @Html.TextAreaFor(m => Model.ResultList.Results[i].Document.Name, new { @class = "box1" })
-                @Html.TextArea($"desc{i}", fullDescription, new { @class = "box2" }) *@
-                <div class="media p-3 my-3 border rounded bg-light">
-                <a href="@detailUrl"><img src="@imgSrc" class="mr-3" style="max-width: 150px;" alt="..."></a>
-                <div class="media-body">
-                    <h5 class="mt-0"><a href="@detailUrl">@Model.ResultList.Results[i].Document.Name</a></h5>
-                    <p class="mb-0">Location: @Model.ResultList.Results[i].Document.LocationName</p>
-                    <p class="mb-0">Tags: @tag</p>
-                </div>
+                    <div class="media p-3 my-3 border rounded bg-light">
+                        <a href="@detailUrl"><img src="@imgSrc" class="mr-3" style="max-width: 150px;" alt="@name"></a>
+                        <div class="media-body">
+                            <h5 class="mt-0"><a href="@detailUrl">@name</a></h5>
+                            <p class="mb-0">Location: @Model.ResultList.Results[i].Document.LocationName</p>
+                            <p class="mb-0">Tags: @tag</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div id="gallery" class="justified-gallery">
+                @for (var i = 0; i < Model.ResultList.Results.Count; i++)
+                {
+                    string name = Model.ResultList.Results[i].Document.Name;
+                    string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
+                    string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
+
+                    <a href="@detailUrl"><img src="@imgSrc" alt="@name "></a>
+                }
                 </div>
             }
-        }
         </div>
         @if (Model != null && Model.PageCount > 1)
         {
-        // If there is more than one page of results, show the paging buttons.
-        <div class="text-center">
-            <ul class="list-inline">
-                @if (Model.CurrentPage > 0)
-                {
-                    <li class="list-inline-item">
-                        @Html.ActionLink("|<", "Index", "Home", parms.Combine(new RouteValueDictionary() {{ "page", 0 }}), null)
-                    </li>
-                }
-                else
-                {
-                    <li class="list-inline-item">|&lt;</li>
-                }
-
-                @if (Model.CurrentPage > 0)
-                {
-                    <li class="list-inline-item">
-                        @Html.ActionLink("<", "Index", "Home", parms.Combine(new RouteValueDictionary() {{ "page", Model.CurrentPage - 1 }}), null)
-                    </li>
-                }
-                else
-                {
-                    <li class="list-inline-item">&lt;</li>
-                }
-
-                @for (var pn = Model.LeftMostPage; pn < Model.LeftMostPage + Model.PageRange; pn++)
-                {
-                    @if (Model.CurrentPage == pn)
+            // If there is more than one page of results, show the paging buttons.
+            <div class="text-center">
+                <ul class="list-inline">
+                    @if (Model.CurrentPage > 0)
                     {
-                        // Convert displayed page numbers to 1-based and not 0-based.
-                        <li class="list-inline-item font-weight-bold">@(pn + 1)</li>
+                        <li class="list-inline-item">
+                            @Html.ActionLink("|<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", 0 } }), null)
+                        </li>
                     }
                     else
                     {
+                        <li class="list-inline-item">|&lt;</li>
+                    }
+
+                    @if (Model.CurrentPage > 0)
+                    {
                         <li class="list-inline-item">
-                            @Html.ActionLink((pn + 1).ToString(), "Index", "Home", parms.Combine(new RouteValueDictionary() {{ "page", pn }}), null)
+                            @Html.ActionLink("<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage - 1 } }), null)
                         </li>
                     }
-                }
+                    else
+                    {
+                        <li class="list-inline-item">&lt;</li>
+                    }
 
-                @if (Model.CurrentPage < Model.PageCount - 1)
-                {
-                    <li class="list-inline-item">
-                        @Html.ActionLink(">", "Index", "Home", parms.Combine(new RouteValueDictionary() {{ "page", Model.CurrentPage + 1 }}), null)
-                    </li>
-                }
-                else
-                {
-                    <li class="list-inline-item">&gt;</li>
-                }
+                    @for (var pn = Model.LeftMostPage; pn < Model.LeftMostPage + Model.PageRange; pn++)
+                    {
+                        @if (Model.CurrentPage == pn)
+                        {
+                            // Convert displayed page numbers to 1-based and not 0-based.
+                            <li class="list-inline-item font-weight-bold">@(pn + 1)</li>
+                        }
+                        else
+                        {
+                            <li class="list-inline-item">
+                                @Html.ActionLink((pn + 1).ToString(), "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", pn } }), null)
+                            </li>
+                        }
+                    }
 
-                @if (Model.CurrentPage < Model.PageCount - 1)
-                {
-                    <li class="list-inline-item">
-                        @Html.ActionLink(">|", "Index", "Home", parms.Combine(new RouteValueDictionary() {{ "page", Model.PageCount - 1 }}), null)
-                    </li>
-                }
-                else
-                {
-                    <li class="list-inline-item">&gt;|</li>
-                }
-            </ul>
-        </div>
+                    @if (Model.CurrentPage < Model.PageCount - 1)
+                    {
+                        <li class="list-inline-item">
+                            @Html.ActionLink(">", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage + 1 } }), null)
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-inline-item">&gt;</li>
+                    }
+
+                    @if (Model.CurrentPage < Model.PageCount - 1)
+                    {
+                        <li class="list-inline-item">
+                            @Html.ActionLink(">|", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.PageCount - 1 } }), null)
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-inline-item">&gt;|</li>
+                    }
+                </ul>
+            </div>
         }
     </div>
 </div>
@@ -218,6 +235,7 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js"></script>
     <script>
         var filterInputs = document.querySelectorAll('.filter-sidebar input, .filter-sidebar select');
         var filterApplyBtn = document.querySelector('.filter-sidebar button');
@@ -228,13 +246,17 @@
         });
 
         $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
+            $('[data-toggle="tooltip"]').tooltip();
+            $("#gallery").justifiedGallery({
+                lastRow: 'nojustify',
+                margins: 5
+            });
         });
     </script>
     @if (Model.Layout == DisplayMode.Map)
     {
-    <text>
-    <script>
+        <text>
+            <script>
         document.querySelector('#SpatialFilter').addEventListener('change', event => {
             location = '@Url.Action("Facet", "Home")?spatialFilter=' + event.target.value;
         });
@@ -292,7 +314,7 @@
             marker.bindPopup(`<a href="${url}" alt="${title}"><img class="popup-img" src="${img}" /></a>`);
             return marker;
         }
-    </script>
-    </text>
+            </script>
+        </text>
     }
 }
