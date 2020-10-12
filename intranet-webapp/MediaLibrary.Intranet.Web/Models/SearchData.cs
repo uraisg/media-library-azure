@@ -8,7 +8,7 @@ namespace MediaLibrary.Intranet.Web.Models
 {
     public static class GlobalVariables
     {
-        public static int ResultsPerPage => 3;
+        public static int ResultsPerPage => 25;
 
         public static int MaxPageRange => 5;
 
@@ -17,6 +17,7 @@ namespace MediaLibrary.Intranet.Web.Models
 
     public enum DisplayMode
     {
+        Grid,
         List,
         Map
     }

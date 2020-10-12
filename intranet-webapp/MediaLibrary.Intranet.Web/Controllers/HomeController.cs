@@ -53,14 +53,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 // Set default result layout
                 if (model.Layout == null)
                 {
-                    model.Layout = DisplayMode.List;
+                    model.Layout = DisplayMode.Grid;
                 }
 
                 // Make the search call for the first page.
                 await RunQueryAsync(model);
             }
 
-            catch (Exception ex)
+            catch (Exception)
             {
                 return View("Error", new ErrorViewModel { RequestId = "1" });
             }
