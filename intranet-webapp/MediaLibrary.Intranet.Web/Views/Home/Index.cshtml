@@ -130,7 +130,7 @@
                     @for (var i = 0; i < Model.ResultList.Results.Count; i++)
                     {
                         string name = Model.ResultList.Results[i].Document.Name;
-                        string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
+                        string imgSrc = Model.ResultList.Results[i].Document.ThumbnailURL;
                         string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
                         double lat = Model.ResultList.Results[i].Document.Location.Latitude;
                         double lng = Model.ResultList.Results[i].Document.Location.Longitude;
@@ -145,7 +145,7 @@
                 {
                     string tag = string.Join(", ", Model.ResultList.Results[i].Document.Tag);
                     string name = Model.ResultList.Results[i].Document.Name;
-                    string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
+                    string imgSrc = Model.ResultList.Results[i].Document.ThumbnailURL;
                     string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
 
                     string fullDescription = Model.ResultList.Results[i].Document.Project;
@@ -168,7 +168,7 @@
                 @for (var i = 0; i < Model.ResultList.Results.Count; i++)
                 {
                     string name = Model.ResultList.Results[i].Document.Name;
-                    string imgSrc = "/api/assets/" + System.IO.Path.GetFileName(new Uri(Model.ResultList.Results[i].Document.FileURL).AbsolutePath);
+                    string imgSrc = Model.ResultList.Results[i].Document.ThumbnailURL;
                     string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.MetadataStorageName) });
 
                     <a href="@detailUrl"><img src="@imgSrc" alt="@name"></a>

@@ -27,6 +27,9 @@ namespace MediaLibrary.Intranet.Web.Models
         [IsSearchable, IsFilterable]
         public string FileURL { get; set; }
 
+        [IsSearchable, IsFilterable]
+        public string ThumbnailURL { get; set; }
+
         [IsSearchable, IsFilterable, IsFacetable]
         public string Project { get; set; }
 
