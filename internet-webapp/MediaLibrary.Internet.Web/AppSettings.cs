@@ -22,5 +22,7 @@ namespace MediaLibrary.Internet.Web
         public string ApiName { get; set; }
 
         public string ApiPassword { get; set; }
+        public string ThumbHeight { get; set; }
+        public string ThumbWidth { get; set; }
     }
 }

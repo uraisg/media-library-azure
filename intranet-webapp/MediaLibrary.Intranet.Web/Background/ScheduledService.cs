@@ -54,17 +54,22 @@ namespace MediaLibrary.Intranet.Web.Background
             string containerConnectionString = _appSettings.MediaStorageConnectionString;
             string imageContainerName = _appSettings.MediaStorageImageContainer;
             string indexContainerName = _appSettings.MediaStorageIndexContainer;
+            string cred = _appSettings.ApiName + ":" + _appSettings.ApiPassword;
 
             //retrieve the index from past 1 hour
             string partition = DateTime.UtcNow.AddHours(7).Hour.ToString();
-            InternetTableItems[] items = await GetInternetTableItems(url, partition);
+            InternetTableItems[] items = await GetInternetTableItems(url, partition,cred);
 
             foreach(InternetTableItems item in items)
             {
                 //first retrieve image
-                Stream imageStream = await GetImageByURL(imageAPI, item.fileURL);
+                Stream imageStream = await GetImageByURL(imageAPI, item.fileURL,cred);
                 BlobContainerClient ImageBlobContainerClient = new BlobContainerClient(containerConnectionString, imageContainerName);
                 string newFileURL = await ImageUploadToBlob(ImageBlobContainerClient, imageStream, item.name);
+
+                //retrieve thumbnail
+                Stream tnStream = await GetImageByURL(imageAPI, item.thumbnailURL, cred);
+                string newtnURL = await ImageUploadToBlob(ImageBlobContainerClient, tnStream, item.name);
 
                 //process to coordinate object
                 CoordinateObj newCoordinateObject = ProcessCoordinate(item.location);
@@ -80,7 +85,8 @@ namespace MediaLibrary.Intranet.Web.Background
                     Location = newCoordinateObject,
                     Tag = tags,
                     UploadDate = item.uploadDate,
-                    FileURL = newFileURL,
+                    FileURL = "/api/assets/" + newFileURL,
+                    ThumbnailURL = "/api/assets/" + newtnURL,
                     Project = item.project,
                     Event = item._event,
                     LocationName = item.locationName,
@@ -96,10 +102,11 @@ namespace MediaLibrary.Intranet.Web.Background
             }
         }
 
-        private static async Task<InternetTableItems[]> GetInternetTableItems(string url,string partition)
+        private static async Task<InternetTableItems[]> GetInternetTableItems(string url,string partition,string cred)
         {
             var http = new HttpClient();
             string requestURL = url + partition;
+            http.DefaultRequestHeaders.Add("Authorization", cred);
             var response = await http.GetAsync(requestURL);
             var result = await response.Content.ReadAsStringAsync();
             result = result.Replace("event", "_event");
@@ -107,7 +114,7 @@ namespace MediaLibrary.Intranet.Web.Background
             return items;
         }
 
-        private static async Task<Stream> GetImageByURL(string url, string imageURL)
+        private static async Task<Stream> GetImageByURL(string url, string imageURL, string cred)
         {
             ImageURLItem itemBody = new ImageURLItem()
             {
@@ -118,6 +125,7 @@ namespace MediaLibrary.Intranet.Web.Background
             var requestBodyData = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
             var http = new HttpClient();
+            http.DefaultRequestHeaders.Add("Authorization", cred);
             var response = await http.PostAsync(url, requestBodyData);
             var result = await response.Content.ReadAsStreamAsync();
             return result;
@@ -132,9 +140,8 @@ namespace MediaLibrary.Intranet.Web.Background
 
             await blobClient.UploadAsync(imageStream, true);
 
-            //get url
-            string url = blobClient.Uri.AbsoluteUri.ToString();
-            return url;
+            //return filename
+            return blobFileName;
         }
 
         private static CoordinateObj ProcessCoordinate(string input)

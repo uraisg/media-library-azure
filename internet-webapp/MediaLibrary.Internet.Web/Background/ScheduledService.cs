@@ -16,7 +16,7 @@ namespace MediaLibrary.Internet.Web.Background
         private CrontabSchedule _schedule;
         private DateTime _nextRun;
         //Run every 1 hour
-        private string Schedule => "0 0 0/1 * * *";
+        private string Schedule => "0 0/1 * * * *";
 
         private readonly AppSettings _appSettings;
 
@@ -53,8 +53,8 @@ namespace MediaLibrary.Internet.Web.Background
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             CloudTable table = tableClient.GetTableReference(tableName);
 
-            //generate partition key - delete the past 2 hours 
-            string partitionKey = DateTime.UtcNow.AddHours(6).Hour.ToString();
+            //generate partition key - delete images from past 5 minute
+            string partitionKey = DateTime.UtcNow.AddHours(8).AddMinutes(-5).Minute.ToString();
 
             //query by partition key
             try

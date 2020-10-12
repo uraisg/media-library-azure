@@ -73,9 +73,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             dynamic result = JsonHelper.ReadJsonFromStream<ExpandoObject>(mediaItemStream);
 
-            // Generate URLs to file and self
-            string filename = Path.GetFileName(new Uri(result.FileURL).AbsolutePath);
-            result.FileURL = _linkGenerator.GetUriByRouteValues(HttpContext, nameof(GetMediaFile), new { name = filename });
+            // Generate URL to self
             result.links = new Dictionary<string, object>()
             {
                 { "self", _linkGenerator.GetUriByRouteValues(HttpContext, nameof(GetMediaItem), new { id = id }) }
