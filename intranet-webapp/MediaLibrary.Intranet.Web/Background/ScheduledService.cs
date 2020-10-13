@@ -21,7 +21,7 @@ namespace MediaLibrary.Intranet.Web.Background
         private CrontabSchedule _schedule;
         private DateTime _nextRun;
         //Run every 1 hour
-        private string Schedule => "0 0 0/1 * * *";
+        private string Schedule => "0 0/1 * * * *";
 
         private readonly AppSettings _appSettings;
 
@@ -56,8 +56,8 @@ namespace MediaLibrary.Intranet.Web.Background
             string indexContainerName = _appSettings.MediaStorageIndexContainer;
             string cred = _appSettings.ApiName + ":" + _appSettings.ApiPassword;
 
-            //retrieve the index from past 1 hour
-            string partition = DateTime.UtcNow.AddHours(7).Hour.ToString();
+            //retrieve the index from past 2 min
+            string partition = DateTime.UtcNow.AddHours(8).AddMinutes(-2).Minute.ToString();
             InternetTableItems[] items = await GetInternetTableItems(url, partition,cred);
 
             foreach(InternetTableItems item in items)
@@ -106,7 +106,8 @@ namespace MediaLibrary.Intranet.Web.Background
         {
             var http = new HttpClient();
             string requestURL = url + partition;
-            http.DefaultRequestHeaders.Add("Authorization", cred);
+            var byteArray = Encoding.ASCII.GetBytes(cred);
+            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             var response = await http.GetAsync(requestURL);
             var result = await response.Content.ReadAsStringAsync();
             result = result.Replace("event", "_event");
@@ -125,7 +126,8 @@ namespace MediaLibrary.Intranet.Web.Background
             var requestBodyData = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
             var http = new HttpClient();
-            http.DefaultRequestHeaders.Add("Authorization", cred);
+            var byteArray = Encoding.ASCII.GetBytes(cred);
+            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             var response = await http.PostAsync(url, requestBodyData);
             var result = await response.Content.ReadAsStreamAsync();
             return result;

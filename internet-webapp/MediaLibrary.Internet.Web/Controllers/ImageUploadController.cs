@@ -192,8 +192,8 @@ namespace MediaLibrary.Internet.Web.Controllers
             else
             {
                 //add default coordinate for images without coordinate metadata
-                coordinate.Add(1.352083);
                 coordinate.Add(103.819836);
+                coordinate.Add(1.352083);
             }
             results.coordinates = coordinate;
             return results;
