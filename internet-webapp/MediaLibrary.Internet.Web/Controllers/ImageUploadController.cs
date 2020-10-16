@@ -48,7 +48,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 {
                     if (file.Length > 0)
                     {
-                        Console.WriteLine(file.Length);
+                        Console.WriteLine($"Uploaded file size: {file.Length}");
                         MemoryStream ms = new MemoryStream();
                         file.CopyTo(ms);
 
@@ -84,9 +84,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                                         image.Write(memStream);
                                         data = memStream.ToArray();
                                         Console.WriteLine($"Compressing: {data.Length}");
+                                        //prevent memory leak
+                                        memStream.SetLength(0);
                                     }
                                 }
-                                Console.WriteLine($"Final: {memStream.Length}");
+
+                                Console.WriteLine($"Final: {data.Length}");
                                 Stream thumbStream = new MemoryStream(data);
                                 thumbnailURL = await GenerateThumbnailAsync(file.FileName, thumbStream, _appSettings);
 
@@ -182,12 +185,32 @@ namespace MediaLibrary.Internet.Web.Controllers
             results.type = "Point";
             var gps = directory.OfType<GpsDirectory>().FirstOrDefault();
 
-            if (gps != null)
+            if (gps != null && gps.TagCount > 0)
             {
                 var location = gps.GetGeoLocation();
+                
+                if(location != null)
+                {
+                    try
+                    {
+                        coordinate.Add(location.Longitude);
+                        coordinate.Add(location.Latitude);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        //add default coordinate for images if metadata cant be extracted
+                        coordinate.Add(103.819836);
+                        coordinate.Add(1.352083);
+                    }
+                }
+                else
+                {
+                    //add default coordinate for images if metadata cant be extracted
+                    coordinate.Add(103.819836);
+                    coordinate.Add(1.352083);
+                }
 
-                coordinate.Add(location.Longitude);
-                coordinate.Add(location.Latitude);
             }
             else
             {
