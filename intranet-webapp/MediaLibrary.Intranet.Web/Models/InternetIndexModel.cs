@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Azure.Storage.Blobs.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ namespace MediaLibrary.Intranet.Web.Models
         public DateTime dateTaken { get; set; }
         public string location { get; set; }
         public string tag { get; set; }
+        public string author { get; set; }
+        public string caption { get; set; }
         public DateTime uploadDate { get; set; }
         public string fileURL { get; set; }
         public string thumbnailURL { get; set; }
