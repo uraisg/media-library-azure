@@ -23,6 +23,8 @@ namespace MediaLibrary.Internet.Web.Models
         public DateTime DateTaken { get; set; }
         public string Location { get; set; }
         public string Tag { get; set; }
+        public string Caption { get; set; }
+        public string Author { get; set; }
         public DateTime UploadDate { get; set; }
         public string FileURL { get; set; }
         public string ThumbnailURL { get; set; }

@@ -19,6 +19,7 @@ using Microsoft.Azure.Cosmos.Table;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using ImageMagick;
+using System.Security.Claims;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -42,7 +43,12 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             List<IFormFile> files = model.File;
 
-            if(files.Count > 0)
+            //get current user claims
+            ClaimsPrincipal cp = this.User;
+            var claims = cp.Claims;
+            string email = claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress").Value;
+
+            if (files.Count > 0)
             {
                 foreach (IFormFile file in files)
                 {
@@ -68,7 +74,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                         //Get tagging from cognitive services
                         //Cognitive services can only take in file size less than 4MB
                         //Do a check on filesize to get tags and generate thumbnail
-                        List<string> tag = new List<string>();
+                        ImageAnalysis computerVisionResult;
                         string thumbnailURL = string.Empty;
                         int quality = 75;
 
@@ -94,13 +100,13 @@ namespace MediaLibrary.Internet.Web.Controllers
                                 thumbnailURL = await GenerateThumbnailAsync(file.FileName, thumbStream, _appSettings);
 
                                 Stream tagStream = new MemoryStream(data);
-                                tag = await GetCSComputerVisionTagAsync(tagStream, _appSettings);
+                                computerVisionResult = await CallCSComputerVisionAsync(tagStream, _appSettings);
                             }
                         }
                         else
                         {
                             thumbnailURL = await GenerateThumbnailAsync(file.FileName, thumbnailStream, _appSettings);
-                            tag = await GetCSComputerVisionTagAsync(imageStream, _appSettings);
+                            computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
                         }
                         
                         //create json for indexing
@@ -108,7 +114,9 @@ namespace MediaLibrary.Internet.Web.Controllers
                         json.Name = file.FileName;
                         json.DateTaken = GetTimestamp(directory);
                         json.Location = JsonConvert.SerializeObject(GetCoordinate(directory));
-                        json.Tag = string.Join(",", tag);
+                        json.Tag = GenerateTags(computerVisionResult);
+                        json.Caption = GenerateCaption(computerVisionResult);
+                        json.Author = email;
                         json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
                         json.FileURL = imageURL;
                         json.ThumbnailURL = thumbnailURL;
@@ -199,24 +207,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        //add default coordinate for images if metadata cant be extracted
-                        coordinate.Add(103.819836);
-                        coordinate.Add(1.352083);
                     }
                 }
-                else
-                {
-                    //add default coordinate for images if metadata cant be extracted
-                    coordinate.Add(103.819836);
-                    coordinate.Add(1.352083);
-                }
-
-            }
-            else
-            {
-                //add default coordinate for images without coordinate metadata
-                coordinate.Add(103.819836);
-                coordinate.Add(1.352083);
             }
             results.coordinates = coordinate;
             return results;
@@ -258,7 +250,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             return bloburl;
         }
 
-        private static async Task<List<string>> GetCSComputerVisionTagAsync(Stream image, AppSettings appSettings)
+        private static async Task<ImageAnalysis> CallCSComputerVisionAsync(Stream image, AppSettings appSettings)
         {
             //replace with computer vision key
             string subscriptionKey = appSettings.ComputerVisionApiKey;
@@ -272,18 +264,42 @@ namespace MediaLibrary.Internet.Web.Controllers
             };
 
             List<VisualFeatureTypes> features = new List<VisualFeatureTypes>()
-            { VisualFeatureTypes.Tags};
+            { VisualFeatureTypes.Tags, VisualFeatureTypes.Description};
 
             ImageAnalysis results = await client.AnalyzeImageInStreamAsync(image, features);
 
+            return results; 
+        }
+
+        private static string GenerateTags(ImageAnalysis results)
+        {
+            List<string> tagList = new List<string>();
+
             foreach (var tag in results.Tags)
             {
-                if(tag.Confidence > 0.7)
+                if (tag.Confidence > 0.7)
                 {
                     tagList.Add(tag.Name);
-                } 
+                }
             }
-            return tagList;
+
+            return string.Join(",", tagList);
+        }
+
+        private static string GenerateCaption(ImageAnalysis results)
+        {
+            double bestScore = 0;
+            string bestCaption = "";
+            foreach(var caption in results.Description.Captions)
+            {
+                if(caption.Confidence > bestScore)
+                {
+                    bestScore = caption.Confidence;
+                    bestCaption = caption.Text;
+                }
+            }
+
+            return bestCaption;
         }
 
         private static async Task IndexUploadToTable(ImageEntity json, AppSettings appSettings)
