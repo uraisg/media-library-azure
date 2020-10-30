@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Search.Models;
+using DataType = System.ComponentModel.DataAnnotations.DataType;
 
 namespace MediaLibrary.Intranet.Web.Models
 {
@@ -50,6 +52,12 @@ namespace MediaLibrary.Intranet.Web.Models
         public IList<string> LocationFilter { get; set; }
 
         public IList<string> TagFilter { get; set; }
+
+        // Unix timestamp representation (seconds)
+        public long? MinDateTaken { get; set; }
+
+        // Unix timestamp representation (seconds)
+        public long? MaxDateTaken { get; set; }
 
         public string SpatialFilter { get; set; }
 

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using MediaLibrary.Intranet.Web.Common;
+using System.Globalization;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -82,7 +83,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             InitSearch();
 
-            string filterExpression = GetFilterExpression(model.LocationFilter, model.TagFilter, model.SpatialFilter);
+            string filterExpression = GetFilterExpression(model.LocationFilter, model.TagFilter, model.SpatialFilter, model.MinDateTaken, model.MaxDateTaken);
             int page = model.Page ?? 0;
 
             var parameters = new SearchParameters
@@ -146,7 +147,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return View("Index", model);
         }
 
-        private string GetFilterExpression(IList<string> locationFilter, IList<string> tagFilter, string spatialFilter)
+        private string GetFilterExpression(IList<string> locationFilter, IList<string> tagFilter, string spatialFilter, long? minDateTaken, long? maxDateTaken)
         {
             var subexpressions = new List<string>();
 
@@ -158,6 +159,18 @@ namespace MediaLibrary.Intranet.Web.Controllers
             if (tagFilter != null && tagFilter.Count > 0)
             {
                 subexpressions.Add(string.Join(" or ", tagFilter.Select(tag => $"Tag/any(t: t eq '{tag.Replace("'", "''")}')")));
+            }
+
+            if (minDateTaken != null)
+            {
+                string minDateTakenString = DateTimeOffset.FromUnixTimeSeconds(minDateTaken.Value).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                subexpressions.Add($"DateTaken ge {minDateTakenString}");
+            }
+
+            if (maxDateTaken != null)
+            {
+                string maxDateTakenString = DateTimeOffset.FromUnixTimeSeconds(maxDateTaken.Value).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                subexpressions.Add($"DateTaken le {maxDateTakenString}");
             }
 
             string spatialExpression = TransformSpatialFilter(spatialFilter);
