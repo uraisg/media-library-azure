@@ -93,9 +93,10 @@
         let fragment = new DocumentFragment();
         let template = document.querySelector("#tags-btn");
         tags.forEach(function (tag) {
-            let btn = template.content.firstElementChild.cloneNode(true);
-            btn.textContent = tag;
-            fragment.appendChild(btn);
+            let a = template.content.firstElementChild.cloneNode(true);
+            a.textContent = tag;
+            a.href = `${a.href}?TagFilter=${encodeURIComponent(tag).replace(/%20/g, "+")}`;
+            fragment.appendChild(a);
         });
         return fragment;
     }
