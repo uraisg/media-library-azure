@@ -66,3 +66,6 @@ TestResults/
 ehthumbs.db
 Icon?
 Thumbs.db
+*.pubxml
+*.user
+/intranet-webapp/MediaLibrary.Intranet.Web/Properties/ServiceDependencies/razgovmedialibraryportal - Web Deploy/profile.arm.json
