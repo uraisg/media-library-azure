@@ -19,7 +19,7 @@ For another example, say URL. We don't need this URL to be searchable, filterabl
 
 Besides deciding these 5 properties for each field, be mindful on the **Type** column as well. This is equivalent to variable type in coding, and by default, Azure Search will generate the data type after assessing the sample data. Be mindful and do a quick check, especially data with date time, and geography point.
 
-![configuration on Azure Seach](~/assets/configure.png)
+![configuration on Azure Seach](assets/configure.png)
 
 One last thing is to give your index a name, and select appropriate column as key. Once done, click **Next* to proceed.
 
@@ -31,6 +31,6 @@ Once done, you can check indexer status in Azure portal, simply navigate to Over
 
 The following shows a sample. It will list down the error message if there's any particular file or entries is not able to index.
 
-![Azure Search Indexer Status](~/assets/status.png)
+![Azure Search Indexer Status](assets/status.png)
 
 In the same overview page, if you navigate to **Indexes**, you can test the search query in portal to validate the setup.
