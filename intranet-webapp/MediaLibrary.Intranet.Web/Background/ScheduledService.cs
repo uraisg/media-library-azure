@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Text;
 using Azure.Storage.Blobs;
+using System.Data.SqlClient;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
@@ -55,6 +56,7 @@ namespace MediaLibrary.Intranet.Web.Background
             string imageContainerName = _appSettings.MediaStorageImageContainer;
             string indexContainerName = _appSettings.MediaStorageIndexContainer;
             string cred = _appSettings.ApiName + ":" + _appSettings.ApiPassword;
+            string sql_conn = _appSettings.SqlConnection;
 
             //retrieve the index from past 2 min
             string partition = DateTime.UtcNow.AddHours(8).AddMinutes(-2).Minute.ToString();
@@ -75,15 +77,18 @@ namespace MediaLibrary.Intranet.Web.Background
                 CoordinateObj newCoordinateObject = ProcessCoordinate(item.location);
 
                 //process tag array
-                List<string> tags = item.tag.Split(",").ToList();
+                List<string> _tags = item.tag.Split(",").ToList();
+                string tags = ProcessTag(_tags);
 
                 //create new json object
                 ImageMetadata json = new ImageMetadata()
                 {
-                    Name = item.name,
+                    Name = Guid.NewGuid().ToString(),
                     DateTaken = item.dateTaken,
                     Location = newCoordinateObject,
                     Tag = tags,
+                    Caption = item.caption,
+                    Author = item.author,
                     UploadDate = item.uploadDate,
                     FileURL = "/api/assets/" + newFileURL,
                     ThumbnailURL = "/api/assets/" + newtnURL,
@@ -93,12 +98,16 @@ namespace MediaLibrary.Intranet.Web.Background
                     Copyright = item.copyright
                 };
 
-                string serialized = JsonConvert.SerializeObject(json);
+                //string serialized = JsonConvert.SerializeObject(json);
 
                 //upload to indexer blob
-                BlobContainerClient IndexBlobContainerClient = new BlobContainerClient(containerConnectionString, indexContainerName);
-                await IndexUploadToBlob(IndexBlobContainerClient, serialized);
-                Console.WriteLine($"Uploaded {item.name} into {newFileURL}.");
+                //BlobContainerClient IndexBlobContainerClient = new BlobContainerClient(containerConnectionString, indexContainerName);
+                //await IndexUploadToBlob(IndexBlobContainerClient, serialized);
+                //Console.WriteLine($"Uploaded {item.name} into {newFileURL}.");
+
+                //Insert into SQL
+                InsertIntoSQL(json, sql_conn);
+                Console.WriteLine("Created new entry");
             }
         }
 
@@ -153,6 +162,18 @@ namespace MediaLibrary.Intranet.Web.Background
             return obj;
         }
 
+        private static string ProcessTag (List<string> inputs)
+        {
+            string result = "";
+            foreach(string input in inputs)
+            {
+                result = result + "\"" + input + "\",";
+            }
+            result = result.TrimEnd(',');
+            result = "[" + result + "]";
+            return result;
+        }
+
         private static async Task IndexUploadToBlob(BlobContainerClient blobContainerClient, string index)
         {
             //create a blob
@@ -166,6 +187,29 @@ namespace MediaLibrary.Intranet.Web.Background
             writer.Flush();
             content.Position = 0;
             await blobClient.UploadAsync(content, true);
+        }
+
+        private static void InsertIntoSQL(ImageMetadata json, string db_conn)
+        {
+            SqlConnection conn = new SqlConnection(db_conn);
+            string query = string.Format("INSERT INTO Indexer(Name, DateTaken, Location, Tag, Caption, Author, UploadDate, FileURL, ThumbnailURL, Project, Event, LocationName, Copyright) " +
+                "VALUES('{0}','{1}','{2}','{3}', '{4}', '{5}', '{6}', '{7}', '{8}','{9}', '{10}', '{11}', '{12}')",
+                json.Name,json.DateTaken,json.Location,json.Tag,json.Caption,json.Author,json.UploadDate,json.FileURL,json.ThumbnailURL,json.Project,json.Event,json.LocationName,json.Copyright);
+
+            SqlCommand command = new SqlCommand(query, conn);
+            try
+            {
+                conn.Open();
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException e)
+            {
+                Console.WriteLine(e);
+            }
+            finally
+            {
+                conn.Close();
+            }
         }
     }
 }

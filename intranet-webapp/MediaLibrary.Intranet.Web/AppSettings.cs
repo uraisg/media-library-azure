@@ -19,5 +19,6 @@ namespace MediaLibrary.Intranet.Web
         public string SearchIndexName { get; set; }
         public string ApiName { get; set; }
         public string ApiPassword { get; set; }
+        public string SqlConnection { get; set; }
     }
 }

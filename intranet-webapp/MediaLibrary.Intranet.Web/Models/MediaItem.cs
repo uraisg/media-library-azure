@@ -42,6 +42,11 @@ namespace MediaLibrary.Intranet.Web.Models
         [IsSearchable, IsFilterable, IsFacetable]
         public string Copyright { get; set; }
 
+        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        public string Author { get; set; }
+        [IsSearchable, IsFilterable]
+        public string Caption { get; set; }
+
         [JsonProperty("metadata_storage_name")]
         public string MetadataStorageName { get; set; }
     }
