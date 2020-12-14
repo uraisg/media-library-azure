@@ -45,13 +45,6 @@ namespace MediaLibrary.Internet.Web
 
             services.AddRazorPages();
 
-            //Add Authorization to identify user
-            services.AddAuthorization(Options =>
-            {
-                Options.AddPolicy("Authenticated", policy => policy.RequireClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"));
-            });
-            
-
             //Configuring appsettings section AzureAdB2C, into IOptions
             services.AddOptions();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
