@@ -79,7 +79,7 @@
         attribs.set("Event", "Event");
         attribs.set("LocationName", "Location");
         attribs.set("Copyright", "Copyright");
-        for (let [key, label] of attribs) {
+        for (var [key, label] of attribs) {
             let clone = template.content.cloneNode(true);
             let dt = clone.querySelector("dt");
             let dd = clone.querySelector("dd");

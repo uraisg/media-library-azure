@@ -40,7 +40,7 @@
         weight: 1,
         opacity: 1,
         fillOpacity: 0.8,
-    }
+    };
     function createMarker(lat, lng, title, url, img) {
         let marker = L.circleMarker(L.latLng(lat, lng), markerStyle);
         marker.bindPopup(

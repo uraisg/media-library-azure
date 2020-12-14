@@ -69,3 +69,6 @@ Thumbs.db
 *.pubxml
 *.user
 /intranet-webapp/MediaLibrary.Intranet.Web/Properties/ServiceDependencies/razgovmedialibraryportal - Web Deploy/profile.arm.json
+# Client side generated bundles
+**/wwwroot/css/*.min.css
+**/wwwroot/js/*.min.js
