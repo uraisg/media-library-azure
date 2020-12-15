@@ -29,7 +29,7 @@
 }
 
 <div class="row">
-    <div class="col-md-3 d-flex flex-column filter-sidebar" style="position: sticky;max-height: calc(100vh - 4.5rem);top: 3.5rem;">
+    <div class="col-md-3 d-flex flex-column filter-sidebar">
         <form id="filter-form" asp-controller="Home" asp-action="Index" method="get">
             <input type="hidden" asp-for="SearchText" form="filter-form">
             <input type="hidden" asp-for="Layout" form="filter-form">
@@ -142,7 +142,7 @@
                 </div>
             </div>
         </div>
-        <div>
+        <div class="results">
             @if (Model.Layout == DisplayMode.Map)
             {
                 <div id="map"></div>
@@ -173,7 +173,7 @@
                     fullDescription += $"\nTags: {tag}";
 
                     <div class="media p-3 my-3 border rounded bg-light">
-                        <a href="@detailUrl"><img src="@imgSrc" class="mr-3" style="max-width: 150px;" alt="@name"></a>
+                        <a href="@detailUrl"><img src="@imgSrc" class="mr-3 thumbnail" alt="@name"></a>
                         <div class="media-body">
                             <h5 class="mt-0"><a href="@detailUrl">@name</a></h5>
                             <p class="mb-0">Location: @Model.ResultList.Results[i].Document.LocationName</p>

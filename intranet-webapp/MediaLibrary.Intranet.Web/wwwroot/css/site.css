@@ -20,6 +20,19 @@ a {
   color: #346cb0;
 }
 
+.results .media .thumbnail {
+  width: 150px;
+}
+
+.filter-sidebar {
+  position: sticky;
+  max-height: calc(100vh - 4.5rem);
+  top: 3.5rem;
+}
+
+#main-media {
+  max-height: 60vh;
+}
 
 /*------------------------------------
 - COLOR theme
