@@ -50,6 +50,7 @@
     }
 
     let map = initMap();
+    if (!map) return;
     // Create markers
     let markers = L.markerClusterGroup();
     let resultElements = document.querySelectorAll("#map-data span");

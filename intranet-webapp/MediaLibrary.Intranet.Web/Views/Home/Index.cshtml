@@ -21,11 +21,20 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/media.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.8.1/css/justifiedGallery.min.css" />
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/justified-gallery/css/justifiedGallery.css" />
+        <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.css" />
+        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.Default.css" />
+        <link rel="stylesheet" href="~/css/media.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/lib/justified-gallery/css/justifiedGallery.min.css" />
+        <link rel="stylesheet" href="~/lib/leaflet/leaflet.min.css" />
+        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.css" />
+        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.Default.css" />
+        <link rel="stylesheet" href="~/css/media.min.css" asp-append-version="true" />
+    </environment>
 }
 
 <div class="row">
@@ -266,12 +275,18 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js"></script>
-    <script src="~/js/search.js" asp-append-version="true"></script>
-    @if (Model.Layout == DisplayMode.Map)
-    {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <script src="~/js/map.js" asp-append-version="true"></script>
-    }
+    <environment include="Development">
+        <script src="~/lib/justified-gallery/js/jquery.justifiedGallery.js"></script>
+        <script src="~/js/search.js"></script>
+        <script src="~/lib/leaflet/leaflet-src.js"></script>
+        <script src="~/lib/leaflet-markercluster/leaflet.markercluster-src.js"></script>
+        <script src="~/js/map.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+        <script src="~/js/search.min.js" asp-append-version="true"></script>
+        <script src="~/lib/leaflet/leaflet.js"></script>
+        <script src="~/lib/leaflet-markercluster/leaflet.markercluster.js"></script>
+        <script src="~/js/map.min.js" asp-append-version="true"></script>
+    </environment>
 }
