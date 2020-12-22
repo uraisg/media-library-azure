@@ -304,12 +304,12 @@ namespace MediaLibrary.Internet.Web.Controllers
 
         private static async Task IndexUploadToTable(ImageEntity json, AppSettings appSettings)
         {
-            string tableName = appSettings.MediaStorageTable;
-            string storageConnectionString = appSettings.MediaStorageConnectionString;
+            string tableName = appSettings.TableName;
+            string tableConnectionString = appSettings.TableConnectionString;
 
             //initialize table client
             CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(storageConnectionString);
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             CloudTable table = tableClient.GetTableReference(tableName);
 

@@ -48,8 +48,8 @@ namespace MediaLibrary.Internet.Web.Controllers
 
                 if(nameMatch && passwordMatch)
                 {
-                    string tableName = _appSettings.MediaStorageTable;
-                    string storageConnectionString = _appSettings.MediaStorageConnectionString;
+                    string tableName = _appSettings.TableName;
+                    string tableConnectionString = _appSettings.TableConnectionString;
 
                     string partitionKey = hour;
 
@@ -57,7 +57,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
                     //initialize table client
                     CloudStorageAccount storageAccount;
-                    storageAccount = CloudStorageAccount.Parse(storageConnectionString);
+                    storageAccount = CloudStorageAccount.Parse(tableConnectionString);
                     CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
                     CloudTable table = tableClient.GetTableReference(tableName);
 

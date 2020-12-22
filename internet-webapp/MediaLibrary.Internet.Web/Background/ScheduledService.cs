@@ -44,12 +44,12 @@ namespace MediaLibrary.Internet.Web.Background
 
         private async Task Process()
         {
-            string tableName = _appSettings.MediaStorageTable;
-            string storageConnectionString = _appSettings.MediaStorageConnectionString;
+            string tableName = _appSettings.TableName;
+            string tableConnectionString = _appSettings.TableConnectionString;
 
             //initialize table client
             CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(storageConnectionString);
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             CloudTable table = tableClient.GetTableReference(tableName);
 
