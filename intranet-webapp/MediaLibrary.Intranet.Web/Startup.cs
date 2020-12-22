@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Serialization;
 
 namespace MediaLibrary.Intranet.Web
 {
@@ -25,7 +26,11 @@ namespace MediaLibrary.Intranet.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddNewtonsoftJson(options =>
+            {
+                // Use the default property (Pascal) casing
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+            });
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHostedService<ScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();

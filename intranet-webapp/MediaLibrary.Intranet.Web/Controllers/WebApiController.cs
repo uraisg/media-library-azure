@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using MediaLibrary.Intranet.Web.Common;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Azure.Search;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using Microsoft.Rest.Azure;
+using MediaLibrary.Intranet.Web.Models;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -22,20 +17,39 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly AppSettings _appSettings;
         private readonly LinkGenerator _linkGenerator;
 
+        private static BlobContainerClient _blobContainerClient = null;
+
+        private static SearchServiceClient _searchServiceName = null;
+        private static ISearchIndexClient _searchIndexClient = null;
+
         public WebApiController(IOptions<AppSettings> appSettings, LinkGenerator linkGenerator)
         {
             _appSettings = appSettings.Value;
             _linkGenerator = linkGenerator;
+
+            InitStorage();
+            InitSearch();
+        }
+
+        private void InitStorage()
+        {
+            if (_blobContainerClient == null)
+                _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionString, _appSettings.MediaStorageImageContainer);
+        }
+
+        private void InitSearch()
+        {
+            if (_searchServiceName == null)
+                _searchServiceName = new SearchServiceClient(_appSettings.SearchServiceName, new SearchCredentials(_appSettings.SearchServiceQueryApiKey));
+
+            if (_searchIndexClient == null)
+                _searchIndexClient = _searchServiceName.Indexes.GetClient(_appSettings.SearchIndexName);
         }
 
         [HttpGet("/api/assets/{name}", Name = nameof(GetMediaFile))]
         public async Task<IActionResult> GetMediaFile(string name)
         {
-            string storageConnectionString = _appSettings.MediaStorageConnectionString;
-            string containerName = _appSettings.MediaStorageImageContainer;
-
-            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
-            BlobClient blobClient = blobContainerClient.GetBlobClient(name);
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
 
             try
             {
@@ -51,35 +65,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpGet("/api/media/{id}", Name = nameof(GetMediaItem))]
         public async Task<IActionResult> GetMediaItem(string id)
         {
-            string storageConnectionString = _appSettings.MediaStorageConnectionString;
-            string containerName = _appSettings.MediaStorageIndexContainer;
-            string fileName = id + ".json";
-
-            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
-            BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
-
             try
             {
-                BlobDownloadInfo download = await blobClient.DownloadAsync();
-                return Ok(ExpandMediaItem(download.Content, id));
+                MediaItem item = await _searchIndexClient.Documents.GetAsync<MediaItem>(id);
+                return Ok(item);
             }
-            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            catch (CloudException ex) when (ex.Response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return NotFound();
             }
-        }
-
-        private dynamic ExpandMediaItem(Stream mediaItemStream, string id)
-        {
-            dynamic result = JsonHelper.ReadJsonFromStream<ExpandoObject>(mediaItemStream);
-
-            // Generate URL to self
-            result.links = new Dictionary<string, object>()
-            {
-                { "self", _linkGenerator.GetUriByRouteValues(HttpContext, nameof(GetMediaItem), new { id = id }) }
-            };
-
-            return result;
         }
     }
 }

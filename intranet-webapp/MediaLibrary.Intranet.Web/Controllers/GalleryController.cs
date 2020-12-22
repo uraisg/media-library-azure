@@ -9,7 +9,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
 {
     public class GalleryController : Controller
     {
-        public IActionResult Item([BindRequired, FromRoute] Guid id)
+        public IActionResult Item([BindRequired, FromRoute] string id)
         {
             if (!ModelState.IsValid)
             {

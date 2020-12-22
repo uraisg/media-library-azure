@@ -1,21 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Azure.Search;
 using Microsoft.Spatial;
 using Newtonsoft.Json;
 
 namespace MediaLibrary.Intranet.Web.Models
 {
+    /// <summary>
+    /// Contains metadata associated with a media item.
+    /// </summary>
     public class MediaItem
     {
+        [System.ComponentModel.DataAnnotations.Key]
+        [JsonProperty("metadata_storage_path")] // TODO: assign a proper ID in upstream process
+        public string Id { get; set; }
+
         [IsSearchable, IsSortable]
         public string Name { get; set; }
 
         [IsSearchable, IsFilterable, IsFacetable]
         public DateTime DateTaken { get; set; }
-        
+
+        [JsonConverter(typeof(GeographyPointJsonConverter))]
         public GeographyPoint Location { get; set; }
 
         [IsSearchable, IsFilterable, IsFacetable]
@@ -41,8 +46,5 @@ namespace MediaLibrary.Intranet.Web.Models
 
         [IsSearchable, IsFilterable, IsFacetable]
         public string Copyright { get; set; }
-
-        [JsonProperty("metadata_storage_name")]
-        public string MetadataStorageName { get; set; }
     }
 }

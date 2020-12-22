@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using MediaLibrary.Intranet.Web.Models;
-using Microsoft.Extensions.Options;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MediaLibrary.Intranet.Web.Common;
-using System.Globalization;
+using MediaLibrary.Intranet.Web.Models;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -94,7 +94,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 Facets = new List<string> { "LocationName,count:20", "Tag,count:20" },
 
                 // Enter media property names into this list, so only these values will be returned.
-                Select = new[] { "Name", "Project", "LocationName", "Tag", "Location", "ThumbnailURL", "metadata_storage_name" },
+                Select = new[] { "Name", "Project", "LocationName", "Tag", "Location", "ThumbnailURL", "metadata_storage_path" },
 
                 // Skip past results that have already been returned.
                 Skip = page * GlobalVariables.ResultsPerPage,
