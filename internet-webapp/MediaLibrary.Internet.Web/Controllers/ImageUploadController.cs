@@ -158,8 +158,8 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             await blobClient.UploadAsync(imageStream, true);
 
-            //get url
-            string url = blobClient.Uri.AbsoluteUri.ToString();
+            //get url (without query string as it will contain SAS token if used in connection string)
+            string url = blobClient.Uri.GetLeftPart(UriPartial.Path);
             return url;
         }
 
