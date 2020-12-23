@@ -94,7 +94,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 Facets = new List<string> { "LocationName,count:20", "Tag,count:20" },
 
                 // Enter media property names into this list, so only these values will be returned.
-                Select = new[] { "Name", "Project", "LocationName", "Tag", "Location", "ThumbnailURL", "metadata_storage_path" },
+                Select = new[] { "Id", "Name", "Project", "LocationName", "Tag", "Location", "ThumbnailURL" },
 
                 // Skip past results that have already been returned.
                 Skip = page * GlobalVariables.ResultsPerPage,

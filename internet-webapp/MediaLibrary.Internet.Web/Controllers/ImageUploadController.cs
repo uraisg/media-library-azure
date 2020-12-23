@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
@@ -27,10 +28,12 @@ namespace MediaLibrary.Internet.Web.Controllers
     public class ImageUploadController : Controller
     {
         private readonly AppSettings _appSettings;
+        private readonly ILogger _logger;
 
-        public ImageUploadController(IOptions<AppSettings> appSettings)
+        public ImageUploadController(IOptions<AppSettings> appSettings, ILogger<ImageUploadController> logger)
         {
             _appSettings = appSettings.Value;
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -54,7 +57,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 {
                     if (file.Length > 0)
                     {
-                        Console.WriteLine($"Uploaded file size: {file.Length}");
+                        _logger.LogInformation($"Uploaded file size: {file.Length}");
                         MemoryStream ms = new MemoryStream();
                         file.CopyTo(ms);
 
@@ -66,7 +69,10 @@ namespace MediaLibrary.Internet.Web.Controllers
                         Stream thumbnailStream = new MemoryStream(data);
 
                         //upload to a separate container to retrieve image URL
-                        string imageURL = await ImageUploadToBlob(file.FileName, uploadImage, _appSettings);
+                        //use guid together with file name to avoid duplication
+                        string id = Guid.NewGuid().ToString();
+                        string blobFileName = id + "_" + file.FileName;
+                        string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, _appSettings);
 
                         //extract image metadata
                         IReadOnlyList<MetadataExtractor.Directory> directory = ImageMetadataReader.ReadMetadata(extractMetadataImage);
@@ -75,6 +81,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                         //Cognitive services can only take in file size less than 4MB
                         //Do a check on filesize to get tags and generate thumbnail
                         ImageAnalysis computerVisionResult;
+                        string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb" + Path.GetExtension(blobFileName);
                         string thumbnailURL = string.Empty;
                         int quality = 75;
 
@@ -89,15 +96,15 @@ namespace MediaLibrary.Internet.Web.Controllers
                                         image.Quality = quality;
                                         image.Write(memStream);
                                         data = memStream.ToArray();
-                                        Console.WriteLine($"Compressing: {data.Length}");
+                                        _logger.LogInformation($"Compressing: {data.Length}");
                                         //prevent memory leak
                                         memStream.SetLength(0);
                                     }
                                 }
 
-                                Console.WriteLine($"Final: {data.Length}");
+                                _logger.LogInformation($"Final: {data.Length}");
                                 Stream thumbStream = new MemoryStream(data);
-                                thumbnailURL = await GenerateThumbnailAsync(file.FileName, thumbStream, _appSettings);
+                                thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbStream, _appSettings);
 
                                 Stream tagStream = new MemoryStream(data);
                                 computerVisionResult = await CallCSComputerVisionAsync(tagStream, _appSettings);
@@ -105,12 +112,13 @@ namespace MediaLibrary.Internet.Web.Controllers
                         }
                         else
                         {
-                            thumbnailURL = await GenerateThumbnailAsync(file.FileName, thumbnailStream, _appSettings);
+                            thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
                             computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
                         }
                         
                         //create json for indexing
                         ImageEntity json = new ImageEntity();
+                        json.Id = id;
                         json.Name = file.FileName;
                         json.DateTaken = GetTimestamp(directory);
                         json.Location = JsonConvert.SerializeObject(GetCoordinate(directory));
@@ -124,11 +132,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                         json.Event = model.Event;
                         json.LocationName = model.LocationText;
                         json.Copyright = model.Copyright;
-                        string serialized = JsonConvert.SerializeObject(json);
+
                         await IndexUploadToTable(json, _appSettings);
                     }
                     else
                     {
+                        _logger.LogWarning("Empty file uploaded by client");
                         return NoContent();
                     }
                 }
@@ -139,6 +148,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             else
             {
+                _logger.LogWarning("No files uploaded by client");
                 return NoContent();
             }
         }
@@ -149,12 +159,10 @@ namespace MediaLibrary.Internet.Web.Controllers
             var storageConnectionString = appSettings.MediaStorageConnectionString;
 
             //create a blob container client
-            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString,containerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
 
             //create a blob
-            //use guid together with file name to avoid duplication
-            string blobFileName = Guid.NewGuid().ToString() + "_" + fileName;
-            BlobClient blobClient = blobContainerClient.GetBlobClient(blobFileName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
 
             await blobClient.UploadAsync(imageStream, true);
 
@@ -246,7 +254,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             byte[] thumbnailImageData =
                     await response.Content.ReadAsByteArrayAsync();
             var result = new MemoryStream(thumbnailImageData);
-            string bloburl = await ImageUploadToBlob("thumb_" + filename, result, appSettings);
+            string bloburl = await ImageUploadToBlob(filename, result, appSettings);
             return bloburl;
         }
 

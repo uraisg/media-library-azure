@@ -12,13 +12,14 @@ namespace MediaLibrary.Internet.Web.Models
         public List<double> coordinates { get; set; }
     }
 
-    public class ImageEntity: TableEntity
+    public class ImageEntity : TableEntity
     {
         public ImageEntity()
         {
             PartitionKey = DateTime.UtcNow.AddHours(8).Minute.ToString();
             RowKey = Guid.NewGuid().ToString();
         }
+        public string Id { get; set; }
         public string Name { get; set; }
         public DateTime DateTaken { get; set; }
         public string Location { get; set; }

@@ -32,6 +32,7 @@ namespace MediaLibrary.Intranet.Web
                 options.SerializerSettings.ContractResolver = new DefaultContractResolver();
             });
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
+            services.AddHttpClient();
             services.AddHostedService<ScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
         }

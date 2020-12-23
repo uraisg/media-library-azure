@@ -1,12 +1,12 @@
 ﻿using MediaLibrary.Intranet.Web.Models;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NCrontab;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -16,6 +16,9 @@ using Azure.Storage.Blobs;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
+    /// <summary>
+    /// A recurring background job to query internet API for new media uploads and transfer them to intranet component.
+    /// </summary>
     public class ScheduledService : BackgroundService
     {
         private CrontabSchedule _schedule;
@@ -24,12 +27,16 @@ namespace MediaLibrary.Intranet.Web.Background
         private string Schedule => "0 0/1 * * * *";
 
         private readonly AppSettings _appSettings;
+        private readonly ILogger<ScheduledService> _logger;
+        private readonly IHttpClientFactory _clientFactory;
 
-        public ScheduledService(IOptions<AppSettings> appSettings)
+        public ScheduledService(IOptions<AppSettings> appSettings, ILogger<ScheduledService> logger, IHttpClientFactory clientFactory)
         {
             _schedule = CrontabSchedule.Parse(Schedule, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
             _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
             _appSettings = appSettings.Value;
+            _logger = logger;
+            _clientFactory = clientFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,7 +44,6 @@ namespace MediaLibrary.Intranet.Web.Background
             do
             {
                 var now = DateTime.Now;
-                var nextrun = _schedule.GetNextOccurrence(now);
                 if (now > _nextRun)
                 {
                     await Process();
@@ -49,6 +55,8 @@ namespace MediaLibrary.Intranet.Web.Background
         }
         private async Task Process()
         {
+            _logger.LogInformation("Starting background processing");
+
             string url = _appSettings.InternetTableAPI;
             string imageAPI = _appSettings.InternetImageAPI;
             string containerConnectionString = _appSettings.MediaStorageConnectionString;
@@ -56,20 +64,25 @@ namespace MediaLibrary.Intranet.Web.Background
             string indexContainerName = _appSettings.MediaStorageIndexContainer;
             string cred = _appSettings.ApiName + ":" + _appSettings.ApiPassword;
 
+            BlobContainerClient ImageBlobContainerClient = new BlobContainerClient(containerConnectionString, imageContainerName);
+            BlobContainerClient IndexBlobContainerClient = new BlobContainerClient(containerConnectionString, indexContainerName);
+
             //retrieve the index from past 2 min
             string partition = DateTime.UtcNow.AddHours(8).AddMinutes(-2).Minute.ToString();
-            InternetTableItems[] items = await GetInternetTableItems(url, partition,cred);
+            InternetTableItems[] items = await GetInternetTableItems(url, partition, cred);
 
-            foreach(InternetTableItems item in items)
+            _logger.LogInformation($"Found {items.Length} items to process");
+            foreach (InternetTableItems item in items)
             {
                 //first retrieve image
-                Stream imageStream = await GetImageByURL(imageAPI, item.fileURL,cred);
-                BlobContainerClient ImageBlobContainerClient = new BlobContainerClient(containerConnectionString, imageContainerName);
-                string newFileURL = await ImageUploadToBlob(ImageBlobContainerClient, imageStream, item.name);
+                Stream imageStream = await GetImageByURL(imageAPI, item.fileURL, cred);
+                string fileName = Path.GetFileName(item.fileURL);
+                await ImageUploadToBlob(ImageBlobContainerClient, imageStream, fileName);
 
                 //retrieve thumbnail
                 Stream tnStream = await GetImageByURL(imageAPI, item.thumbnailURL, cred);
-                string newtnURL = await ImageUploadToBlob(ImageBlobContainerClient, tnStream, item.name);
+                string thumbnailFileName = Path.GetFileName(item.thumbnailURL);
+                await ImageUploadToBlob(ImageBlobContainerClient, tnStream, thumbnailFileName);
 
                 //process to coordinate object
                 CoordinateObj newCoordinateObject = ProcessCoordinate(item.location);
@@ -80,13 +93,16 @@ namespace MediaLibrary.Intranet.Web.Background
                 //create new json object
                 ImageMetadata json = new ImageMetadata()
                 {
+                    Id = item.id,
                     Name = item.name,
                     DateTaken = item.dateTaken,
                     Location = newCoordinateObject,
                     Tag = tags,
+                    Caption = item.caption,
+                    Author = item.author,
                     UploadDate = item.uploadDate,
-                    FileURL = "/api/assets/" + newFileURL,
-                    ThumbnailURL = "/api/assets/" + newtnURL,
+                    FileURL = "/api/assets/" + fileName,
+                    ThumbnailURL = "/api/assets/" + thumbnailFileName,
                     Project = item.project,
                     Event = item._event,
                     LocationName = item.locationName,
@@ -96,15 +112,17 @@ namespace MediaLibrary.Intranet.Web.Background
                 string serialized = JsonConvert.SerializeObject(json);
 
                 //upload to indexer blob
-                BlobContainerClient IndexBlobContainerClient = new BlobContainerClient(containerConnectionString, indexContainerName);
-                await IndexUploadToBlob(IndexBlobContainerClient, serialized);
-                Console.WriteLine($"Uploaded {item.name} into {newFileURL}.");
+                string indexFileName = item.id + ".json";
+                await IndexUploadToBlob(IndexBlobContainerClient, serialized, indexFileName);
+                _logger.LogInformation("Uploaded item {ID} into {URL}", item.id, indexFileName);
             }
+
+            _logger.LogInformation("Finished background processing");
         }
 
-        private static async Task<InternetTableItems[]> GetInternetTableItems(string url,string partition,string cred)
+        private async Task<InternetTableItems[]> GetInternetTableItems(string url,string partition, string cred)
         {
-            var http = new HttpClient();
+            var http = _clientFactory.CreateClient();
             string requestURL = url + partition;
             var byteArray = Encoding.ASCII.GetBytes(cred);
             http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
@@ -115,7 +133,7 @@ namespace MediaLibrary.Intranet.Web.Background
             return items;
         }
 
-        private static async Task<Stream> GetImageByURL(string url, string imageURL, string cred)
+        private async Task<Stream> GetImageByURL(string url, string imageURL, string cred)
         {
             ImageURLItem itemBody = new ImageURLItem()
             {
@@ -125,7 +143,7 @@ namespace MediaLibrary.Intranet.Web.Background
             string requestBody = JsonConvert.SerializeObject(itemBody);
             var requestBodyData = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
-            var http = new HttpClient();
+            var http = _clientFactory.CreateClient();
             var byteArray = Encoding.ASCII.GetBytes(cred);
             http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             var response = await http.PostAsync(url, requestBodyData);
@@ -133,17 +151,12 @@ namespace MediaLibrary.Intranet.Web.Background
             return result;
         }
 
-        private static async Task<string> ImageUploadToBlob(BlobContainerClient blobContainerClient, Stream imageStream, string fileName)
+        private static async Task ImageUploadToBlob(BlobContainerClient blobContainerClient, Stream imageStream, string fileName)
         {
             //create a blob
-            //use guid together with file name to avoid duplication
-            string blobFileName = Guid.NewGuid().ToString() + "_" + fileName;
-            BlobClient blobClient = blobContainerClient.GetBlobClient(blobFileName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
 
             await blobClient.UploadAsync(imageStream, true);
-
-            //return filename
-            return blobFileName;
         }
 
         private static CoordinateObj ProcessCoordinate(string input)
@@ -153,10 +166,9 @@ namespace MediaLibrary.Intranet.Web.Background
             return obj;
         }
 
-        private static async Task IndexUploadToBlob(BlobContainerClient blobContainerClient, string index)
+        private static async Task IndexUploadToBlob(BlobContainerClient blobContainerClient, string index, string fileName)
         {
             //create a blob
-            string fileName = Guid.NewGuid().ToString() + ".json";
             BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
 
             //convert string to stream
