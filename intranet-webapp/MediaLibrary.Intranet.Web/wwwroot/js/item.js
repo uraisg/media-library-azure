@@ -41,7 +41,11 @@
         h4.textContent = data["Name"];
 
         let geo = clone.querySelector(".metadata-geo span");
-        geo.textContent = formatLatLng(data["Location"].coordinates);
+        if (data["Location"]) {
+            geo.textContent = formatLatLng(data["Location"].coordinates);
+        } else {
+            geo.textContent = "No geotag";
+        }
 
         let taken = clone.querySelector(".metadata-taken span");
         let uploaded = clone.querySelector(".metadata-uploaded span");

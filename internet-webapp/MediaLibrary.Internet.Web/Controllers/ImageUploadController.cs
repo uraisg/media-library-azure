@@ -75,7 +75,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                         string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, _appSettings);
 
                         //extract image metadata
-                        IReadOnlyList<MetadataExtractor.Directory> directory = ImageMetadataReader.ReadMetadata(extractMetadataImage);
+                        IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(extractMetadataImage);
 
                         //Get tagging from cognitive services
                         //Cognitive services can only take in file size less than 4MB
@@ -120,8 +120,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                         ImageEntity json = new ImageEntity();
                         json.Id = id;
                         json.Name = file.FileName;
-                        json.DateTaken = GetTimestamp(directory);
-                        json.Location = JsonConvert.SerializeObject(GetCoordinate(directory));
+                        json.DateTaken = GetTimestamp(directories);
+                        json.Location = JsonConvert.SerializeObject(GetCoordinate(directories));
                         json.Tag = GenerateTags(computerVisionResult);
                         json.Caption = GenerateCaption(computerVisionResult);
                         json.Author = email;
@@ -171,9 +171,9 @@ namespace MediaLibrary.Internet.Web.Controllers
             return url;
         }
 
-        private static DateTime GetTimestamp(IReadOnlyList<MetadataExtractor.Directory> directory)
+        private static DateTime GetTimestamp(IReadOnlyList<MetadataExtractor.Directory> directories)
         {
-            var time = directory.OfType<ExifIfd0Directory>().FirstOrDefault();
+            var time = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
 
             if (time != null)
             {
@@ -194,18 +194,21 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
         }
 
-        private static CoordinateObj GetCoordinate(IReadOnlyList<MetadataExtractor.Directory> directory)
+        /// <summary>
+        /// Get the geographical coordinates where the image was taken from metadata.
+        /// </summary>
+        /// <param name="directories">List of image metadata directories</param>
+        /// <returns>The coordinates found in the metadata, if possible, otherwise null</returns>
+        private static CoordinateObj GetCoordinate(IReadOnlyList<MetadataExtractor.Directory> directories)
         {
-            List<double> coordinate = new List<double>();
-            CoordinateObj results = new CoordinateObj();
-            results.type = "Point";
-            var gps = directory.OfType<GpsDirectory>().FirstOrDefault();
+            var coordinate = new List<double>();
+            var gps = directories.OfType<GpsDirectory>().FirstOrDefault();
 
             if (gps != null && gps.TagCount > 0)
             {
                 var location = gps.GetGeoLocation();
                 
-                if(location != null)
+                if (location != null && !location.IsZero)
                 {
                     try
                     {
@@ -218,8 +221,17 @@ namespace MediaLibrary.Internet.Web.Controllers
                     }
                 }
             }
-            results.coordinates = coordinate;
-            return results;
+
+            // Make sure that we have valid coordinates, otherwise return null
+            if (coordinate.Count != 2)
+            {
+                return null;
+            }
+            return new CoordinateObj
+            {
+                type = "Point",
+                coordinates = coordinate
+            };
         }
 
         private static async Task<string> GenerateThumbnailAsync(string filename, Stream image, AppSettings appSettings)
