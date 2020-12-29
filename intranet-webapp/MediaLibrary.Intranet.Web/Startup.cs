@@ -4,9 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaLibrary.Intranet.Web.Background;
 using MediaLibrary.Intranet.Web.Common;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,7 +32,16 @@ namespace MediaLibrary.Intranet.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews().AddNewtonsoftJson(options =>
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            }).AddNewtonsoftJson(options =>
             {
                 // Use the default property (Pascal) casing
                 options.SerializerSettings.ContractResolver = new DefaultContractResolver();
@@ -35,6 +50,8 @@ namespace MediaLibrary.Intranet.Web
             services.AddHttpClient();
             services.AddHostedService<ScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
+            services.AddRazorPages()
+                .AddMicrosoftIdentityUI();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +72,7 @@ namespace MediaLibrary.Intranet.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
