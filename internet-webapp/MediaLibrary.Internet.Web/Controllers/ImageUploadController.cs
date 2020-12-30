@@ -69,8 +69,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                         Stream thumbnailStream = new MemoryStream(data);
 
                         //upload to a separate container to retrieve image URL
-                        //use guid together with file name to avoid duplication
-                        string id = Guid.NewGuid().ToString();
+                        //use unique id together with file name to avoid duplication
+                        string id = GenerateId();
                         string blobFileName = id + "_" + file.FileName;
                         string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, _appSettings);
 
@@ -151,6 +151,16 @@ namespace MediaLibrary.Internet.Web.Controllers
                 _logger.LogWarning("No files uploaded by client");
                 return NoContent();
             }
+        }
+
+        /// <summary>
+        /// Generate a new ID (random 16 character string using Base58 alphabet).
+        /// </summary>
+        /// <returns>A new ID.</returns>
+        private static string GenerateId()
+        {
+            var base58Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+            return Nanoid.Nanoid.Generate(base58Alphabet, 16);
         }
 
         private static async Task<string> ImageUploadToBlob(string fileName, MemoryStream imageStream, AppSettings appSettings)
