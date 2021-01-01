@@ -13,7 +13,7 @@ Authorization: Bearer {{Token}}
 
 
 ### Delete User
-DELETE https://graph.microsoft.com/v1.0/users/58c39159-2dab-4ad3-9db9-ca216968eaf4
+DELETE https://graph.microsoft.com/v1.0/users/{{user-id}}
 Authorization: Bearer {{Token}}
 
 
