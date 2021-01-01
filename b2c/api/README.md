@@ -87,6 +87,8 @@ Authorization: Bearer {{access_token obtained above}}
 
 We will receive 204 response if it's successful.
 
+A sample API request can be found in rest.http (using VS Code Rest Client extension).
+
 ### Extra
 We can also use Microsoft Graph to obtain user sign in logs for entire Azure Active Directory. Permission required is **AuditLog.Read.All** under app registration, and we can then use this to analyze sign in behavior and remove users if they didn't sign in for more than x days.
 
