@@ -75,5 +75,20 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 return NotFound();
             }
         }
+
+        [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
+        public async Task<IActionResult> DeleteMediaFile(string name)
+        {
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
+            try
+            {
+                await blobClient.DeleteIfExistsAsync();
+                return Ok();
+            }
+            catch(RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            {
+                return NotFound();
+            }
+        }
     }
 }
