@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
 using Azure.Storage.Blobs;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
@@ -20,7 +21,6 @@ using Microsoft.Azure.Cosmos.Table;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using ImageMagick;
-using System.Security.Claims;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -44,115 +44,164 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPost("FileUpload")]
         public async Task<IActionResult> Index(UploadFormModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData["Alert.Type"] = "danger";
+                TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
+                return View("~/Views/Home/Index.cshtml");
+            }
+
             List<IFormFile> files = model.File;
 
             //get current user claims
             ClaimsPrincipal cp = this.User;
             var claims = cp.Claims;
-            string email = claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress").Value;
+            string email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-            if (files.Count > 0)
+            foreach (IFormFile file in files)
             {
-                foreach (IFormFile file in files)
+                string untrustedFileName = Path.GetFileName(file.FileName);
+                string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
+
+                _logger.LogInformation($"Upload file name: {untrustedFileName}, size: {file.Length}");
+
+                // Check the file length
+                if (file.Length == 0)
                 {
-                    if (file.Length > 0)
+                    _logger.LogWarning($"File {untrustedFileName} is empty.");
+
+                    ModelState.AddModelError(file.Name, $"File {encodedFileName} is empty.");
+                    TempData["Alert.Type"] = "danger";
+                    TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
+                    return View("~/Views/Home/Index.cshtml");
+                }
+
+                // Check the content type and file extension
+                if (!IsValidImage(file))
+                {
+                    _logger.LogWarning($"File {untrustedFileName} does not have allowed file extension.");
+
+                    ModelState.AddModelError(file.Name, 
+                        $"File {encodedFileName} does not have allowed file extension. " +
+                        "Allowed file extensions are .jpg, .jpeg, .png, .gif, .bmp");
+                    TempData["Alert.Type"] = "danger";
+                    TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
+                    return View("~/Views/Home/Index.cshtml");
+                }
+
+                try
+                {
+                    
+                    MemoryStream ms = new MemoryStream();
+                    file.CopyTo(ms);
+
+                    byte[] data = ms.ToArray();
+
+                    MemoryStream uploadImage = new MemoryStream(data);
+                    Stream extractMetadataImage = new MemoryStream(data);
+                    Stream imageStream = new MemoryStream(data);
+                    Stream thumbnailStream = new MemoryStream(data);
+
+                    //upload to a separate container to retrieve image URL
+                    //use unique id together with file name to avoid duplication
+                    string id = GenerateId();
+                    string blobFileName = id + "_" + untrustedFileName;
+                    string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, _appSettings);
+
+                    //extract image metadata
+                    IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(extractMetadataImage);
+
+                    //Get tagging from cognitive services
+                    //Cognitive services can only take in file size less than 4MB
+                    //Do a check on filesize to get tags and generate thumbnail
+                    ImageAnalysis computerVisionResult;
+                    string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb" + Path.GetExtension(blobFileName);
+                    string thumbnailURL = string.Empty;
+                    int quality = 75;
+
+                    if (data.Length > 4000000)
                     {
-                        _logger.LogInformation($"Uploaded file size: {file.Length}");
-                        MemoryStream ms = new MemoryStream();
-                        file.CopyTo(ms);
-
-                        byte[] data = ms.ToArray();
-
-                        MemoryStream uploadImage = new MemoryStream(data);
-                        Stream extractMetadataImage = new MemoryStream(data);
-                        Stream imageStream = new MemoryStream(data);
-                        Stream thumbnailStream = new MemoryStream(data);
-
-                        //upload to a separate container to retrieve image URL
-                        //use unique id together with file name to avoid duplication
-                        string id = GenerateId();
-                        string blobFileName = id + "_" + file.FileName;
-                        string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, _appSettings);
-
-                        //extract image metadata
-                        IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(extractMetadataImage);
-
-                        //Get tagging from cognitive services
-                        //Cognitive services can only take in file size less than 4MB
-                        //Do a check on filesize to get tags and generate thumbnail
-                        ImageAnalysis computerVisionResult;
-                        string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb" + Path.GetExtension(blobFileName);
-                        string thumbnailURL = string.Empty;
-                        int quality = 75;
-
-                        if (data.Length > 4000000)
+                        using (var memStream = new MemoryStream())
                         {
-                            using (var memStream = new MemoryStream())
+                            while (data.Length > 4000000)
                             {
-                                while (data.Length > 4000000)
+                                using (var image = new MagickImage(data))
                                 {
-                                    using (var image = new MagickImage(data))
-                                    {
-                                        image.Quality = quality;
-                                        image.Write(memStream);
-                                        data = memStream.ToArray();
-                                        _logger.LogInformation($"Compressing: {data.Length}");
-                                        //prevent memory leak
-                                        memStream.SetLength(0);
-                                    }
+                                    image.Quality = quality;
+                                    image.Write(memStream);
+                                    data = memStream.ToArray();
+                                    _logger.LogInformation($"Compressing: {data.Length}");
+                                    //prevent memory leak
+                                    memStream.SetLength(0);
                                 }
-
-                                _logger.LogInformation($"Final: {data.Length}");
-                                Stream thumbStream = new MemoryStream(data);
-                                thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbStream, _appSettings);
-
-                                Stream tagStream = new MemoryStream(data);
-                                computerVisionResult = await CallCSComputerVisionAsync(tagStream, _appSettings);
                             }
-                        }
-                        else
-                        {
-                            thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
-                            computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
-                        }
-                        
-                        //create json for indexing
-                        ImageEntity json = new ImageEntity();
-                        json.Id = id;
-                        json.Name = file.FileName;
-                        json.DateTaken = GetTimestamp(directories);
-                        json.Location = JsonConvert.SerializeObject(GetCoordinate(directories));
-                        json.Tag = GenerateTags(computerVisionResult);
-                        json.Caption = GenerateCaption(computerVisionResult);
-                        json.Author = email;
-                        json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
-                        json.FileURL = imageURL;
-                        json.ThumbnailURL = thumbnailURL;
-                        json.Project = model.Project;
-                        json.Event = model.Event;
-                        json.LocationName = model.LocationText;
-                        json.Copyright = model.Copyright;
 
-                        await IndexUploadToTable(json, _appSettings);
+                            _logger.LogInformation($"Final: {data.Length}");
+                            Stream thumbStream = new MemoryStream(data);
+                            thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbStream, _appSettings);
+
+                            Stream tagStream = new MemoryStream(data);
+                            computerVisionResult = await CallCSComputerVisionAsync(tagStream, _appSettings);
+                        }
                     }
                     else
                     {
-                        _logger.LogWarning("Empty file uploaded by client");
-                        return NoContent();
+                        thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
+                        computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
                     }
+                        
+                    //create json for indexing
+                    ImageEntity json = new ImageEntity();
+                    json.Id = id;
+                    json.Name = file.FileName;
+                    json.DateTaken = GetTimestamp(directories);
+                    json.Location = JsonConvert.SerializeObject(GetCoordinate(directories));
+                    json.Tag = GenerateTags(computerVisionResult);
+                    json.Caption = GenerateCaption(computerVisionResult);
+                    json.Author = email;
+                    json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
+                    json.FileURL = imageURL;
+                    json.ThumbnailURL = thumbnailURL;
+                    json.Project = model.Project;
+                    json.Event = model.Event;
+                    json.LocationName = model.LocationText;
+                    json.Copyright = model.Copyright;
+
+                    await IndexUploadToTable(json, _appSettings);
                 }
-                ModelState.Clear();
-                TempData["Alert.Type"] = "success";
-                TempData["Alert.Message"] = "Items have been uploaded sucessfully";
-                return View("~/Views/Home/Index.cshtml");
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"File {untrustedFileName} failed to upload.");
+
+                    ModelState.AddModelError(file.Name, $"File {encodedFileName} could not be uploaded.");
+                    TempData["Alert.Type"] = "danger";
+                    TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
+                    return View("~/Views/Home/Index.cshtml");
+                }
             }
-            else
-            {
-                _logger.LogWarning("No files uploaded by client");
-                return NoContent();
-            }
+            ModelState.Clear();
+            TempData["Alert.Type"] = "success";
+            TempData["Alert.Message"] = "Items have been uploaded sucessfully";
+            return View("~/Views/Home/Index.cshtml");
         }
 
+        /// <summary>
+        /// Check whether an image upload has image MIME type and contains an allowed file extension.
+        /// </summary>
+        /// <param name="file">The IFormFile to check.</param>
+        /// <returns><c>true</c> if the IFormFile is valid; otherwise <c>false</c>.</returns>
+        private static bool IsValidImage(IFormFile file)
+        {
+            if (!file.ContentType.Contains("image"))
+            {
+                return false;
+            }
+
+            string[] allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+
+            return allowedExtensions.Any(item => file.FileName.EndsWith(item, StringComparison.OrdinalIgnoreCase));
+        }
+        
         /// <summary>
         /// Generate a new ID (random 16 character string using Base58 alphabet).
         /// </summary>
