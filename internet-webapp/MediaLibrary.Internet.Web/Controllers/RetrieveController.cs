@@ -12,10 +12,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using Azure;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -24,10 +26,12 @@ namespace MediaLibrary.Internet.Web.Controllers
     public class RetrieveController : ControllerBase
     {
         private readonly AppSettings _appSettings;
+        private readonly ILogger _logger;
 
-        public RetrieveController(IOptions<AppSettings> appSettings)
+        public RetrieveController(IOptions<AppSettings> appSettings, ILogger<RetrieveController> logger)
         {
             _appSettings = appSettings.Value;
+            _logger = logger;
         }
 
         [HttpGet("{hour}")]
@@ -84,6 +88,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     }
                     catch (StorageException e)
                     {
+                        _logger.LogWarning(e, "Error while executing query");
                         return NotFound();
                         throw;
                     }
@@ -119,8 +124,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                 {
                     string requestbody;
 
-                    var storageAccountName = _appSettings.MediaStorageAccountName;
-                    var storageAccountKey = _appSettings.MediaStorageAccountKey;
+                    var storageConnectionString = _appSettings.MediaStorageConnectionString;
+                    var containerName = _appSettings.MediaStorageContainer;
 
                     //get request body
                     using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
@@ -133,20 +138,27 @@ namespace MediaLibrary.Internet.Web.Controllers
                     string imageUrl = (string)json["url"];
 
                     //authenticate with blob and down image via URL
-                    StorageSharedKeyCredential credential = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-                    BlobClient blobClient = new BlobClient(new System.Uri(imageUrl), credential);
-                    BlobDownloadInfo content = await blobClient.DownloadAsync();
-
-                    //return stream content
-                    return Ok(content.Content);
+                    var blobUriBuilder = new BlobUriBuilder(new Uri(imageUrl));
+                    BlobClient blobClient = new BlobClient(storageConnectionString, containerName, blobUriBuilder.BlobName);
+                    try
+                    {
+                        BlobDownloadInfo download = await blobClient.DownloadAsync();
+                        return File(download.Content, download.ContentType);
+                    }
+                    catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+                    {
+                        return NotFound();
+                    }
                 }
                 else
                 {
+                    _logger.LogInformation("Incorrect user name or password");
                     return Unauthorized();
                 }
             }
             else
             {
+                _logger.LogInformation("Missing \"Authentication\" header");
                 return Unauthorized();
             }
             
