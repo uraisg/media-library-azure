@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-using MediaLibrary.Internet.Web.Background;
+﻿using MediaLibrary.Internet.Web.Background;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.Logging;
@@ -31,26 +27,21 @@ namespace MediaLibrary.Internet.Web
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
+                options.CheckConsentNeeded = context => false;
                 options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
                 // Handling SameSite cookie according to https://docs.microsoft.com/en-us/aspnet/core/security/samesite?view=aspnetcore-3.1
                 options.HandleSameSiteCookieCompatibility();
             });
 
-            // Configuration to sign-in users with Azure AD B2C
-            services.AddSignIn(Configuration, "AzureAdB2C");
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
 
-            services.AddControllersWithViews()
+            services.AddControllersWithViews();
+            
+            services.AddRazorPages()
                 .AddMicrosoftIdentityUI();
 
-            services.AddRazorPages();
-
-            //Configuring appsettings section AzureAdB2C, into IOptions
-            services.AddOptions();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
-            services.Configure<OpenIdConnectOptions>(Configuration.GetSection("AzureAdB2C"));
-
-            services.AddControllers();
             services.AddHostedService<ScheduledService>();
         }
 
@@ -74,17 +65,16 @@ namespace MediaLibrary.Internet.Web
             app.UseCookiePolicy();
 
             app.UseRouting();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");             
                 endpoints.MapRazorPages();
-                
             });
         }
     }
