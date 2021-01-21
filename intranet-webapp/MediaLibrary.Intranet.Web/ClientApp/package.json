@@ -1,0 +1,31 @@
+{
+  "name": "medialibrary-intranet-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "development": "mix",
+    "watch": "mix watch",
+    "watch-poll": "mix watch -- --watch-options-poll=1000",
+    "hot": "mix watch --hot",
+    "production": "mix --production"
+  },
+  "keywords": [],
+  "author": "uraisg",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/preset-react": "^7.12.10",
+    "laravel-mix": "^6.0.10",
+    "postcss": "^8.1.14"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.5.0",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.1",
+    "react-bootstrap": "^1.4.3",
+    "react-dom": "^17.0.1",
+    "react-redux": "^7.2.2",
+    "react-router-dom": "^5.2.0",
+    "redux": "^4.0.5",
+    "styled-components": "^5.2.1"
+  }
+}

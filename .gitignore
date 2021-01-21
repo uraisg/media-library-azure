@@ -394,5 +394,13 @@ FodyWeavers.xsd
 # Bundled and minified static assets
 **/wwwroot/css/*.min.css
 **/wwwroot/js/*.min.js
+**/wwwroot/js/dist/
+
+# npm dependencies
+node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 appsettings.json

@@ -5,6 +5,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
 {
     public class GalleryController : Controller
     {
+        public IActionResult Index()
+        {
+            return View();
+        }
+
         public IActionResult Item([BindRequired, FromRoute] string id)
         {
             if (!ModelState.IsValid)

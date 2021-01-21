@@ -90,6 +90,10 @@ namespace MediaLibrary.Intranet.Web
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
+                    name: "spa", 
+                    pattern: "spa/{*path}",
+                    defaults: new { controller = "Gallery", action = "Index" });
                 endpoints.MapRazorPages();
             });
         }
