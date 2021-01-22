@@ -1,13 +1,11 @@
-﻿using MediaLibrary.Internet.Web.Models;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaLibrary.Internet.Web.Models;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using NCrontab;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaLibrary.Internet.Web.Background
 {

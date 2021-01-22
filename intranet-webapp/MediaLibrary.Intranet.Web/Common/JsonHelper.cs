@@ -1,8 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
+using Newtonsoft.Json;
 
 namespace MediaLibrary.Intranet.Web.Common
 {
@@ -20,7 +17,7 @@ namespace MediaLibrary.Intranet.Web.Common
         {
             using (var sr = new StreamReader(jsonStream))
             using (var jr = new JsonTextReader(sr))
-            { 
+            {
                 return JsonSerializer.CreateDefault().Deserialize<T>(jr);
             }
         }

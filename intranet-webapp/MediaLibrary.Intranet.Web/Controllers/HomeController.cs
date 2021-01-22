@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaLibrary.Intranet.Web.Common;
+using MediaLibrary.Intranet.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MediaLibrary.Intranet.Web.Common;
-using MediaLibrary.Intranet.Web.Models;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -137,7 +137,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 model.SpatialCategories = _geoSearchHelper.GetNames();
             }
-            
+
             // Return the new view.
             return View("Index", model);
         }

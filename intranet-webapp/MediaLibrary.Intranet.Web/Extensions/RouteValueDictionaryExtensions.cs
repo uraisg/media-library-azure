@@ -1,9 +1,6 @@
-using Microsoft.AspNetCore.Routing;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Routing;
 
 namespace MediaLibrary.Intranet.Web.Extensions
 {

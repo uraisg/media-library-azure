@@ -138,7 +138,7 @@ namespace MediaLibrary.Intranet.Web.Background
             _logger.LogInformation("Finished background processing");
         }
 
-        private async Task<InternetTableItems[]> GetInternetTableItems(string url,string partition, string cred)
+        private async Task<InternetTableItems[]> GetInternetTableItems(string url, string partition, string cred)
         {
             var http = _clientFactory.CreateClient();
             string requestURL = url + partition;

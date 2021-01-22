@@ -3,12 +3,12 @@ using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using MediaLibrary.Intranet.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Search;
 using Microsoft.Extensions.Options;
 using Microsoft.Rest.Azure;
-using MediaLibrary.Intranet.Web.Models;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -16,17 +16,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
     public class WebApiController : ControllerBase
     {
         private readonly AppSettings _appSettings;
-        private readonly LinkGenerator _linkGenerator;
 
         private static BlobContainerClient _blobContainerClient = null;
 
         private static SearchServiceClient _searchServiceName = null;
         private static ISearchIndexClient _searchIndexClient = null;
 
-        public WebApiController(IOptions<AppSettings> appSettings, LinkGenerator linkGenerator)
+        public WebApiController(IOptions<AppSettings> appSettings)
         {
             _appSettings = appSettings.Value;
-            _linkGenerator = linkGenerator;
 
             InitStorage();
             InitSearch();
@@ -97,7 +95,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 await blobClient.DeleteIfExistsAsync();
                 return Ok();
             }
-            catch(RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
             {
                 return NotFound();
             }

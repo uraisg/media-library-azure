@@ -1,4 +1,5 @@
 ﻿using System;
+using MediaLibrary.Intranet.Web.Common;
 using Microsoft.Azure.Search;
 using Microsoft.Spatial;
 using Newtonsoft.Json;

@@ -2,25 +2,25 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using Azure.Storage.Blobs;
+using ImageMagick;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Azure.Cosmos.Table;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using ImageMagick;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -81,7 +81,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 {
                     _logger.LogWarning($"File {untrustedFileName} does not have allowed file extension.");
 
-                    ModelState.AddModelError(file.Name, 
+                    ModelState.AddModelError(file.Name,
                         $"File {encodedFileName} does not have allowed file extension. " +
                         "Allowed file extensions are .jpg, .jpeg, .png, .gif, .bmp");
                     TempData["Alert.Type"] = "danger";
@@ -91,7 +91,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
                 try
                 {
-                    
+
                     MemoryStream ms = new MemoryStream();
                     file.CopyTo(ms);
 
@@ -149,7 +149,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                         thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
                         computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
                     }
-                        
+
                     //create json for indexing
                     ImageEntity json = new ImageEntity();
                     json.Id = id;
@@ -201,7 +201,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             return allowedExtensions.Any(item => file.FileName.EndsWith(item, StringComparison.OrdinalIgnoreCase));
         }
-        
+
         /// <summary>
         /// Generate a new ID (random 16 character string using Base58 alphabet).
         /// </summary>
@@ -266,7 +266,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             if (gps != null && gps.TagCount > 0)
             {
                 var location = gps.GetGeoLocation();
-                
+
                 if (location != null && !location.IsZero)
                 {
                     try
@@ -299,28 +299,28 @@ namespace MediaLibrary.Internet.Web.Controllers
             string endpoint = appSettings.ComputerVisionEndpoint;
             string width = appSettings.ThumbWidth;
             string height = appSettings.ThumbHeight;
-            
+
             string uriBase = endpoint + "vision/v3.0/generateThumbnail";
 
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
-                string requestParameters = "width=" + width + "&height=" + height + "&smartCropping=true";
-                string uri = uriBase + "?" + requestParameters;
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
+            string requestParameters = "width=" + width + "&height=" + height + "&smartCropping=true";
+            string uri = uriBase + "?" + requestParameters;
 
-                HttpResponseMessage response;
-                byte[] byteData;
-                using (var streamReader = new MemoryStream())
-                {
-                    image.CopyTo(streamReader);
-                    byteData = streamReader.ToArray();
-                }
+            HttpResponseMessage response;
+            byte[] byteData;
+            using (var streamReader = new MemoryStream())
+            {
+                image.CopyTo(streamReader);
+                byteData = streamReader.ToArray();
+            }
 
-                using (ByteArrayContent content = new ByteArrayContent(byteData))
-                {
-                    content.Headers.ContentType =
-                        new MediaTypeHeaderValue("application/octet-stream");
-                    response = await client.PostAsync(uri, content);
-                }
+            using (ByteArrayContent content = new ByteArrayContent(byteData))
+            {
+                content.Headers.ContentType =
+                    new MediaTypeHeaderValue("application/octet-stream");
+                response = await client.PostAsync(uri, content);
+            }
 
             byte[] thumbnailImageData =
                     await response.Content.ReadAsByteArrayAsync();
@@ -347,7 +347,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             ImageAnalysis results = await client.AnalyzeImageInStreamAsync(image, features);
 
-            return results; 
+            return results;
         }
 
         private static string GenerateTags(ImageAnalysis results)
@@ -369,9 +369,9 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             double bestScore = 0;
             string bestCaption = "";
-            foreach(var caption in results.Description.Captions)
+            foreach (var caption in results.Description.Captions)
             {
-                if(caption.Confidence > bestScore)
+                if (caption.Confidence > bestScore)
                 {
                     bestScore = caption.Confidence;
                     bestCaption = caption.Text;

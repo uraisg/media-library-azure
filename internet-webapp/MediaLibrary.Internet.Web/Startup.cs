@@ -37,7 +37,7 @@ namespace MediaLibrary.Internet.Web
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
 
             services.AddControllersWithViews();
-            
+
             services.AddRazorPages()
                 .AddMicrosoftIdentityUI();
 
@@ -73,7 +73,7 @@ namespace MediaLibrary.Internet.Web
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");             
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
         }

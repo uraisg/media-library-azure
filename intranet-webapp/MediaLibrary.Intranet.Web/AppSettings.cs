@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace MediaLibrary.Intranet.Web
+﻿namespace MediaLibrary.Intranet.Web
 {
     public class AppSettings
     {

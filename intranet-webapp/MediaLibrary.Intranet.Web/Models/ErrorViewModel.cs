@@ -1,5 +1,3 @@
-using System;
-
 namespace MediaLibrary.Intranet.Web.Models
 {
     public class ErrorViewModel
