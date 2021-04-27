@@ -1,18 +1,19 @@
-﻿using MediaLibrary.Intranet.Web.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using MediaLibrary.Intranet.Web.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NCrontab;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.IO;
-using System.Text;
-using Azure.Storage.Blobs;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
@@ -59,13 +60,30 @@ namespace MediaLibrary.Intranet.Web.Background
 
             string url = _appSettings.InternetTableAPI;
             string imageAPI = _appSettings.InternetImageAPI;
-            string containerConnectionString = _appSettings.MediaStorageConnectionString;
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
+            string storageAccountName = _appSettings.MediaStorageAccountName;
             string imageContainerName = _appSettings.MediaStorageImageContainer;
             string indexContainerName = _appSettings.MediaStorageIndexContainer;
             string cred = _appSettings.ApiName + ":" + _appSettings.ApiPassword;
 
-            BlobContainerClient ImageBlobContainerClient = new BlobContainerClient(containerConnectionString, imageContainerName);
-            BlobContainerClient IndexBlobContainerClient = new BlobContainerClient(containerConnectionString, indexContainerName);
+            BlobContainerClient imageBlobContainerClient;
+            BlobContainerClient indexBlobContainerClient;
+
+            if (!string.IsNullOrEmpty(storageConnectionString))
+            {
+                imageBlobContainerClient = new BlobContainerClient(storageConnectionString, imageContainerName);
+                indexBlobContainerClient = new BlobContainerClient(storageConnectionString, indexContainerName);
+            }
+            else
+            {
+                string imageContainerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                    storageAccountName, imageContainerName);
+                imageBlobContainerClient = new BlobContainerClient(new Uri(imageContainerEndpoint), new DefaultAzureCredential());
+
+                string indexContainerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                    storageAccountName, indexContainerName);
+                indexBlobContainerClient = new BlobContainerClient(new Uri(indexContainerEndpoint), new DefaultAzureCredential());
+            }
 
             //retrieve the index from past 2 min
             string partition = DateTime.UtcNow.AddHours(8).AddMinutes(-2).Minute.ToString();
@@ -77,12 +95,12 @@ namespace MediaLibrary.Intranet.Web.Background
                 //first retrieve image
                 Stream imageStream = await GetImageByURL(imageAPI, item.fileURL, cred);
                 string fileName = Path.GetFileName(item.fileURL);
-                await ImageUploadToBlob(ImageBlobContainerClient, imageStream, fileName);
+                await ImageUploadToBlob(imageBlobContainerClient, imageStream, fileName);
 
                 //retrieve thumbnail
                 Stream tnStream = await GetImageByURL(imageAPI, item.thumbnailURL, cred);
                 string thumbnailFileName = Path.GetFileName(item.thumbnailURL);
-                await ImageUploadToBlob(ImageBlobContainerClient, tnStream, thumbnailFileName);
+                await ImageUploadToBlob(imageBlobContainerClient, tnStream, thumbnailFileName);
 
                 //process to coordinate object
                 CoordinateObj newCoordinateObject = ProcessCoordinate(item.location);
@@ -113,7 +131,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
                 //upload to indexer blob
                 string indexFileName = item.id + ".json";
-                await IndexUploadToBlob(IndexBlobContainerClient, serialized, indexFileName);
+                await IndexUploadToBlob(indexBlobContainerClient, serialized, indexFileName);
                 _logger.LogInformation("Uploaded item {ID} into {URL}", item.id, indexFileName);
             }
 

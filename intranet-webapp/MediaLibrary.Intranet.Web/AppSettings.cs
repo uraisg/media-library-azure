@@ -8,6 +8,7 @@ namespace MediaLibrary.Intranet.Web
     public class AppSettings
     {
         public string MediaStorageConnectionString { get; set; }
+        public string MediaStorageAccountName { get; set; }
         public string MediaStorageImageContainer { get; set; }
         public string MediaStorageIndexContainer { get; set; }
         public string InternetTableAPI { get; set; }

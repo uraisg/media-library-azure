@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Azure;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,18 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private void InitStorage()
         {
             if (_blobContainerClient == null)
-                _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionString, _appSettings.MediaStorageImageContainer);
+            {
+                if (!string.IsNullOrEmpty(_appSettings.MediaStorageConnectionString))
+                {
+                    _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionString, _appSettings.MediaStorageImageContainer);
+                }
+                else
+                {
+                    string containerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                        _appSettings.MediaStorageAccountName, _appSettings.MediaStorageImageContainer);
+                    _blobContainerClient = new BlobContainerClient(new Uri(containerEndpoint), new DefaultAzureCredential());
+                }
+            }
         }
 
         private void InitSearch()
