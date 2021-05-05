@@ -12,7 +12,7 @@ const store = configureStore({
 
 render(
   <Provider store={store}>
-    <Router basename="/spa">
+    <Router basename="/s">
       <App />
     </Router>
   </Provider>,

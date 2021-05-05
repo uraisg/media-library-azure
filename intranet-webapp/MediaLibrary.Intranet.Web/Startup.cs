@@ -92,7 +92,7 @@ namespace MediaLibrary.Intranet.Web
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute(
                     name: "spa", 
-                    pattern: "spa/{*path}",
+                    pattern: "s/{*path}",
                     defaults: new { controller = "Gallery", action = "Index" });
                 endpoints.MapRazorPages();
             });
