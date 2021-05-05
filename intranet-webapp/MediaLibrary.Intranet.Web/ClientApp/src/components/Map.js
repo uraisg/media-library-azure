@@ -5,7 +5,7 @@ import { useMap, useInitMap } from '@/contexts'
 
 const MapContainer = styled.div`
   width: 100%;
-  height: calc(100vh - 5rem);
+  height: 100%;
 `
 
 const basemap = L.tileLayer(
