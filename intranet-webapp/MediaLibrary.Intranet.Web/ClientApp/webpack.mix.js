@@ -13,4 +13,7 @@ mix.webpackConfig({
     },
   },
 })
+mix.babelConfig({
+  plugins: ['transform-class-properties'],
+})
 mix.js('src/main.js', '../wwwroot/js/dist').react()
