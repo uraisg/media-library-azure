@@ -43,28 +43,21 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
         public async Task<ActionResult> Index([FromQuery] SearchData model)
         {
-            try
+            // Ensure the search string is valid.
+            if (model.SearchText == null)
             {
-                // Ensure the search string is valid.
-                if (model.SearchText == null)
-                {
-                    model.SearchText = "";
-                }
-
-                // Set default result layout
-                if (model.Layout == null)
-                {
-                    model.Layout = DisplayMode.Grid;
-                }
-
-                // Make the search call for the first page.
-                await RunQueryAsync(model);
+                model.SearchText = "";
             }
 
-            catch (Exception)
+            // Set default result layout
+            if (model.Layout == null)
             {
-                return View("Error", new ErrorViewModel { RequestId = "1" });
+                model.Layout = DisplayMode.Grid;
             }
+
+            // Make the search call for the first page.
+            await RunQueryAsync(model);
+
             return View(model);
         }
 
