@@ -1,0 +1,64 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+    - 'internet-webapp/**'
+    - 'intranet-webapp/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+    - 'internet-webapp/**'
+    - 'intranet-webapp/**'
+
+jobs:
+  # JOB to run change detection
+  changes:
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      internet: ${{ steps.filter.outputs.internet }}
+      intranet: ${{ steps.filter.outputs.intranet }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          internet:
+            - 'internet-webapp/**'
+          intranet:
+            - 'intranet-webapp/**'
+
+  # JOB to build and test internet-facing code
+  internet:
+    needs: changes
+    if: ${{ needs.changes.outputs.internet == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    - name: Build
+      run: dotnet build internet-webapp/MediaLibrary.Internet.sln --configuration Release
+    - name: Test
+      run: dotnet test internet-webapp/MediaLibrary.Internet.sln --no-build --verbosity normal --configuration Release
+
+  # JOB to build and test intranet-facing code
+  intranet:
+    needs: changes
+    if: ${{ needs.changes.outputs.intranet == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    - name: Build
+      run: dotnet build intranet-webapp/MediaLibrary.Intranet.sln --configuration Release
+    - name: Test
+      run: dotnet test intranet-webapp/MediaLibrary.Intranet.sln --no-build --verbosity normal --configuration Release
