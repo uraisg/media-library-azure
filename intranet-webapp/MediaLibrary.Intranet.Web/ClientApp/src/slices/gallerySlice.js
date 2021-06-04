@@ -12,6 +12,7 @@ const initialState = galleryAdapter.getInitialState({
   page: 1,
   boundingbox: '',
   isFetching: false,
+  results: [],
   error: null,
 })
 
@@ -72,10 +73,12 @@ export const getSearchResults = (searchTerm, filters, map) => {
 
     dispatch(getSearchResultsSuccess({ results }))
     // TODO Zoom to pa or postal code
-    map.flyToBounds([
-      [1.283174, 103.847427],
-      [1.277768, 103.839802],
-    ])
+    if (map) {
+      map.flyToBounds([
+        [1.283174, 103.847427],
+        [1.277768, 103.839802],
+      ])
+    }
   }
 }
 
@@ -84,6 +87,7 @@ const getSearchResultsApi = async (searchTerm, filters, page = 1) => {
   const url = new URL('/api/search', baseUrl)
   const params = {
     SearchText: searchTerm,
+    Page: page - 1,
     // TODO: add the filters
   }
 
@@ -106,10 +110,22 @@ const getSearchResultsApi = async (searchTerm, filters, page = 1) => {
 }
 
 const processData = (data) => {
-  return {
-    byId: {},
-    allIds: [],
-    page: data.Page, 
-    totalPages: data.PageCount
-  }
+  // return {
+  //   byId: {},
+  //   allIds: [],
+  //   page: data.Page,
+  //   totalPages: data.PageCount
+  // }
+  return data.ResultList.value.map((item) => {
+    const doc = item.Document
+    return {
+      id: doc.Id,
+      src: new URL(doc.FileURL, window.location).toString(),
+      thumbnail: new URL(doc.ThumbnailURL, window.location).toString(),
+      caption: doc.Name,
+      thumbnailWidth: 320,
+      thumbnailHeight: 240,
+      link: new URL('/Gallery/Item/' + doc.Id, window.location).toString(),
+    }
+  })
 }

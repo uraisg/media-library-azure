@@ -141,7 +141,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 Filter = filterExpression,
 
                 // Enter media property names into this list, so only these values will be returned.
-                Select = new[] { "Id", "Name", "Project", "LocationName", "Tag", "Location", "ThumbnailURL" },
+                Select = new[] { "Id", "Name", "FileURL", "ThumbnailURL" },
 
                 // Skip past results that have already been returned.
                 Skip = page * GlobalVariables.ResultsPerPage,
