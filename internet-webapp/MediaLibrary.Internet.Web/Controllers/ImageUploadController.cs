@@ -27,6 +27,8 @@ namespace MediaLibrary.Internet.Web.Controllers
     [Authorize]
     public class ImageUploadController : Controller
     {
+        private static readonly string TransferPartitionKey = "transfer";
+
         private readonly AppSettings _appSettings;
         private readonly ILogger _logger;
 
@@ -152,6 +154,8 @@ namespace MediaLibrary.Internet.Web.Controllers
 
                     //create json for indexing
                     ImageEntity json = new ImageEntity();
+                    json.PartitionKey = TransferPartitionKey;
+                    json.RowKey = id;
                     json.Id = id;
                     json.Name = file.FileName;
                     json.DateTaken = GetTimestamp(directories);

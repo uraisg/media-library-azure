@@ -1,4 +1,4 @@
-﻿namespace MediaLibrary.Internet.Web
+﻿namespace MediaLibrary.Internet.Api
 {
     public class AppSettings
     {
@@ -6,9 +6,6 @@
         public string MediaStorageContainer { get; set; }
         public string TableConnectionString { get; set; }
         public string TableName { get; set; }
-        public string ComputerVisionEndpoint { get; set; }
-        public string ComputerVisionApiKey { get; set; }
-        public string ThumbHeight { get; set; }
-        public string ThumbWidth { get; set; }
+        public string ApiKey { get; set; }
     }
 }

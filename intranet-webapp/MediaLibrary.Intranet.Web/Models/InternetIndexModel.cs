@@ -26,7 +26,7 @@ namespace MediaLibrary.Intranet.Web.Models
 
     public class ImageURLItem
     {
-        public string url { get; set; }
+        public string Path { get; set; }
     }
 
 }
