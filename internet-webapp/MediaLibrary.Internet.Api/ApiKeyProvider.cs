@@ -20,7 +20,7 @@ namespace MediaLibrary.Internet.Api
             _logger = logger;
         }
 
-        public async Task<IApiKey> ProvideAsync(string key)
+        public Task<IApiKey> ProvideAsync(string key)
         {
             try
             {
@@ -31,10 +31,10 @@ namespace MediaLibrary.Internet.Api
 
                 if (string.Compare(key, _appSettings.ApiKey, StringComparison.Ordinal) == 0)
                 {
-                    return new ApiKey(key, "API client");
+                    return Task.FromResult<IApiKey>(new ApiKey(key, "API client"));
                 }
 
-                return null;
+                return Task.FromResult<IApiKey>(null);
             }
             catch (Exception exception)
             {

@@ -8,8 +8,6 @@
         public string TableName { get; set; }
         public string ComputerVisionEndpoint { get; set; }
         public string ComputerVisionApiKey { get; set; }
-        public string ApiName { get; set; }
-        public string ApiPassword { get; set; }
         public string ThumbHeight { get; set; }
         public string ThumbWidth { get; set; }
     }

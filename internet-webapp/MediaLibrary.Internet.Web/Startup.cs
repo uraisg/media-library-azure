@@ -1,5 +1,4 @@
-﻿using MediaLibrary.Internet.Web.Background;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +41,6 @@ namespace MediaLibrary.Internet.Web
                 .AddMicrosoftIdentityUI();
 
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
-            services.AddHostedService<ScheduledService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

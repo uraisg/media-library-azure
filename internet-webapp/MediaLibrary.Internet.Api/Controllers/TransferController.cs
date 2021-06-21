@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
@@ -17,19 +19,7 @@ namespace MediaLibrary.Internet.Api.Controllers
     [Authorize]
     public class TransferController : ControllerBase
     {
-        private static readonly string[] Tags = new[]
-        {
-            "mountain", "sky", "water", "lake", "outdoor", "valley", "nature", "ship", "landscape",
-            "outdoor", "building", "person", "human face", "clothing", "smile", "woman", "lighthouse", "building"
-        };
-
-        private static readonly string[] LocationNames = new[]
-{
-            "Admiralty", "Botanic Gardens", "Bugis", "Chinatown", "Clarke Quay", "East Cost Park", "Fort Canning Park",
-            "Gardens by the Bay", "Jurong Town Hall", "Kampung Admiralty", "Marina Bay Sands", "Merlion Park",
-            "Northpoint City", "Orchard Road", "Pioneer", "Raffles City", "Raffles Hotel", "Sembawang", "Senoko",
-            "Sentosa Island", "Singapore Zoo", "Yishun"
-        };
+        private static readonly string TransferPartitionKey = "transfer";
 
         private readonly AppSettings _appSettings;
         private readonly ILogger<TransferController> _logger;
@@ -51,25 +41,33 @@ namespace MediaLibrary.Internet.Api.Controllers
         {
             _logger.LogInformation("Listing all transfer items");
 
-            var rng = new Random();
-            return Ok(Enumerable.Range(1, 20).Select(index => new ImageEntity
+            string tableName = _appSettings.TableName;
+            string tableConnectionString = _appSettings.TableConnectionString;
+
+            List<ImageEntity> listEntities = new List<ImageEntity>();
+
+            // Initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            // Query by partition key
+            TableQuery<ImageEntity> partitionScanQuery = new TableQuery<ImageEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, TransferPartitionKey));
+            TableContinuationToken token = null;
+
+            do
             {
-                Id = GenerateId(),
-                Name = $"image{index}.jpg",
-                DateTaken = DateTime.Now.AddDays(rng.Next(-5000, -50)),
-                Location = @"{""type"":""Point"",""coordinates"":[103.82281141666667,1.30259975]}",
-                Tag = string.Join(",", Tags.OrderBy(x => rng.Next()).Take(rng.Next(Tags.Length))),
-                Caption = "Media caption",
-                Author = "userid@ura.gov.sg",
-                UploadDate = DateTime.Now.AddDays(rng.Next(-50, 0)),
-                FileURL = $"https://abc.blob.core.windows.net/media-upload/image{index}.jpg",
-                ThumbnailURL = $"https://abc.blob.core.windows.net/media-upload/image{index}_thumb.jpg",
-                Project = null,
-                Event = null,
-                LocationName = LocationNames[rng.Next(LocationNames.Length)],
-                Copyright = "Copyright URA"
-            })
-            .ToArray());
+                TableQuerySegment<ImageEntity> segment = await table.ExecuteQuerySegmentedAsync(partitionScanQuery, token);
+                token = segment.ContinuationToken;
+                foreach (ImageEntity entity in segment)
+                {
+                    listEntities.Add(entity);
+                }
+            }
+            while (token != null);
+
+            return Ok(listEntities);
         }
 
         [HttpDelete("mediaItems/{id}")]
@@ -81,16 +79,45 @@ namespace MediaLibrary.Internet.Api.Controllers
         [SwaggerResponse(StatusCodes.Status204NoContent, "The media transfer item was removed")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Media item not found")]
         public async Task<IActionResult> DeleteItemAsync(string id)
-        //public async Task<IActionResult> DeleteItemAsync([FromBody, SwaggerRequestBody(Required = true)] DeleteParams parms)
         {
             _logger.LogInformation("Delete content for id {id}", id);
 
-            var rng = new Random();
+            string tableName = _appSettings.TableName;
+            string tableConnectionString = _appSettings.TableConnectionString;
+            string containerName = _appSettings.MediaStorageContainer;
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
 
-            if (rng.Next(100) < 50)
+
+            // Initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            // Initialize blob container client
+            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
+
+            string rowKey = id;
+            TableOperation retrieveOperation = TableOperation.Retrieve<ImageEntity>(TransferPartitionKey, rowKey);
+            TableResult result = await table.ExecuteAsync(retrieveOperation);
+            ImageEntity entity = result.Result as ImageEntity;
+
+            if (entity == null)
             {
+                _logger.LogWarning("Item id {id} not found", id);
                 return NotFound();
             }
+
+            var blobUriBuilder = new BlobUriBuilder(new Uri(entity.FileURL));
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
+            await blobClient.DeleteIfExistsAsync();
+
+            blobUriBuilder = new BlobUriBuilder(new Uri(entity.ThumbnailURL));
+            blobClient = blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
+            await blobClient.DeleteIfExistsAsync();
+
+            TableOperation deleteOperation = TableOperation.Delete(entity);
+            result = await table.ExecuteAsync(deleteOperation);
 
             return NoContent();
         }
@@ -109,14 +136,21 @@ namespace MediaLibrary.Internet.Api.Controllers
         {
             _logger.LogInformation("Getting content for file path: {path}", parms.Path);
 
-            FileStream fs = System.IO.File.OpenRead("test_image.jpg");
-            return File(fs, "image/jpeg");
-        }
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
+            string containerName = _appSettings.MediaStorageContainer;
 
-        private static string GenerateId()
-        {
-            var base58Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-            return Nanoid.Nanoid.Generate(base58Alphabet, 16);
+            // Authenticate with storage and download image via URL
+            var blobUriBuilder = new BlobUriBuilder(new Uri(parms.Path));
+            BlobClient blobClient = new BlobClient(storageConnectionString, containerName, blobUriBuilder.BlobName);
+            try
+            {
+                BlobDownloadInfo download = await blobClient.DownloadAsync();
+                return File(download.Content, download.ContentType);
+            }
+            catch (RequestFailedException e) when (e.ErrorCode == BlobErrorCode.BlobNotFound)
+            {
+                return NotFound();
+            }
         }
 
         public class FileContentParams

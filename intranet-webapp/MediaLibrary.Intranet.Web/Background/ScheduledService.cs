@@ -24,8 +24,9 @@ namespace MediaLibrary.Intranet.Web.Background
     {
         private CrontabSchedule _schedule;
         private DateTime _nextRun;
-        //Run every 1 hour
-        private string Schedule => "0 0/1 * * * *";
+
+        // Run once at every second minute
+        private static readonly string Schedule = "*/2 * * * *";
 
         private readonly AppSettings _appSettings;
         private readonly ILogger<ScheduledService> _logger;
@@ -33,7 +34,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
         public ScheduledService(IOptions<AppSettings> appSettings, ILogger<ScheduledService> logger, IHttpClientFactory clientFactory)
         {
-            _schedule = CrontabSchedule.Parse(Schedule, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
+            _schedule = CrontabSchedule.Parse(Schedule);
             _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
             _appSettings = appSettings.Value;
             _logger = logger;
@@ -54,18 +55,17 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             while (!stoppingToken.IsCancellationRequested);
         }
+
         private async Task Process()
         {
             _logger.LogInformation("Starting background processing");
 
-            string url = _appSettings.InternetTableAPI;
-            string imageAPI = _appSettings.InternetImageAPI;
             string storageConnectionString = _appSettings.MediaStorageConnectionString;
             string storageAccountName = _appSettings.MediaStorageAccountName;
             string imageContainerName = _appSettings.MediaStorageImageContainer;
             string indexContainerName = _appSettings.MediaStorageIndexContainer;
-            string cred = _appSettings.ApiName + ":" + _appSettings.ApiPassword;
 
+            // Initialize blob container clients
             BlobContainerClient imageBlobContainerClient;
             BlobContainerClient indexBlobContainerClient;
 
@@ -85,20 +85,28 @@ namespace MediaLibrary.Intranet.Web.Background
                 indexBlobContainerClient = new BlobContainerClient(new Uri(indexContainerEndpoint), new DefaultAzureCredential());
             }
 
-            //retrieve the index from past 2 min
-            string partition = DateTime.UtcNow.AddHours(8).AddMinutes(-2).Minute.ToString();
-            InternetTableItems[] items = await GetInternetTableItems(url, partition, cred);
+            InternetTableItems[] items;
+            try
+            {
+                // Retrieve pending transfer items
+                items = await GetInternetTableItems();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Got exception while retriving media transfer items");
+                return;
+            }
 
             _logger.LogInformation($"Found {items.Length} items to process");
             foreach (InternetTableItems item in items)
             {
                 //first retrieve image
-                Stream imageStream = await GetImageByURL(imageAPI, item.fileURL, cred);
+                Stream imageStream = await GetImageByURL(item.fileURL);
                 string fileName = Path.GetFileName(item.fileURL);
                 await ImageUploadToBlob(imageBlobContainerClient, imageStream, fileName);
 
                 //retrieve thumbnail
-                Stream tnStream = await GetImageByURL(imageAPI, item.thumbnailURL, cred);
+                Stream tnStream = await GetImageByURL(item.thumbnailURL);
                 string thumbnailFileName = Path.GetFileName(item.thumbnailURL);
                 await ImageUploadToBlob(imageBlobContainerClient, tnStream, thumbnailFileName);
 
@@ -132,41 +140,77 @@ namespace MediaLibrary.Intranet.Web.Background
                 //upload to indexer blob
                 string indexFileName = item.id + ".json";
                 await IndexUploadToBlob(indexBlobContainerClient, serialized, indexFileName);
+
+                // Remove item from transfers list
+                await DeleteInternetTableItem(item);
+
                 _logger.LogInformation("Uploaded item {ID} into {URL}", item.id, indexFileName);
             }
 
             _logger.LogInformation("Finished background processing");
         }
 
-        private async Task<InternetTableItems[]> GetInternetTableItems(string url, string partition, string cred)
+        private async Task DeleteInternetTableItem(InternetTableItems item)
         {
-            var http = _clientFactory.CreateClient();
-            string requestURL = url + partition;
-            var byteArray = Encoding.ASCII.GetBytes(cred);
-            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-            var response = await http.GetAsync(requestURL);
-            var result = await response.Content.ReadAsStringAsync();
-            result = result.Replace("event", "_event");
-            InternetTableItems[] items = JsonConvert.DeserializeObject<InternetTableItems[]>(result);
-            return items;
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"api/v1/transfer/mediaItems/{item.id}");
+
+            var client = _clientFactory.CreateClient();
+            client.BaseAddress = new Uri(_appSettings.ApiDomain);
+            client.DefaultRequestHeaders.Add("X-Api-Key", _appSettings.ApiKey);
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception($"API response is not successful, the status code is {response.StatusCode} with content {await response.Content.ReadAsStringAsync()}");
+            }
         }
 
-        private async Task<Stream> GetImageByURL(string url, string imageURL, string cred)
+        private async Task<InternetTableItems[]> GetInternetTableItems()
         {
-            ImageURLItem itemBody = new ImageURLItem()
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/v1/transfer/mediaItems");
+
+            var client = _clientFactory.CreateClient();
+            client.BaseAddress = new Uri(_appSettings.ApiDomain);
+            client.DefaultRequestHeaders.Add("X-Api-Key", _appSettings.ApiKey);
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
             {
-                url = imageURL
-            };
+                var result = await response.Content.ReadAsStringAsync();
+                result = result.Replace("event", "_event");
+                var items = JsonConvert.DeserializeObject<InternetTableItems[]>(result);
+                return items;
+            }
+            else
+            {
+                throw new Exception($"API response is not successful, the status code is {response.StatusCode} with content {await response.Content.ReadAsStringAsync()}");
+            }
+        }
 
-            string requestBody = JsonConvert.SerializeObject(itemBody);
-            var requestBodyData = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        private async Task<Stream> GetImageByURL(string imageURL)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/transfer/fileContents");
+            var requestBody = JsonConvert.SerializeObject(new ImageURLItem() { Path = imageURL });
+            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
-            var http = _clientFactory.CreateClient();
-            var byteArray = Encoding.ASCII.GetBytes(cred);
-            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-            var response = await http.PostAsync(url, requestBodyData);
-            var result = await response.Content.ReadAsStreamAsync();
-            return result;
+            var client = _clientFactory.CreateClient();
+            client.BaseAddress = new Uri(_appSettings.ApiDomain);
+            client.DefaultRequestHeaders.Add("X-Api-Key", _appSettings.ApiKey);
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStreamAsync();
+                return result;
+            }
+            else
+            {
+                throw new Exception($"API response is not successful, the status code is {response.StatusCode} with content {await response.Content.ReadAsStringAsync()}");
+            }
         }
 
         private static async Task ImageUploadToBlob(BlobContainerClient blobContainerClient, Stream imageStream, string fileName)

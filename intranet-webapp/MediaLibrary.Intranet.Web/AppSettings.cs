@@ -11,7 +11,7 @@
         public string SearchServiceName { get; set; }
         public string SearchServiceQueryApiKey { get; set; }
         public string SearchIndexName { get; set; }
-        public string ApiName { get; set; }
-        public string ApiPassword { get; set; }
+        public string ApiDomain { get; set; }
+        public string ApiKey { get; set; }
     }
 }
