@@ -161,8 +161,8 @@
                         string name = Model.ResultList.Results[i].Document.Name;
                         string imgSrc = Model.ResultList.Results[i].Document.ThumbnailURL;
                         string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.Id) });
-                        double lat = Model.ResultList.Results[i].Document.Location.Latitude;
-                        double lng = Model.ResultList.Results[i].Document.Location.Longitude;
+                        double lat = Model.ResultList.Results[i].Document.Location?.Latitude ?? 0;
+                        double lng = Model.ResultList.Results[i].Document.Location?.Longitude ?? 0;
 
                         <span data-title="@name" data-url="@detailUrl" data-img="@imgSrc" data-lat="@lat" data-lng="@lng"></span>
                     }
