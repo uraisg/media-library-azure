@@ -8,10 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Spatial;
 using NCrontab;
 using Newtonsoft.Json;
 
@@ -85,7 +88,7 @@ namespace MediaLibrary.Intranet.Web.Background
                 indexBlobContainerClient = new BlobContainerClient(new Uri(indexContainerEndpoint), new DefaultAzureCredential());
             }
 
-            InternetTableItems[] items;
+            List<InternetTableItems> items;
             try
             {
                 // Retrieve pending transfer items
@@ -97,33 +100,27 @@ namespace MediaLibrary.Intranet.Web.Background
                 return;
             }
 
-            _logger.LogInformation($"Found {items.Length} items to process");
+            _logger.LogInformation($"Found {items.Count} items to process");
             foreach (InternetTableItems item in items)
             {
                 //first retrieve image
-                Stream imageStream = await GetImageByURL(item.fileURL);
+                HttpContent imageContent = await GetImageByURL(item.fileURL);
                 string fileName = Path.GetFileName(item.fileURL);
-                await ImageUploadToBlob(imageBlobContainerClient, imageStream, fileName);
+                await ImageUploadToBlob(imageBlobContainerClient, imageContent, fileName);
 
                 //retrieve thumbnail
-                Stream tnStream = await GetImageByURL(item.thumbnailURL);
+                HttpContent thumbnailContent = await GetImageByURL(item.thumbnailURL);
                 string thumbnailFileName = Path.GetFileName(item.thumbnailURL);
-                await ImageUploadToBlob(imageBlobContainerClient, tnStream, thumbnailFileName);
+                await ImageUploadToBlob(imageBlobContainerClient, thumbnailContent, thumbnailFileName);
 
-                //process to coordinate object
-                CoordinateObj newCoordinateObject = ProcessCoordinate(item.location);
-
-                //process tag array
-                List<string> tags = item.tag.Split(",").ToList();
-
-                //create new json object
-                ImageMetadata json = new ImageMetadata()
+                //create new object to serialize to json
+                var mediaItem = new MediaItem()
                 {
                     Id = item.id,
                     Name = item.name,
                     DateTaken = item.dateTaken,
-                    Location = newCoordinateObject,
-                    Tag = tags,
+                    Location = JsonConvert.DeserializeObject<GeographyPoint>(item.location, new GeographyPointJsonConverter()),
+                    Tag = item.tag.Split(",").ToArray(),
                     Caption = item.caption,
                     Author = item.author,
                     UploadDate = item.uploadDate,
@@ -135,11 +132,9 @@ namespace MediaLibrary.Intranet.Web.Background
                     Copyright = item.copyright
                 };
 
-                string serialized = JsonConvert.SerializeObject(json);
-
                 //upload to indexer blob
                 string indexFileName = item.id + ".json";
-                await IndexUploadToBlob(indexBlobContainerClient, serialized, indexFileName);
+                await IndexUploadToBlob(indexBlobContainerClient, mediaItem, indexFileName);
 
                 // Remove item from transfers list
                 await DeleteInternetTableItem(item);
@@ -169,7 +164,7 @@ namespace MediaLibrary.Intranet.Web.Background
             }
         }
 
-        private async Task<InternetTableItems[]> GetInternetTableItems()
+        private async Task<List<InternetTableItems>> GetInternetTableItems()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "api/v1/transfer/mediaItems");
 
@@ -182,7 +177,7 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 var result = await response.Content.ReadAsStringAsync();
                 result = result.Replace("event", "_event");
-                var items = JsonConvert.DeserializeObject<InternetTableItems[]>(result);
+                var items = JsonConvert.DeserializeObject<List<InternetTableItems>>(result);
                 return items;
             }
             else
@@ -191,7 +186,7 @@ namespace MediaLibrary.Intranet.Web.Background
             }
         }
 
-        private async Task<Stream> GetImageByURL(string imageURL)
+        private async Task<HttpContent> GetImageByURL(string imageURL)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/transfer/fileContents");
             var requestBody = JsonConvert.SerializeObject(new ImageURLItem() { Path = imageURL });
@@ -204,8 +199,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadAsStreamAsync();
-                return result;
+                return response.Content;
             }
             else
             {
@@ -213,33 +207,41 @@ namespace MediaLibrary.Intranet.Web.Background
             }
         }
 
-        private static async Task ImageUploadToBlob(BlobContainerClient blobContainerClient, Stream imageStream, string fileName)
+        private static async Task ImageUploadToBlob(BlobContainerClient blobContainerClient, HttpContent content, string fileName)
         {
-            //create a blob
-            BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
+            // Get image stream
+            var stream = await content.ReadAsStreamAsync();
 
-            await blobClient.UploadAsync(imageStream, true);
+            //create a blob
+            var blobClient = blobContainerClient.GetBlobClient(fileName);
+            var blobUploadOptions = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = content.Headers.ContentType.ToString()
+                }
+            };
+
+            await blobClient.UploadAsync(stream, blobUploadOptions);
         }
 
-        private static CoordinateObj ProcessCoordinate(string input)
+        private static async Task IndexUploadToBlob(BlobContainerClient blobContainerClient, MediaItem mediaItem, string fileName)
         {
-            string json = input.Replace("\\", "");
-            CoordinateObj obj = JsonConvert.DeserializeObject<CoordinateObj>(json);
-            return obj;
-        }
-
-        private static async Task IndexUploadToBlob(BlobContainerClient blobContainerClient, string index, string fileName)
-        {
-            //create a blob
-            BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
-
             //convert string to stream
-            MemoryStream content = new MemoryStream();
-            StreamWriter writer = new StreamWriter(content);
-            writer.Write(index);
-            writer.Flush();
-            content.Position = 0;
-            await blobClient.UploadAsync(content, true);
+            var stream = new MemoryStream();
+            JsonHelper.WriteJsonToStream(mediaItem, stream);
+
+            //create a blob
+            var blobClient = blobContainerClient.GetBlobClient(fileName);
+            var blobUploadOptions = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = "application/json"
+                }
+            };
+
+            await blobClient.UploadAsync(stream, blobUploadOptions);
         }
     }
 }

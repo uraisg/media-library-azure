@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using ImageMagick;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
@@ -108,7 +109,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     //use unique id together with file name to avoid duplication
                     string id = GenerateId();
                     string blobFileName = id + "_" + untrustedFileName;
-                    string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, _appSettings);
+                    string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, file.ContentType, _appSettings);
 
                     //extract image metadata
                     IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(extractMetadataImage);
@@ -117,7 +118,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     //Cognitive services can only take in file size less than 4MB
                     //Do a check on filesize to get tags and generate thumbnail
                     ImageAnalysis computerVisionResult;
-                    string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb" + Path.GetExtension(blobFileName);
+                    string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb.jpg";
                     string thumbnailURL = string.Empty;
                     int quality = 75;
 
@@ -216,7 +217,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             return Nanoid.Nanoid.Generate(base58Alphabet, 16);
         }
 
-        private static async Task<string> ImageUploadToBlob(string fileName, MemoryStream imageStream, AppSettings appSettings)
+        private static async Task<string> ImageUploadToBlob(string fileName, MemoryStream imageStream, string contentType, AppSettings appSettings)
         {
             var containerName = appSettings.MediaStorageContainer;
             var storageConnectionString = appSettings.MediaStorageConnectionString;
@@ -226,8 +227,15 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             //create a blob
             BlobClient blobClient = blobContainerClient.GetBlobClient(fileName);
+            var blobUploadOptions = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = contentType
+                }
+            };
 
-            await blobClient.UploadAsync(imageStream, true);
+            await blobClient.UploadAsync(imageStream, blobUploadOptions);
 
             //get url (without query string as it will contain SAS token if used in connection string)
             string url = blobClient.Uri.GetLeftPart(UriPartial.Path);
@@ -329,7 +337,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             byte[] thumbnailImageData =
                     await response.Content.ReadAsByteArrayAsync();
             var result = new MemoryStream(thumbnailImageData);
-            string bloburl = await ImageUploadToBlob(filename, result, appSettings);
+            string bloburl = await ImageUploadToBlob(filename, result, "image/jpeg", appSettings);
             return bloburl;
         }
 
