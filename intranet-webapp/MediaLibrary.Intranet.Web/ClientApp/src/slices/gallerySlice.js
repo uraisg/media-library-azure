@@ -87,7 +87,7 @@ const getSearchResultsApi = async (searchTerm, filters, page = 1) => {
   const url = new URL('/api/search', baseUrl)
   const params = {
     SearchText: searchTerm,
-    Page: page - 1,
+    Page: page,
     // TODO: add the filters
   }
 
@@ -116,8 +116,7 @@ const processData = (data) => {
   //   page: data.Page,
   //   totalPages: data.PageCount
   // }
-  return data.ResultList.value.map((item) => {
-    const doc = item.Document
+  return data.Items.map((doc) => {
     return {
       id: doc.Id,
       src: new URL(doc.FileURL, window.location).toString(),

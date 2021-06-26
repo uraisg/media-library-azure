@@ -1,5 +1,6 @@
 using MediaLibrary.Intranet.Web.Background;
 using MediaLibrary.Intranet.Web.Common;
+using MediaLibrary.Intranet.Web.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -59,6 +60,7 @@ namespace MediaLibrary.Intranet.Web
             services.AddHttpClient();
             services.AddHostedService<ScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
+            services.AddSingleton<MediaSearchService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
