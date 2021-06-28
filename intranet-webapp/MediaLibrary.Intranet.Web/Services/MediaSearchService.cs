@@ -59,7 +59,16 @@ namespace MediaLibrary.Intranet.Web.Services
         {
             searchTerm = searchTerm ?? "";
 
-            string filterExpression = CreateFilterExpression(searchOptions);
+            string filterExpression;
+            try
+            {
+                filterExpression = CreateFilterExpression(searchOptions);
+            }
+            catch (ArgumentException ex) // Invalid spatial filter
+            {
+                return new MediaSearchResult();
+            }
+
             var parameters = new SearchParameters()
             {
                 Filter = filterExpression,
@@ -131,12 +140,17 @@ namespace MediaLibrary.Intranet.Web.Services
 
             _geoSearchHelper.GetDictionary().TryGetValue(spatialFilter, out var ret);
 
-            if (string.IsNullOrEmpty(ret))
+            if (ret == null)
             {
-                return null;
+                throw new ArgumentException("Could not find coordinates for given area");
             }
 
-            return "geo.intersects(Location, geography'" + ret + "')";
+            return "geo.intersects(Location, geography'" + ret.WktPolygon + "')";
+        }
+
+        public IList<AreaPolygon> GetSpatialAreas()
+        {
+            return _geoSearchHelper.GetDictionary().Values.ToList();
         }
     }
 }

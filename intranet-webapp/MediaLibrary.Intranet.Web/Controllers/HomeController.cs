@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Extensions.Logging;
@@ -71,7 +72,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             InitSearch();
 
-            string filterExpression = GetFilterExpression(model.LocationFilter, model.TagFilter, model.SpatialFilter, model.MinDateTaken, model.MaxDateTaken);
+            string filterExpression;
+            try
+            {
+                filterExpression = GetFilterExpression(model.LocationFilter, model.TagFilter, model.SpatialFilter, model.MinDateTaken, model.MaxDateTaken);
+            }
+            catch (ArgumentException ex)
+            {
+                filterExpression = "false";
+            }
             int page = model.Page ?? 0;
 
             var parameters = new SearchParameters
@@ -128,7 +137,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
             if (model.SpatialCategories == null)
             {
-                model.SpatialCategories = _geoSearchHelper.GetNames();
+                model.SpatialCategories = _geoSearchHelper.GetDictionary().Select(s => new SelectListItem(s.Value.Name, s.Value.Id)).ToList(); ;
             }
 
             // Return the new view.
@@ -174,17 +183,17 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             if (string.IsNullOrEmpty(spatialFilter))
             {
-                return string.Empty;
+                return null;
             }
 
             _geoSearchHelper.GetDictionary().TryGetValue(spatialFilter, out var ret);
 
-            if (string.IsNullOrEmpty(ret))
+            if (ret == null)
             {
-                return string.Empty;
+                throw new ArgumentException("Could not find coordinates for given area");
             }
 
-            return "geo.intersects(Location, geography'" + ret + "')";
+            return "geo.intersects(Location, geography'" + ret.WktPolygon + "')";
         }
     }
 }

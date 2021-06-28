@@ -36,6 +36,7 @@ const GalleryPage = () => {
   const dispatch = useDispatch()
 
   const { searchTerm, filters, results } = useSelector((state) => state.gallery)
+  const areas = useSelector((state) => state.areas)
 
   const map = useMap()
 
@@ -62,7 +63,7 @@ const GalleryPage = () => {
       <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <MainContainer>
         <Sidebar>
-          <FilterSettings filters={filters} setFilters={setFilters} />
+          <FilterSettings filters={filters} setFilters={setFilters} areas={areas} />
           <SearchResultsView results={results} />
         </Sidebar>
         <NotSidebar>

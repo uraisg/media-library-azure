@@ -71,7 +71,7 @@
 
             <div class="form-group">
                 <label class="filter-heading" asp-for="SpatialFilter">Planning Area</label>
-                <select class="custom-select custom-select-sm" asp-for="SpatialFilter" asp-items="new SelectList(Model.SpatialCategories)" form="filter-form" autocomplete="off">
+                <select class="custom-select custom-select-sm" asp-for="SpatialFilter" asp-items="Model.SpatialCategories" form="filter-form" autocomplete="off">
                     <option value="">&mdash; ALL &mdash;</option>
                 </select>
             </div>

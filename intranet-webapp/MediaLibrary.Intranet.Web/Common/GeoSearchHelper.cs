@@ -6,17 +6,17 @@ namespace MediaLibrary.Intranet.Web.Common
 {
     public class GeoSearchHelper : IGeoSearchHelper
     {
-        private readonly Dictionary<string, string> _dictionary; // key = name, value = WKT string for search boundary
+        private readonly Dictionary<string, AreaPolygon> _dictionary; // key = name, value = WKT string for search boundary
 
         public GeoSearchHelper()
         {
             _dictionary = LoadData("planning-area-boundary.json");
         }
 
-        private static Dictionary<string, string> LoadData(string path)
+        private static Dictionary<string, AreaPolygon> LoadData(string path)
         {
             dynamic data = JsonHelper.ReadJsonFromFile<ExpandoObject>(path);
-            var result = new Dictionary<string, string>();
+            var result = new Dictionary<string, AreaPolygon>();
 
             foreach (var feature in data.features)
             {
@@ -27,21 +27,21 @@ namespace MediaLibrary.Intranet.Web.Common
                 // Generate WKT
                 string wkt = "POLYGON((" + string.Join(",", pointsList.Select(point => string.Join(" ", point))) + "))";
 
-                string name = feature.properties.PLN_AREA_N;
-                result.Add(name, wkt);
+                string id = feature.properties.PLN_AREA_C;
+                result.Add(id, new AreaPolygon()
+                {
+                    Id = feature.properties.PLN_AREA_C,
+                    Name = feature.properties.PLN_AREA_N,
+                    WktPolygon = wkt
+                });
             }
 
             return result;
         }
 
-        public Dictionary<string, string> GetDictionary()
+        public Dictionary<string, AreaPolygon> GetDictionary()
         {
             return _dictionary;
-        }
-
-        public List<string> GetNames()
-        {
-            return _dictionary.Keys.ToList();
         }
     }
 }

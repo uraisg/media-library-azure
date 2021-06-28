@@ -10,7 +10,7 @@ const Container = styled.div`
   padding: 1rem 15px;
 `
 
-const FilterSettings = ({ filters, setFilters }) => {
+const FilterSettings = ({ filters, setFilters, areas }) => {
   const [key, setKey] = useState('none')
   const [currentFilters, setCurrentFilters] = useState({
     areaName: '',
@@ -70,6 +70,10 @@ const FilterSettings = ({ filters, setFilters }) => {
     () => 'filter-form-' + Math.random().toString(36).substr(2, 9)
   )
 
+  const areasOptions = areas.map(area => (
+    <option key={area.Id} value={area.Id}>{area.Name}</option>
+  ))
+
   return (
     <Container>
       <p>Location Filter</p>
@@ -98,12 +102,8 @@ const FilterSettings = ({ filters, setFilters }) => {
               value={currentFilters.areaName ? currentFilters.areaName : ''}
               onChange={handleFiltersChange('areaName')}
             >
-              <option value="" disabled>
-                Select an area
-              </option>
-              {/* TODO: populate the options from razor generated template */}
-              <option value="CLEMENTI">Clementi</option>
-              <option value="JURONG">Jurong</option>
+              <option value="" disabled>Select an area</option>
+              {areasOptions}
             </Form.Control>
           </Form.Group>
         </Tab>

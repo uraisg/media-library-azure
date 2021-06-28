@@ -4,8 +4,13 @@ namespace MediaLibrary.Intranet.Web.Common
 {
     public interface IGeoSearchHelper
     {
-        List<string> GetNames();
+        Dictionary<string, AreaPolygon> GetDictionary();
+    }
 
-        Dictionary<string, string> GetDictionary();
+    public class AreaPolygon
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string WktPolygon { get; set; }
     }
 }

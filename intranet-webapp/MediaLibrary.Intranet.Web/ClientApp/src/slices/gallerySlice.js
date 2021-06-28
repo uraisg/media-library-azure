@@ -88,7 +88,13 @@ const getSearchResultsApi = async (searchTerm, filters, page = 1) => {
   const params = {
     SearchText: searchTerm,
     Page: page,
-    // TODO: add the filters
+  }
+
+  // Convert filters to serach API parameters
+  if (filters.filterType === 'postal') {
+    // TODO: handle postal code filter
+  } else if (filters.filterType === 'area') {
+    params.SpatialFilter = filters.areaName
   }
 
   console.log(params)

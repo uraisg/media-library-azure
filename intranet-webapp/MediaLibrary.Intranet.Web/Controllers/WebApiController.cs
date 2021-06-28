@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
@@ -119,25 +120,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return Ok(result);
         }
 
-        [HttpGet("/api/search", Name = nameof(GetSearch))]
-        public IActionResult GetSearch([FromQuery] SearchData model)
+        [HttpGet("/api/areas", Name = nameof(GetAreas))]
+        public IActionResult GetAreas()
         {
-            _logger.LogInformation("Search called");
+            var areas = _mediaSearchService.GetSpatialAreas().Select(s => new { Id = s.Id, Name = s.Name });
 
-            int page = Math.Max(1, model.Page ?? 1);
-            int skip = (page - 1) * GlobalVariables.ResultsPerPage;
-            var searchOptions = new MediaSearchOptions()
-            {
-                LocationFilter = model.LocationFilter,
-                TagFilter = model.TagFilter,
-                SpatialFilter = model.SpatialFilter,
-                MinDateTaken = model.MinDateTaken,
-                MaxDateTaken = model.MaxDateTaken
-            };
-
-            var result = await _mediaSearchService.QueryAsync(model.SearchText, searchOptions, GlobalVariables.ResultsPerPage, skip);
-
-            return Ok(result);
+            return Ok(areas);
         }
     }
 }
