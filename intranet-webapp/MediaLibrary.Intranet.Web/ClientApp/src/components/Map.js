@@ -22,14 +22,21 @@ const basemap = L.tileLayer(
 
 const placesLayer = L.featureGroup()
 
+const defaultMapBounds = L.latLngBounds([1.56073, 104.11475], [1.16, 103.502])
+
 const mapOptions = {
-  center: L.latLngBounds([1.56073, 104.11475], [1.16, 103.502]).getCenter(),
+  center: defaultMapBounds.getCenter(),
   zoom: 12,
-  maxBounds: L.latLngBounds([1.56073, 104.11475], [1.16, 103.502]),
+  maxBounds: defaultMapBounds,
   layers: [placesLayer, basemap],
 }
 
-const Map = () => {
+const markerClick = (e) => {
+  console.log(e)
+  // TODO: dispatch action to scroll and select photo in SearchResultView
+}
+
+const Map = ({ results }) => {
   const mapRef = useRef(null)
   const map = useMap()
   const initMap = useInitMap()
@@ -37,9 +44,38 @@ const Map = () => {
   useEffect(() => {
     if (map === undefined) {
       const newMap = L.map(mapRef.current, mapOptions)
+
+      newMap.zoomControl.setPosition('topright')
+
       initMap(newMap)
     }
   }, [])
+
+  useEffect(() => {
+    // Remove existing markers
+    placesLayer.clearLayers()
+
+    for (const result of results) {
+      const pointFeature = result.location
+      if (pointFeature) {
+        // for every location in results we will add a circlemarker
+        L.circleMarker(
+          [pointFeature.coordinates[1], pointFeature.coordinates[0]],
+          {
+            radius: 5,
+            weight: 1,
+            fillOpacity: 0.5,
+          }
+        )
+          .addTo(placesLayer)
+          .on('click', markerClick)
+      }
+    }
+
+    // Zoom to layer
+    const layerBounds = placesLayer.getBounds()
+    map.fitBounds(layerBounds.isValid() ? layerBounds : defaultMapBounds)
+  }, [results])
 
   return <MapContainer ref={mapRef} />
 }

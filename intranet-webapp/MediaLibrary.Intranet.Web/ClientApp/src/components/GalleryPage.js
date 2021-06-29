@@ -67,7 +67,7 @@ const GalleryPage = () => {
           <SearchResultsView results={results} />
         </Sidebar>
         <NotSidebar>
-          <Map />
+          <Map results={results} />
         </NotSidebar>
       </MainContainer>
     </LayoutContainer>

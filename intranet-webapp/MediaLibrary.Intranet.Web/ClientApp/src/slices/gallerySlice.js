@@ -72,13 +72,6 @@ export const getSearchResults = (searchTerm, filters, map) => {
     }
 
     dispatch(getSearchResultsSuccess({ results }))
-    // TODO Zoom to pa or postal code
-    if (map) {
-      map.flyToBounds([
-        [1.283174, 103.847427],
-        [1.277768, 103.839802],
-      ])
-    }
   }
 }
 
@@ -131,6 +124,7 @@ const processData = (data) => {
       thumbnailWidth: 320,
       thumbnailHeight: 240,
       link: new URL('/Gallery/Item/' + doc.Id, window.location).toString(),
+      location: doc.Location,
     }
   })
 }
