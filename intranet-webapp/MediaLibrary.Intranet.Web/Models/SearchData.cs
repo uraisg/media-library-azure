@@ -59,6 +59,10 @@ namespace MediaLibrary.Intranet.Web.Models
 
         public IList<SelectListItem> SpatialCategories { get; set; }
 
+        public double? Lng { get; set; }
+
+        public double? Lat { get; set; }
+
         // The list of results.
         public DocumentSearchResult<MediaItem> ResultList;
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Search.Models;
+using Microsoft.Spatial;
 
 namespace MediaLibrary.Intranet.Web.Models
 {
@@ -36,10 +37,19 @@ namespace MediaLibrary.Intranet.Web.Models
 
         public string SpatialFilter { get; set; }
 
+        public GeoDistanceSearch DistanceSearch { get; set; }
+
         // Unix timestamp representation (seconds)
         public long? MinDateTaken { get; set; }
 
         // Unix timestamp representation (seconds)
         public long? MaxDateTaken { get; set; }
+    }
+
+    public class GeoDistanceSearch
+    {
+        public GeographyPoint Point { get; set; }
+
+        public int Radius { get; set; } // meters
     }
 }

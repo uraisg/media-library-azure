@@ -10,6 +10,7 @@ using MediaLibrary.Intranet.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Spatial;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -54,6 +55,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpGet("/api/assets/{name}", Name = nameof(GetMediaFile))]
         public async Task<IActionResult> GetMediaFile(string name)
         {
+            _logger.LogInformation("Getting blob with name {name}", name);
+
             BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
 
             try
@@ -87,6 +90,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
         public async Task<IActionResult> DeleteMediaFile(string name)
         {
+            _logger.LogInformation("Deleting blob with name {name}", name);
+
             BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
             try
             {
@@ -106,11 +111,27 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
             int page = Math.Max(1, model.Page ?? 1);
             int skip = (page - 1) * GlobalVariables.ResultsPerPage;
+
+            if ((model.Lat != null && model.Lng == null) ||
+                (model.Lng != null && model.Lat == null))
+            {
+                _logger.LogError(
+                    "A value for one of Lat or Lng was provided, but the other is missing. Query: {query}",
+                    HttpContext.Request.QueryString);
+                return BadRequest("A value for one of Lat or Lng was provided, but the other is missing");
+            }
+            GeographyPoint point = null;
+            if (model.Lng != null && model.Lat != null)
+            {
+                point = GeographyPoint.Create(model.Lat.Value, model.Lng.Value);
+            }
+
             var searchOptions = new MediaSearchOptions()
             {
                 LocationFilter = model.LocationFilter,
                 TagFilter = model.TagFilter,
                 SpatialFilter = model.SpatialFilter,
+                DistanceSearch = point != null ? new GeoDistanceSearch() { Point = point, Radius = 500 } : null,
                 MinDateTaken = model.MinDateTaken,
                 MaxDateTaken = model.MaxDateTaken
             };

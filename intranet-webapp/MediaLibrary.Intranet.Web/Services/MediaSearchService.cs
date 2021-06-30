@@ -128,6 +128,13 @@ namespace MediaLibrary.Intranet.Web.Services
                 subexpressions.Add(spatialExpression);
             }
 
+            if (o.DistanceSearch != null)
+            {
+                var lat = o.DistanceSearch.Point.Latitude;
+                var lon = o.DistanceSearch.Point.Longitude;
+                subexpressions.Add($"geo.distance(Location, geography'POINT({lon} {lat})') le {o.DistanceSearch.Radius / 1000.0}");
+            }
+
             return string.Join(" and ", subexpressions);
         }
 

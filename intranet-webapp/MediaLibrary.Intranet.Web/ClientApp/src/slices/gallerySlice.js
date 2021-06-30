@@ -1,4 +1,5 @@
 import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
+import { queryPostalCode } from '@/api/geospace'
 
 const galleryAdapter = createEntityAdapter()
 
@@ -68,7 +69,8 @@ export const getSearchResults = (searchTerm, filters, map) => {
       results = processData(data)
     } catch (err) {
       dispatch(getSearchResultsFailed(err.toString()))
-      return
+      // TODO: add default error slice
+      throw err
     }
 
     dispatch(getSearchResultsSuccess({ results }))
@@ -83,9 +85,11 @@ const getSearchResultsApi = async (searchTerm, filters, page = 1) => {
     Page: page,
   }
 
-  // Convert filters to serach API parameters
+  // Convert filters to search API parameters
   if (filters.filterType === 'postal') {
-    // TODO: handle postal code filter
+    const [lng, lat] = await queryPostalCode(filters.postalCode)
+    params.Lng = lng
+    params.Lat = lat
   } else if (filters.filterType === 'area') {
     params.SpatialFilter = filters.areaName
   }
