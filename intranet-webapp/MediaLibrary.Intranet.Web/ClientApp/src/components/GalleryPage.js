@@ -35,7 +35,7 @@ const NotSidebar = styled.div`
 const GalleryPage = () => {
   const dispatch = useDispatch()
 
-  const { searchTerm, filters, results } = useSelector((state) => state.gallery)
+  const { searchTerm, filters, isFetching, results } = useSelector((state) => state.gallery)
   const areas = useSelector((state) => state.areas)
 
   const map = useMap()
@@ -64,7 +64,7 @@ const GalleryPage = () => {
       <MainContainer>
         <Sidebar>
           <FilterSettings filters={filters} setFilters={setFilters} areas={areas} />
-          <SearchResultsView results={results} />
+          <SearchResultsView isFetching={isFetching} results={results} />
         </Sidebar>
         <NotSidebar>
           <Map results={results} />

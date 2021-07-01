@@ -55,6 +55,10 @@ const Map = ({ results }) => {
     // Remove existing markers
     placesLayer.clearLayers()
 
+    if (!results) {
+      return
+    }
+
     for (const result of results) {
       const pointFeature = result.location
       if (pointFeature) {

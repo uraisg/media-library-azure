@@ -13,7 +13,7 @@ const initialState = galleryAdapter.getInitialState({
   page: 1,
   boundingbox: '',
   isFetching: false,
-  results: [],
+  results: null,
   error: null,
 })
 
