@@ -5,7 +5,7 @@ import TopBar from '@/components/TopBar'
 import Map from '@/components/Map'
 import FilterSettings from '@/components/FilterSettings'
 import SearchResultsView from '@/components/SearchResultsView'
-import { displayMedia, changePage, getSearchResults } from '@/slices/gallerySlice'
+import { changePage, getSearchResults, selectSearchResult } from '@/slices/gallerySlice'
 import { useMap } from '@/contexts'
 
 const LayoutContainer = styled.div`
@@ -42,16 +42,24 @@ const GalleryPage = () => {
 
   const setSearchTerm = (searchTerm) => {
     dispatch(getSearchResults(searchTerm, filters, map))
-    // dispatch(displayMedia({ searchTerm, filters }))
   }
 
   const setFilters = (filters) => {
     dispatch(getSearchResults(searchTerm, filters, map))
-    // dispatch(displayMedia({ searchTerm, filters }))
   }
 
   const setPage = (page) => {
     dispatch(changePage({ page }))
+  }
+
+  const handleMapClick = (e) => {
+    dispatch(selectSearchResult(null))
+  }
+
+  const handleMarkerClick = (e) => {
+    const resultId = e.target.data.id
+    dispatch(selectSearchResult(resultId))
+    // TODO: scroll results view to selection
   }
 
   useEffect(() => {
@@ -67,7 +75,7 @@ const GalleryPage = () => {
           <SearchResultsView isFetching={isFetching} results={results} />
         </Sidebar>
         <NotSidebar>
-          <Map results={results} />
+          <Map results={results} onMapClick={handleMapClick} onMarkerClick={handleMarkerClick} />
         </NotSidebar>
       </MainContainer>
     </LayoutContainer>

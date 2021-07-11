@@ -31,21 +31,27 @@ const mapOptions = {
   layers: [placesLayer, basemap],
 }
 
-const markerClick = (e) => {
-  console.log(e)
-  // TODO: dispatch action to scroll and select photo in SearchResultView
-}
-
-const Map = ({ results }) => {
+const Map = ({ results, onMapClick, onMarkerClick }) => {
   const mapRef = useRef(null)
   const map = useMap()
   const initMap = useInitMap()
 
+  const prevResultIdsRef = useRef()
+  useEffect(() => {
+    prevResultIdsRef.current = results?.map((result) => result.id)
+  })
+  const prevResultIds = prevResultIdsRef.current
+
+  // Initialise map
   useEffect(() => {
     if (map === undefined) {
       const newMap = L.map(mapRef.current, mapOptions)
 
       newMap.zoomControl.setPosition('topright')
+
+      if (onMapClick) {
+        newMap.on('click', onMapClick)
+      }
 
       initMap(newMap)
     }
@@ -63,22 +69,35 @@ const Map = ({ results }) => {
       const pointFeature = result.location
       if (pointFeature) {
         // for every location in results we will add a circlemarker
-        L.circleMarker(
+        const marker = L.circleMarker(
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
             radius: 5,
             weight: 1,
             fillOpacity: 0.5,
+            bubblingMouseEvents: false,
           }
         )
-          .addTo(placesLayer)
-          .on('click', markerClick)
+        marker.data = result
+        if (onMarkerClick) {
+          marker.on('click', onMarkerClick)
+        }
+
+        marker.addTo(placesLayer)
       }
     }
 
-    // Zoom to layer
-    const layerBounds = placesLayer.getBounds()
-    map.fitBounds(layerBounds.isValid() ? layerBounds : defaultMapBounds)
+    const resultIds = results.map((result) => result.id)
+    const equalIds =
+      !prevResultIds ||
+      (resultIds.length === prevResultIds.length &&
+        resultIds.every((v, i) => v === prevResultIds[i]))
+
+    // Zoom to layer if ids are different (not just a selection change)
+    if (!equalIds) {
+      const layerBounds = placesLayer.getBounds()
+      map.fitBounds(layerBounds.isValid() ? layerBounds : defaultMapBounds)
+    }
   }, [results])
 
   return <MapContainer ref={mapRef} />

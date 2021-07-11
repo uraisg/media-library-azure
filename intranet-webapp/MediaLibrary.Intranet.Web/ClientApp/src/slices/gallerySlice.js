@@ -42,6 +42,13 @@ const gallerySlice = createSlice({
       state.results = []
       state.error = action.payload
     },
+    selectSearchResult(state, action) {
+      const newResults = state.results.map((result, i) => ({
+        ...result,
+        isSelected: result.id === action.payload,
+      }))
+      state.results = newResults
+    },
   },
 })
 
@@ -51,6 +58,7 @@ export const {
   getSearchResultsRequest,
   getSearchResultsSuccess,
   getSearchResultsFailed,
+  selectSearchResult,
 } = gallerySlice.actions
 
 export default gallerySlice.reducer
@@ -129,6 +137,7 @@ const processData = (data) => {
       thumbnailHeight: 240,
       link: new URL('/Gallery/Item/' + doc.Id, window.location).toString(),
       location: doc.Location,
+      isSelected: false,
     }
   })
 }
