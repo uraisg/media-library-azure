@@ -104,7 +104,6 @@ const getSearchResultsApi = async (searchTerm, filters, page) => {
     params.SpatialFilter = filters.areaName
   }
 
-  console.log(params)
   url.search = new URLSearchParams(params)
 
   const response = await fetch(url, {

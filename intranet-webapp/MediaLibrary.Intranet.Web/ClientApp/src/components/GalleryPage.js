@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { useLocation, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import TopBar from '@/components/TopBar'
 import Map from '@/components/Map'
@@ -34,24 +35,44 @@ const NotSidebar = styled.div`
 
 const GalleryPage = () => {
   const dispatch = useDispatch()
+  const location = useLocation()
+  const history = useHistory()
 
   const { searchTerm, filters, isFetching, results, page, totalPages } =
     useSelector((state) => state.gallery)
   const areas = useSelector((state) => state.areas)
 
-  const map = useMap()
-
-  const setSearchTerm = (searchTerm) => {
-    dispatch(getSearchResults(searchTerm, filters))
+  const setSearchTerm = (newSearchTerm) => {
+    const searchParams = new URLSearchParams()
+    if (newSearchTerm) {
+      searchParams.set('q', newSearchTerm)
+    }
+    history.push({
+      search: `?${searchParams}`,
+    })
   }
 
-  const setFilters = (filters) => {
-    dispatch(getSearchResults(searchTerm, filters))
+  const setFilters = (newFilters) => {
+    const searchParams = new URLSearchParams({
+      q: searchTerm,
+    })
+    if (newFilters.filterType === 'postal') {
+      searchParams.set('postalCode', newFilters.postalCode)
+    } else if (newFilters.filterType === 'area') {
+      searchParams.set('area', newFilters.areaName)
+    }
+    history.push({
+      search: `?${searchParams}`,
+    })
   }
 
   const setPage = (data) => {
     const selectedPage = data.selected + 1
-    dispatch(getSearchResults(searchTerm, filters, selectedPage))
+    const searchParams = new URLSearchParams(location.search)
+    searchParams.set('page', selectedPage)
+    history.push({
+      search: `?${searchParams}`,
+    })
   }
 
   const handleMapClick = (e) => {
@@ -65,8 +86,24 @@ const GalleryPage = () => {
   }
 
   useEffect(() => {
-    dispatch(getSearchResults(searchTerm, filters, map))
-  }, [dispatch])
+    // Extract search parameters from query string
+    const searchParams = new URLSearchParams(location.search)
+
+    const q = searchParams.get('q') || ''
+    const page = searchParams.get('page') || 1
+    const postalCode = searchParams.get('postalCode')
+    const areaName = searchParams.get('area')
+
+    let filters = { filterType: 'none' }
+    if (postalCode) {
+      filters = { filterType: 'postal', postalCode }
+    }
+    if (areaName) {
+      filters = { filterType: 'area', areaName }
+    }
+
+    dispatch(getSearchResults(q, filters, page))
+  }, [location])
 
   return (
     <LayoutContainer>

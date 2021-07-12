@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
@@ -11,6 +11,10 @@ const Container = styled.div`
 
 const TopBar = ({ searchTerm, setSearchTerm }) => {
   const [currentSearchTerm, setCurrentSearchTerm] = useState(searchTerm)
+
+  useEffect(() => {
+    setCurrentSearchTerm(searchTerm)
+  }, [searchTerm])
 
   const handleInputChange = (e) => {
     setCurrentSearchTerm(e.target.value)

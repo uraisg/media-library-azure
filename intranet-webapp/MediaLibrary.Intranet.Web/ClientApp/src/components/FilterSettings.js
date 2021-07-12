@@ -76,7 +76,7 @@ const getButtonText = ({ filterType, postalCode, areaName }, areas) => {
   } else if (filterType === 'postal') {
     text += postalCode
   } else if (filterType === 'area') {
-    text += areas.find(a => a.Id == areaName).Name
+    text += areas.find(a => a.Id == areaName)?.Name || areaName
   }
 
   return text
