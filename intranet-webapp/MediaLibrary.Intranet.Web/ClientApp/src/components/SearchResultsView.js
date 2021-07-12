@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Gallery from 'react-grid-gallery'
 import Button from 'react-bootstrap/Button'
+import ReactPaginate from 'react-paginate'
 import DelayedSpinner from '@/components/DelayedSpinner'
 
 const Container = styled.div`
@@ -20,7 +21,7 @@ const Message = styled.div`
   max-width: 100%;
 `
 
-const SearchResultsView = ({ isFetching, results }) => {
+const SearchResultsView = ({ isFetching, results, page, totalPages, onPageChange }) => {
   const [currentResults, setCurrentResults] = useState(results)
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -65,17 +66,39 @@ const SearchResultsView = ({ isFetching, results }) => {
         </Message>
       )}
       {!isFetching && currentResults?.length > 0 && (
-        <Gallery
-          images={currentResults}
-          enableLightbox={true}
-          enableImageSelection={false}
-          currentImageWillChange={onCurrentImageChange}
-          customControls={[
-            <Button variant="light" key="showDetails" onClick={showDetails}>
-              Show details
-            </Button>,
-          ]}
-        />
+        <>
+          <nav>
+            <ReactPaginate
+              containerClassName="pagination"
+              breakClassName="page-item"
+              breakLinkClassName="page-link"
+              pageClassName="page-item"
+              previousClassName="page-item"
+              nextClassName="page-item"
+              pageLinkClassName="page-link"
+              previousLinkClassName="page-link"
+              nextLinkClassName="page-link"
+              activeClassName="active"
+              onPageChange={onPageChange}
+              forcePage={page - 1}
+              pageCount={totalPages}
+              pageRangeDisplayed={5}
+              marginPagesDisplayed={1}
+            />
+          </nav>
+
+          <Gallery
+            images={currentResults}
+            enableLightbox={true}
+            enableImageSelection={false}
+            currentImageWillChange={onCurrentImageChange}
+            customControls={[
+              <Button variant="light" key="showDetails" onClick={showDetails}>
+                Show details
+              </Button>,
+            ]}
+          />
+        </>
       )}
     </Container>
   )

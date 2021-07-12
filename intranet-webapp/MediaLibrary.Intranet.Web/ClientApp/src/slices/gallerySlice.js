@@ -11,6 +11,7 @@ const initialState = galleryAdapter.getInitialState({
     // areaName: 'JURONG',
   },
   page: 1,
+  totalPages: null,
   boundingbox: '',
   isFetching: false,
   results: null,
@@ -22,12 +23,10 @@ const gallerySlice = createSlice({
   initialState,
   reducers: {
     displayMedia(state, action) {
-      const { searchTerm, filters } = action.payload
+      const { searchTerm, filters, page } = action.payload
       state.searchTerm = searchTerm
       state.filters = filters
-    },
-    changePage(state, action) {
-      state.page = action.payload.page
+      state.page = page
     },
     getSearchResultsRequest(state, action) {
       state.isFetching = true
@@ -35,6 +34,7 @@ const gallerySlice = createSlice({
     getSearchResultsSuccess(state, action) {
       state.isFetching = false
       state.results = action.payload.results
+      state.totalPages = action.payload.totalPages
       state.error = null
     },
     getSearchResultsFailed(state, action) {
@@ -63,29 +63,31 @@ export const {
 
 export default gallerySlice.reducer
 
-export const getSearchResults = (searchTerm, filters, map) => {
+export const getSearchResults = (searchTerm, filters, page = 1) => {
   return async (dispatch, getState) => {
     // First, update search parameters in state
-    dispatch(displayMedia({ searchTerm, filters }))
+    dispatch(displayMedia({ searchTerm, filters, page }))
     // Inform app that a search request is being made
     dispatch(getSearchResultsRequest())
 
     // Call the search API
     let results
+    let totalPages
     try {
-      const data = await getSearchResultsApi(searchTerm, filters)
+      const data = await getSearchResultsApi(searchTerm, filters, page)
       results = processData(data)
+      totalPages = data.TotalPages
     } catch (err) {
       dispatch(getSearchResultsFailed(err.toString()))
       // TODO: add default error slice
       throw err
     }
 
-    dispatch(getSearchResultsSuccess({ results }))
+    dispatch(getSearchResultsSuccess({ results, totalPages }))
   }
 }
 
-const getSearchResultsApi = async (searchTerm, filters, page = 1) => {
+const getSearchResultsApi = async (searchTerm, filters, page) => {
   const baseUrl = location
   const url = new URL('/api/search', baseUrl)
   const params = {

@@ -5,7 +5,7 @@ import TopBar from '@/components/TopBar'
 import Map from '@/components/Map'
 import FilterSettings from '@/components/FilterSettings'
 import SearchResultsView from '@/components/SearchResultsView'
-import { changePage, getSearchResults, selectSearchResult } from '@/slices/gallerySlice'
+import { getSearchResults, selectSearchResult } from '@/slices/gallerySlice'
 import { useMap } from '@/contexts'
 
 const LayoutContainer = styled.div`
@@ -35,21 +35,23 @@ const NotSidebar = styled.div`
 const GalleryPage = () => {
   const dispatch = useDispatch()
 
-  const { searchTerm, filters, isFetching, results } = useSelector((state) => state.gallery)
+  const { searchTerm, filters, isFetching, results, page, totalPages } =
+    useSelector((state) => state.gallery)
   const areas = useSelector((state) => state.areas)
 
   const map = useMap()
 
   const setSearchTerm = (searchTerm) => {
-    dispatch(getSearchResults(searchTerm, filters, map))
+    dispatch(getSearchResults(searchTerm, filters))
   }
 
   const setFilters = (filters) => {
-    dispatch(getSearchResults(searchTerm, filters, map))
+    dispatch(getSearchResults(searchTerm, filters))
   }
 
-  const setPage = (page) => {
-    dispatch(changePage({ page }))
+  const setPage = (data) => {
+    const selectedPage = data.selected + 1
+    dispatch(getSearchResults(searchTerm, filters, selectedPage))
   }
 
   const handleMapClick = (e) => {
@@ -71,11 +73,25 @@ const GalleryPage = () => {
       <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <MainContainer>
         <Sidebar>
-          <FilterSettings filters={filters} setFilters={setFilters} areas={areas} />
-          <SearchResultsView isFetching={isFetching} results={results} />
+          <FilterSettings
+            filters={filters}
+            setFilters={setFilters}
+            areas={areas}
+          />
+          <SearchResultsView
+            isFetching={isFetching}
+            results={results}
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </Sidebar>
         <NotSidebar>
-          <Map results={results} onMapClick={handleMapClick} onMarkerClick={handleMarkerClick} />
+          <Map
+            results={results}
+            onMapClick={handleMapClick}
+            onMarkerClick={handleMarkerClick}
+          />
         </NotSidebar>
       </MainContainer>
     </LayoutContainer>

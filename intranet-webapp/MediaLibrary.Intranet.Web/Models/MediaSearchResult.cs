@@ -27,6 +27,8 @@ namespace MediaLibrary.Intranet.Web.Models
         public int Count => Items.Count;
 
         public long? Total { get; set; }
+
+        public long? TotalPages { get; set; }
     }
 
     public class MediaSearchOptions

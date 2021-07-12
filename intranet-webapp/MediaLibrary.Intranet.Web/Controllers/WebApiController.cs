@@ -137,6 +137,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             };
 
             var result = await _mediaSearchService.QueryAsync(model.SearchText, searchOptions, GlobalVariables.ResultsPerPage, skip);
+            result.TotalPages = ((int)result.Total + GlobalVariables.ResultsPerPage - 1) / GlobalVariables.ResultsPerPage;
 
             return Ok(result);
         }
