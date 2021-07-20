@@ -90,6 +90,7 @@ const SearchResultsView = ({ isFetching, results, page, totalPages, onPageChange
           <Gallery
             images={currentResults}
             enableLightbox={true}
+            backdropClosesModal={true}
             enableImageSelection={false}
             currentImageWillChange={onCurrentImageChange}
             customControls={[
