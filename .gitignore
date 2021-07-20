@@ -394,7 +394,7 @@ FodyWeavers.xsd
 # Bundled and minified static assets
 **/wwwroot/css/*.min.css
 **/wwwroot/js/*.min.js
-**/wwwroot/js/dist/
+**/wwwroot/js/mix-manifest.json
 
 # npm dependencies
 node_modules/
