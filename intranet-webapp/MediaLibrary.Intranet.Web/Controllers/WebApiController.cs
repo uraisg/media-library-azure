@@ -7,6 +7,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -116,8 +117,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 (model.Lng != null && model.Lat == null))
             {
                 _logger.LogError(
-                    "A value for one of Lat or Lng was provided, but the other is missing. Query: {query}",
-                    HttpContext.Request.QueryString);
+                    "A value for one of Lat or Lng was provided, but the other is missing." + Environment.NewLine +
+                    "URL: {url}",
+                    HttpContext.Request.GetDisplayUrl());
                 return BadRequest("A value for one of Lat or Lng was provided, but the other is missing");
             }
             GeographyPoint point = null;
