@@ -36,7 +36,8 @@
         <link rel="stylesheet" href="~/css/media.min.css" asp-append-version="true" />
     </environment>
 }
-
+<div class="container-fluid">
+<main role="main" class="pb-3">
 <div class="row">
     <div class="col-md-3 d-flex flex-column filter-sidebar">
         <form id="filter-form" asp-controller="Home" asp-action="Index" method="get">
@@ -70,7 +71,7 @@
 
             <div class="form-group">
                 <label class="filter-heading" asp-for="SpatialFilter">Planning Area</label>
-                <select class="custom-select custom-select-sm" asp-for="SpatialFilter" asp-items="new SelectList(Model.SpatialCategories)" form="filter-form" autocomplete="off">
+                <select class="custom-select custom-select-sm" asp-for="SpatialFilter" asp-items="Model.SpatialCategories" form="filter-form" autocomplete="off">
                     <option value="">&mdash; ALL &mdash;</option>
                 </select>
             </div>
@@ -272,6 +273,8 @@
             </div>
         }
     </div>
+</div>
+</main>
 </div>
 
 @section Scripts {

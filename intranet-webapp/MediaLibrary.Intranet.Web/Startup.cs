@@ -1,14 +1,20 @@
+using System;
+using System.Linq;
 using MediaLibrary.Intranet.Web.Background;
 using MediaLibrary.Intranet.Web.Common;
+using MediaLibrary.Intranet.Web.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.Logging;
@@ -59,6 +65,24 @@ namespace MediaLibrary.Intranet.Web
             services.AddHttpClient();
             services.AddHostedService<ScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
+            services.AddSingleton<MediaSearchService>();
+
+            services.PostConfigure<ApiBehaviorOptions>(options =>
+            {
+                var builtInFactory = options.InvalidModelStateResponseFactory;
+
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    // Log Automatic HTTP 400 responses triggered by model validation errors in ApiControllers
+                    // See https://github.com/dotnet/AspNetCore.Docs/issues/12157
+                    if (!context.ModelState.IsValid)
+                    {
+                        LogApiModelValidationErrors(context);
+                    }
+
+                    return builtInFactory(context);
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -90,8 +114,30 @@ namespace MediaLibrary.Intranet.Web
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
+                    name: "spa", 
+                    pattern: "s/{*path}",
+                    defaults: new { controller = "Gallery", action = "Index" });
                 endpoints.MapRazorPages();
             });
+        }
+
+        private void LogApiModelValidationErrors(ActionContext context)
+        {
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger(context.ActionDescriptor.DisplayName);
+
+            // Get error messages
+            var errorMessages = string.Join(" | ", context.ModelState.Values
+                .SelectMany(x => x.Errors)
+                .Select(x => x.ErrorMessage));
+
+            logger.LogError(
+                "Validation errors occurred." + Environment.NewLine +
+                "Error(s): {errorMessages}" + Environment.NewLine +
+                "URL: {url}",
+                errorMessages,
+                context.HttpContext.Request.GetDisplayUrl());
         }
     }
 }

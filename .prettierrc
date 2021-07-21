@@ -1,0 +1,7 @@
+# Config options for formatting JS files with prettier
+tabWidth: 2
+semi: false
+singleQuote: true
+trailingComma: "es5"
+arrowParens: "always"
+proseWrap: "preserve"

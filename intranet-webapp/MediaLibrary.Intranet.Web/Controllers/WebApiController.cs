@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using MediaLibrary.Intranet.Web.Models;
+using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Azure.Search;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Rest.Azure;
+using Microsoft.Spatial;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -17,18 +19,21 @@ namespace MediaLibrary.Intranet.Web.Controllers
     public class WebApiController : ControllerBase
     {
         private readonly AppSettings _appSettings;
+        private readonly ILogger<WebApiController> _logger;
+        private readonly MediaSearchService _mediaSearchService;
 
         private static BlobContainerClient _blobContainerClient = null;
 
-        private static SearchServiceClient _searchServiceName = null;
-        private static ISearchIndexClient _searchIndexClient = null;
-
-        public WebApiController(IOptions<AppSettings> appSettings)
+        public WebApiController(
+            IOptions<AppSettings> appSettings,
+            ILogger<WebApiController> logger,
+            MediaSearchService mediaSearchService)
         {
             _appSettings = appSettings.Value;
+            _logger = logger;
+            _mediaSearchService = mediaSearchService;
 
             InitStorage();
-            InitSearch();
         }
 
         private void InitStorage()
@@ -48,18 +53,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
         }
 
-        private void InitSearch()
-        {
-            if (_searchServiceName == null)
-                _searchServiceName = new SearchServiceClient(_appSettings.SearchServiceName, new SearchCredentials(_appSettings.SearchServiceQueryApiKey));
-
-            if (_searchIndexClient == null)
-                _searchIndexClient = _searchServiceName.Indexes.GetClient(_appSettings.SearchIndexName);
-        }
-
         [HttpGet("/api/assets/{name}", Name = nameof(GetMediaFile))]
         public async Task<IActionResult> GetMediaFile(string name)
         {
+            _logger.LogInformation("Getting blob with name {name}", name);
+
             BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
 
             try
@@ -76,12 +74,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpGet("/api/media/{id}", Name = nameof(GetMediaItem))]
         public async Task<IActionResult> GetMediaItem(string id)
         {
-            try
+            _logger.LogInformation("Getting item details for id {id}", id);
+
+            var item = await _mediaSearchService.GetItemAsync(id);
+
+            if (item != null)
             {
-                MediaItem item = await _searchIndexClient.Documents.GetAsync<MediaItem>(id);
                 return Ok(item);
             }
-            catch (CloudException ex) when (ex.Response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            else
             {
                 return NotFound();
             }
@@ -90,6 +91,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
         public async Task<IActionResult> DeleteMediaFile(string name)
         {
+            _logger.LogInformation("Deleting blob with name {name}", name);
+
             BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
             try
             {
@@ -100,6 +103,53 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpGet("/api/search", Name = nameof(GetSearch))]
+        public async Task<IActionResult> GetSearch([FromQuery] SearchData model)
+        {
+            _logger.LogInformation("Search called");
+
+            int page = Math.Max(1, model.Page ?? 1);
+            int skip = (page - 1) * GlobalVariables.ResultsPerPage;
+
+            if ((model.Lat != null && model.Lng == null) ||
+                (model.Lng != null && model.Lat == null))
+            {
+                _logger.LogError(
+                    "A value for one of Lat or Lng was provided, but the other is missing." + Environment.NewLine +
+                    "URL: {url}",
+                    HttpContext.Request.GetDisplayUrl());
+                return BadRequest("A value for one of Lat or Lng was provided, but the other is missing");
+            }
+            GeographyPoint point = null;
+            if (model.Lng != null && model.Lat != null)
+            {
+                point = GeographyPoint.Create(model.Lat.Value, model.Lng.Value);
+            }
+
+            var searchOptions = new MediaSearchOptions()
+            {
+                LocationFilter = model.LocationFilter,
+                TagFilter = model.TagFilter,
+                SpatialFilter = model.SpatialFilter,
+                DistanceSearch = point != null ? new GeoDistanceSearch() { Point = point, Radius = 500 } : null,
+                MinDateTaken = model.MinDateTaken,
+                MaxDateTaken = model.MaxDateTaken
+            };
+
+            var result = await _mediaSearchService.QueryAsync(model.SearchText, searchOptions, GlobalVariables.ResultsPerPage, skip);
+            result.TotalPages = ((int)result.Total + GlobalVariables.ResultsPerPage - 1) / GlobalVariables.ResultsPerPage;
+
+            return Ok(result);
+        }
+
+        [HttpGet("/api/areas", Name = nameof(GetAreas))]
+        public IActionResult GetAreas()
+        {
+            var areas = _mediaSearchService.GetSpatialAreas().Select(s => new { Id = s.Id, Name = s.Name });
+
+            return Ok(areas);
         }
     }
 }
