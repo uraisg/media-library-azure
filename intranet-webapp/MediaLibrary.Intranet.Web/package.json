@@ -14,9 +14,13 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/preset-react": "^7.12.10",
-    "babel-plugin-transform-class-properties": "^6.24.1",
+    "bootstrap": "^4.6.0",
     "laravel-mix": "^6.0.25",
-    "postcss": "^8.3.5"
+    "popper.js": "^1.16.1",
+    "postcss": "^8.3.5",
+    "resolve-url-loader": "^4.0.0",
+    "sass": "^1.36.0",
+    "sass-loader": "^12.1.0"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.5.0",

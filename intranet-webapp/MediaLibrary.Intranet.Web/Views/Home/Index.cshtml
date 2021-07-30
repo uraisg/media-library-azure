@@ -26,18 +26,15 @@
         <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
         <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.css" />
         <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.Default.css" />
-        <link rel="stylesheet" href="~/css/media.css" />
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/lib/justified-gallery/css/justifiedGallery.min.css" />
         <link rel="stylesheet" href="~/lib/leaflet/leaflet.min.css" />
         <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.css" />
         <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.Default.css" />
-        <link rel="stylesheet" href="~/css/media.min.css" asp-append-version="true" />
     </environment>
 }
-<div class="container-fluid">
-<main role="main" class="pb-3">
+<div class="container">
 <div class="row">
     <div class="col-md-3 d-flex flex-column filter-sidebar">
         <form id="filter-form" asp-controller="Home" asp-action="Index" method="get">
@@ -111,7 +108,7 @@
             </div>
         </div>
         <div class="mt-2 text-right">
-            <button class="btn btn-theme btn-sm disabled" type="submit" form="filter-form">Apply</button>
+            <button class="btn btn-primary btn-sm disabled" type="submit" form="filter-form">Apply</button>
             <a class="btn btn-link btn-sm" href="@Url.Action("Index", "Home", new { searchtext = Model.SearchText, layout = Model.Layout }, null)" role="button">Reset</a>
         </div>
     </div>
@@ -120,7 +117,7 @@
         <div class="input-group mt-3">
             <input asp-for="SearchText" form="searchform" class="form-control border border-right-0" placeholder="Search..." autocomplete="off">
             <span class="input-group-append">
-                <button class="btn btn-theme border-left-0" type="submit" form="searchform">
+                <button class="btn btn-primary border-left-0" type="submit" form="searchform">
                     <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
                         <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
@@ -134,17 +131,17 @@
             <div>
                 <span class="mr-1">Layout:</span>
                 <div class="btn-group">
-                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Grid }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.Grid ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in grid layout">
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Grid }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Grid ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in grid layout">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-grid" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
                         </svg>
                     </a>
-                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.List ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in list layout">
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.List ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in list layout">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
                             <path fill-rule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z" />
                         </svg>
                     </a>
-                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-theme @(@Model.Layout == DisplayMode.Map ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in map layout">
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Map ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in map layout">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-map" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in map layout">
                             <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98l4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"></path>
                         </svg>
@@ -274,7 +271,6 @@
         }
     </div>
 </div>
-</main>
 </div>
 
 @section Scripts {

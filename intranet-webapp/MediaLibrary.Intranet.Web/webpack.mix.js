@@ -1,7 +1,7 @@
 const mix = require('laravel-mix')
 const path = require('path')
 
-mix.setPublicPath(path.normalize('wwwroot/js'))
+mix.setPublicPath(path.normalize('wwwroot'))
 mix.webpackConfig({
   externals: {
     jquery: 'jQuery',
@@ -9,11 +9,14 @@ mix.webpackConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'ClientApp/src'),
+      '@': path.resolve(__dirname, 'assets/scripts/gallery'),
     },
   },
 })
-mix.babelConfig({
-  plugins: ['transform-class-properties'],
-})
-mix.js('ClientApp/src/main.js', 'wwwroot/js/main.min.js').react()
+mix.sourceMaps(false) // enable source maps in dev mode, but not prod
+
+mix
+  .js('assets/scripts/site.js', 'scripts')
+  .js('assets/scripts/item.js', 'scripts')
+  .sass('assets/styles/site.scss', 'styles')
+mix.js('assets/scripts/gallery/main.js', 'scripts/gallery.js').react()

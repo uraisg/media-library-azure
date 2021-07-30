@@ -1,0 +1,32 @@
+$blue: #0477bf;
+
+$font-family-sans-serif: Inter, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+$font-weight-bold: 600;
+$headings-font-weight: 600;
+$btn-font-weight: $font-weight-bold;
+
+$navbar-padding-y: 1rem;
+
+// Add xxl breakpoint
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px,
+);
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px,
+);
+
+@import 'node_modules/bootstrap/scss/bootstrap';
+
+// Make an xs button
+.btn-xs {
+  @include button-size(.2rem, .4rem, .75rem, 1.5, .15rem);
+}
