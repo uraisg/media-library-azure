@@ -1,5 +1,5 @@
 import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
-import { queryPostalCode } from '@/api/geospace'
+import { queryPostalCode } from '@/api/onemap'
 
 const galleryAdapter = createEntityAdapter()
 
