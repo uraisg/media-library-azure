@@ -1,27 +1,83 @@
 ﻿@model UploadFormModel
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
 @if (!User.Identity.IsAuthenticated)
 {
-<div class="jumbotron">
-    <div class="row">
-        <div class="col-md-6">
-            <h1>Media Library Upload Portal</h1>
-            <p>This portal provides a convenient way to upload media files into the Media Library from your own devices.</p>
-        </div>
-        <div class="col-md-6 visible-md-block visible-lg-block">
-            <img class="img-responsive" src="~/images/hero-image.svg" alt="">
+<div class="intro-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-xl-8">
+                <h1>Media Library Upload Portal</h1>
+                <p>This portal provides a convenient method to upload media files into the Media Library from your own devices.</p>
+                <hr />
+                <div class="mb-3">
+                    <span class="small">To continue, sign in using your official email address</span>
+                </div>
+                <form method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">
+                    <button type="submit" class="btn btn-lg btn-primary">Sign In</button>
+                </form>
+            </div>
+            <div class="col-md-6 col-xl-4 d-none d-md-block">
+                <img class="img-fluid" src="~/images/hero-image.svg" role="presentation" alt="">
+            </div>
         </div>
     </div>
-    <hr />
-    <div style="margin-bottom: 10px">
-        <span class="small">To continue, sign in using your official email address</span>
-    </div>    
-    <form method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">
-        <button type="submit" class="btn btn-lg btn-primary">Sign In</button>
-    </form>
+</div>
+<div class="how-it-works-section text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2 class="text-primary mb-3">How it works</h2>
+                <div class="card-deck justify-content-center">
+                    <div class="card text-center shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title"><span class="dot">1</span></h5>
+                            <p class="card-text">Take photos of objects, locations and events using your mobile device.</p>
+                        </div>
+                    </div>
+                    <div class="card text-center shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title"><span class="dot">2</span></h5>
+                            <p class="card-text">Sign in to Media Library Upload Portal from your mobile device and upload your photos.</p>
+                        </div>
+                    </div>
+                    <div class="card text-center shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title"><span class="dot">3</span></h5>
+                            <p class="card-text">Your uploaded photos are analysed and automatically organised to make them searchable.</p>
+                        </div>
+                    </div>
+                    <div class="card text-center shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title"><span class="dot">4</span></h5>
+                            <p class="card-text">The analysed photos are copied to Media Library on intranet for long-term storage.</p>
+                        </div>
+                    </div>
+                    <div class="card text-center shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title"><span class="dot">5</span></h5>
+                            <p class="card-text">Find and share your photo uploads by accessing Media Library on your work machine.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="get-started-section text-center text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2 class="mb-3">It's easy to get started</h2>
+                <p class="d-block mx-auto mb-4" style="max-width: 40rem;">Sign in to this portal using your official email address. Complete the OTP verification and you can start uploading your media files right away.</p>
+                <form method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">
+                    <button type="submit" class="btn btn-light">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 }
 else
@@ -35,21 +91,23 @@ if (!string.IsNullOrEmpty(alertType))
         @alertMessage
     </div>
 }
+<div class="container mt-4">
 <h1>
     Upload Media
 </h1>
-<div class="row">
-    <form id="upload-form" method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
+
+<form id="upload-form" method="post" enctype="multipart/form-data" asp-controller="ImageUpload" asp-action="Index">
+    <div class="form-row">
         <div class="col-md-6">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="File"></label>
-                <input asp-for="File" multiple accept=".jpg, .jpeg, .png, .gif, .bmp"/>
+                <input asp-for="File" multiple accept=".jpg, .jpeg, .png, .gif, .bmp" />
                 <span asp-validation-for="File" class="text-danger"></span>
             </div>
         </div>
         <div class="col-md-6">
-            <span class="help-block">Provide optional information to make future search easier</span>
+            <div class="help-block mb-3">Provide optional information to make future search easier</div>
             <div class="form-group">
                 <label asp-for="Project"></label>
                 <input asp-for="Project" class="form-control">
@@ -70,7 +128,8 @@ if (!string.IsNullOrEmpty(alertType))
                 <button type="submit" class="btn btn-primary btn-lg">Upload</button>
             </div>
         </div>
-    </form>
+    </div>
+</form>
 </div>
 }
 

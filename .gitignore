@@ -395,6 +395,9 @@ FodyWeavers.xsd
 **/wwwroot/css/*.min.css
 **/wwwroot/js/*.min.js
 **/wwwroot/js/mix-manifest.json
+**/wwwroot/scripts/
+**/wwwroot/styles/
+**/wwwroot/mix-manifest.json
 
 # npm dependencies
 node_modules/

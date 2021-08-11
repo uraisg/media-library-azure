@@ -1,0 +1,60 @@
+@import 'theme';
+
+body {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.intro-section,
+.get-started-section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.intro-section {
+  background: linear-gradient(135deg, theme-color(light) 0%, theme-color-level(warning, -11) 100%) no-repeat fixed;
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  p {
+    font-size: 1.25rem;
+  }
+}
+
+.how-it-works-section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+
+  .card-deck .card {
+    min-width: 11rem;
+
+    @media (min-width: map-get($grid-breakpoints, 'sm')) {
+      max-width: 14rem;
+    }
+  }
+
+  .dot {
+    height: 2.25rem;
+    width: 2.25rem;
+    font-size: 1.25rem;
+    background-color: #f2b544;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.get-started-section {
+  background: linear-gradient(135deg, theme-color(primary) 0%, $purple 100%) no-repeat fixed;
+}
+
+.site-footer {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  background-color: #363d4a;
+}
