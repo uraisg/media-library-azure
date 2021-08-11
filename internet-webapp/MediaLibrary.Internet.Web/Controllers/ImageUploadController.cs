@@ -186,7 +186,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             ModelState.Clear();
             TempData["Alert.Type"] = "success";
-            TempData["Alert.Message"] = "Items have been uploaded sucessfully";
+            TempData["Alert.Message"] = "Items have been uploaded successfully";
             return View("~/Views/Home/Index.cshtml");
         }
 
