@@ -31,6 +31,15 @@ const mapOptions = {
   layers: [placesLayer, basemap],
 }
 
+const markerStyle = {
+  radius: 5,
+  color: '#333333',
+  fillColor: '#004DA8',
+  weight: 1,
+  opacity: 1,
+  fillOpacity: 0.8,
+}
+
 const Map = ({ results, onMapClick, onMarkerClick }) => {
   const mapRef = useRef(null)
   const map = useMap()
@@ -72,9 +81,7 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
         const marker = L.circleMarker(
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
-            radius: 5,
-            weight: 1,
-            fillOpacity: 0.5,
+            ...markerStyle,
             bubblingMouseEvents: false,
           }
         )

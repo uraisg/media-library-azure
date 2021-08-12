@@ -11,7 +11,7 @@ import Tabs from 'react-bootstrap/Tabs'
 import Tooltip from 'react-bootstrap/Tooltip'
 
 const Container = styled.div`
-  padding: 1rem 15px;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
 `
@@ -42,9 +42,9 @@ const LayoutTypeSwitch = () => {
       <span className="mr-2">
         <small className="font-weight-bold">Layout</small>
       </span>
-      <ButtonGroup aria-label="Basic example">
+      <ButtonGroup size="sm" aria-label="Basic example">
         <TooltipOverlay message="View in grid layout">
-          <Button variant="outline-theme" active>
+          <Button variant="outline-primary" active>
             <svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-grid" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in grid layout">
               <path
                 fillRule="evenodd"
@@ -54,7 +54,7 @@ const LayoutTypeSwitch = () => {
           </Button>
         </TooltipOverlay>
         <TooltipOverlay message="View in list layout">
-          <Button variant="outline-theme" disabled>
+          <Button variant="outline-primary" disabled>
             <svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
               <path
                 fillRule="evenodd"
@@ -155,7 +155,7 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
   return (
     <Container>
       <Dropdown>
-        <Dropdown.Toggle variant="outline-theme" id="dropdown-location-filter">
+        <Dropdown.Toggle size="sm" variant="outline-primary" id="dropdown-location-filter">
           {dropdownButtonText}
         </Dropdown.Toggle>
         <DropdownMenu>
@@ -169,11 +169,12 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
               activeKey={key}
               onSelect={setKey}
             >
-              <Tab eventKey="postal" title="Postal Code">
+              <Tab tabClassName="nav-link-sm" eventKey="postal" title="Postal Code">
                 <Form.Group controlId="postal-input">
                   <Form.Label srOnly>Postal Code</Form.Label>
                   <Form.Control
                     form={formId}
+                    size="sm"
                     type="tel"
                     maxLength={6}
                     pattern="[0-9]{6}"
@@ -184,11 +185,12 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
                   />
                 </Form.Group>
               </Tab>
-              <Tab eventKey="area" title="Planning Area">
+              <Tab tabClassName="nav-link-sm" eventKey="area" title="Planning Area">
                 <Form.Group controlId="area-select">
                   <Form.Label srOnly>Planning Area</Form.Label>
                   <Form.Control
                     form={formId}
+                    size="sm"
                     as="select"
                     value={currentFilters.areaName ?? ''}
                     required
@@ -202,10 +204,10 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
                 </Form.Group>
               </Tab>
             </Tabs>
-            <Button variant="theme" type="submit">
+            <Button size="sm" variant="primary" type="submit">
               Apply
             </Button>
-            <Button variant="link" onClick={handleReset}>
+            <Button size="sm" variant="link" onClick={handleReset}>
               Reset
             </Button>
           </DropdownForm>

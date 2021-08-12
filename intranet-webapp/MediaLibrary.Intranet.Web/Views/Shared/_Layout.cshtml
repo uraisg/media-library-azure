@@ -14,7 +14,10 @@
 <body>
     <nav class="navbar sticky-top navbar-expand-md navbar-light bg-white border-bottom shadow-sm">
         <div class="container">
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand font-weight-bold">Media Library</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand font-weight-bold">
+                <img src="~/icon.svg" width="30" height="30" class="d-inline-block d-lg-none align-top" alt="Media Library">
+                <span class="d-none d-lg-block">Media Library</span>
+            </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-main" aria-controls="navbar-main" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

@@ -7,10 +7,9 @@ import Map from '@/components/Map'
 import FilterSettings from '@/components/FilterSettings'
 import SearchResultsView from '@/components/SearchResultsView'
 import { getSearchResults, selectSearchResult } from '@/slices/gallerySlice'
-import { useMap } from '@/contexts'
 
 const LayoutContainer = styled.div`
-  height: calc(100vh - 3.5rem);
+  height: calc(100vh - 4.5625rem);
   display: flex;
   flex-direction: column;
 `
@@ -23,13 +22,13 @@ const MainContainer = styled.div`
 `
 
 const Sidebar = styled.div`
-  flex: 0 0 66.666667%;
+  flex: 0 0 60%;
   display: flex;
   flex-direction: column;
 `
 
 const NotSidebar = styled.div`
-  flex: 0 0 33.333333%;
+  flex: 0 0 40%;
   min-width: 25%;
 `
 

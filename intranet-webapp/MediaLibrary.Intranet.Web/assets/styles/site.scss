@@ -42,6 +42,12 @@ a.navbar-brand {
   word-break: break-all;
 }
 
+.nav-link-sm {
+  font-size: 0.875rem;
+  border-top-left-radius: 0.2rem;
+  border-top-right-radius: 0.2rem;
+}
+
 .media-container {
   max-height: calc(100vh - 7.5625rem);
   text-align: center;
