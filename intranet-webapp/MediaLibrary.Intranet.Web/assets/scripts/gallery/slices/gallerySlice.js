@@ -43,11 +43,13 @@ const gallerySlice = createSlice({
       state.error = action.payload
     },
     selectSearchResult(state, action) {
-      const newResults = state.results.map((result, i) => ({
-        ...result,
-        isSelected: result.id === action.payload,
-      }))
-      state.results = newResults
+      state.results.forEach(result => {
+        if (result.id === action.payload) {
+          result.isSelected = true
+        } else if (result.isSelected) {
+          result.isSelected = false
+        }
+      })
     },
   },
 })
