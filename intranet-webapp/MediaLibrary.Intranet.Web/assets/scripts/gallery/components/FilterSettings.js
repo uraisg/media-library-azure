@@ -36,7 +36,7 @@ const TooltipOverlay = ({ message, placement = 'bottom', ...props }) => {
   )
 }
 
-const LayoutTypeSwitch = () => {
+const LayoutTypeSwitch = ({ gridView, setGridView }) => {
   return (
     <div>
       <span className="mr-2">
@@ -44,22 +44,24 @@ const LayoutTypeSwitch = () => {
       </span>
       <ButtonGroup size="sm" aria-label="Basic example">
         <TooltipOverlay message="View in grid layout">
-          <Button variant="outline-primary" active>
+          <Button
+            variant="outline-primary"
+            active={gridView}
+            onClick={() => setGridView(true)}
+          >
             <svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-grid" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in grid layout">
-              <path
-                fillRule="evenodd"
-                d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"
-              ></path>
+              <path fillRule="evenodd" d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"></path>
             </svg>
           </Button>
         </TooltipOverlay>
         <TooltipOverlay message="View in list layout">
-          <Button variant="outline-primary" disabled>
+          <Button
+            variant="outline-primary"
+            active={!gridView}
+            onClick={() => setGridView(false)}
+          >
             <svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
-              <path
-                fillRule="evenodd"
-                d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z"
-              ></path>
+              <path fillRule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z"></path>
             </svg>
           </Button>
         </TooltipOverlay>
@@ -76,13 +78,19 @@ const getButtonText = ({ filterType, postalCode, areaName }, areas) => {
   } else if (filterType === 'postal') {
     text += postalCode
   } else if (filterType === 'area') {
-    text += areas.find(a => a.Id == areaName)?.Name || areaName
+    text += areas.find((a) => a.Id == areaName)?.Name || areaName
   }
 
   return text
 }
 
-const FilterSettings = ({ filters, setFilters, areas }) => {
+const FilterSettings = ({
+  filters,
+  setFilters,
+  areas,
+  gridView,
+  onSetView,
+}) => {
   const [key, setKey] = useState('none')
   const [currentFilters, setCurrentFilters] = useState({
     areaName: '',
@@ -155,7 +163,11 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
   return (
     <Container>
       <Dropdown>
-        <Dropdown.Toggle size="sm" variant="outline-primary" id="dropdown-location-filter">
+        <Dropdown.Toggle
+          size="sm"
+          variant="outline-primary"
+          id="dropdown-location-filter"
+        >
           {dropdownButtonText}
         </Dropdown.Toggle>
         <DropdownMenu>
@@ -169,7 +181,11 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
               activeKey={key}
               onSelect={setKey}
             >
-              <Tab tabClassName="nav-link-sm" eventKey="postal" title="Postal Code">
+              <Tab
+                tabClassName="nav-link-sm"
+                eventKey="postal"
+                title="Postal Code"
+              >
                 <Form.Group controlId="postal-input">
                   <Form.Label srOnly>Postal Code</Form.Label>
                   <Form.Control
@@ -185,7 +201,11 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
                   />
                 </Form.Group>
               </Tab>
-              <Tab tabClassName="nav-link-sm" eventKey="area" title="Planning Area">
+              <Tab
+                tabClassName="nav-link-sm"
+                eventKey="area"
+                title="Planning Area"
+              >
                 <Form.Group controlId="area-select">
                   <Form.Label srOnly>Planning Area</Form.Label>
                   <Form.Control
@@ -213,7 +233,7 @@ const FilterSettings = ({ filters, setFilters, areas }) => {
           </DropdownForm>
         </DropdownMenu>
       </Dropdown>
-      <LayoutTypeSwitch />
+      <LayoutTypeSwitch gridView={gridView} setGridView={onSetView} />
     </Container>
   )
 }

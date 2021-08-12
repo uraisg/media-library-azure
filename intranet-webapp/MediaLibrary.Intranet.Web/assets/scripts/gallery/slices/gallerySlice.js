@@ -16,6 +16,7 @@ const initialState = galleryAdapter.getInitialState({
   isFetching: false,
   results: null,
   error: null,
+  gridView: true,
 })
 
 const gallerySlice = createSlice({
@@ -51,6 +52,9 @@ const gallerySlice = createSlice({
         }
       })
     },
+    setGridView(state, action) {
+      state.gridView = !!action.payload
+    },
   },
 })
 
@@ -61,6 +65,7 @@ export const {
   getSearchResultsSuccess,
   getSearchResultsFailed,
   selectSearchResult,
+  setGridView
 } = gallerySlice.actions
 
 export default gallerySlice.reducer
@@ -135,9 +140,8 @@ const processData = (data) => {
       id: doc.Id,
       src: new URL(doc.FileURL, window.location).toString(),
       thumbnail: new URL(doc.ThumbnailURL, window.location).toString(),
-      caption: doc.Name,
-      thumbnailWidth: 320,
-      thumbnailHeight: 240,
+      name: doc.Name,
+      caption: doc.Caption,
       link: new URL('/Gallery/Item/' + doc.Id, window.location).toString(),
       location: doc.Location,
       isSelected: false,

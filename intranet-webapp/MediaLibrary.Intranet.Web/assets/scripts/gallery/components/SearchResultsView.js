@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import Gallery from 'react-grid-gallery'
-import Button from 'react-bootstrap/Button'
 import ReactPaginate from 'react-paginate'
 import DelayedSpinner from '@/components/DelayedSpinner'
+import MediaGrid from '@/components/MediaGrid'
+import MediaList from '@/components/MediaList'
 
 const Container = styled.div`
   flex-grow: 1;
@@ -21,21 +21,21 @@ const Message = styled.div`
   max-width: 100%;
 `
 
-const SearchResultsView = ({ isFetching, results, page, totalPages, onPageChange }) => {
+const SearchResultsView = ({
+  isFetching,
+  results,
+  page,
+  totalPages,
+  onPageChange,
+  gridView,
+}) => {
   const [currentResults, setCurrentResults] = useState(results)
-  const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
     setCurrentResults(JSON.parse(JSON.stringify(results)))
   }, [results])
 
-  const onCurrentImageChange = (index) => {
-    setCurrentIndex(index)
-  }
-
-  const showDetails = () => {
-    document.location = currentResults[currentIndex].link
-  }
+  const MediaViewComponent = gridView ? MediaGrid : MediaList
 
   return (
     <Container>
@@ -80,18 +80,7 @@ const SearchResultsView = ({ isFetching, results, page, totalPages, onPageChange
             />
           </nav>
 
-          <Gallery
-            images={currentResults}
-            enableLightbox={true}
-            backdropClosesModal={true}
-            enableImageSelection={false}
-            currentImageWillChange={onCurrentImageChange}
-            customControls={[
-              <Button size="sm" variant="light" key="showDetails" onClick={showDetails}>
-                Show details
-              </Button>,
-            ]}
-          />
+          <MediaViewComponent results={currentResults} />
         </>
       )}
     </Container>
