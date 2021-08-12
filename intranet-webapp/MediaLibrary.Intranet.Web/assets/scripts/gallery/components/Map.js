@@ -40,6 +40,11 @@ const markerStyle = {
   fillOpacity: 0.8,
 }
 
+const selectedStyle = {
+  color: '#263238',
+  fillColor: '#E57373',
+}
+
 const Map = ({ results, onMapClick, onMarkerClick }) => {
   const mapRef = useRef(null)
   const map = useMap()
@@ -67,9 +72,6 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
   }, [])
 
   useEffect(() => {
-    // Remove existing markers
-    placesLayer.clearLayers()
-
     if (!results) {
       return
     }
@@ -82,6 +84,7 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
             ...markerStyle,
+            ...(result.isSelected ? selectedStyle : null),
             bubblingMouseEvents: false,
           }
         )
@@ -104,6 +107,11 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
     if (!equalIds) {
       const layerBounds = placesLayer.getBounds()
       map.fitBounds(layerBounds.isValid() ? layerBounds : defaultMapBounds)
+    }
+
+    return () => {
+      // Remove existing markers
+      placesLayer.clearLayers()
     }
   }, [results])
 
