@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <SpaRoot>ClientApp\</SpaRoot>
+    <SpaRoot>assets\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
-    <UserSecretsId>620a3113-b5d8-40b3-8f75-d86c85ff5166</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.6.0" />
-    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.8" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="Microsoft.Azure.Search" Version="10.1.0" />
@@ -37,14 +35,14 @@
   </Target>
 
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-    <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+    <!-- As part of publishing, ensure the webpack resources are freshly built -->
     <Exec Command="npm install" />
     <Exec Command="npm run development" Condition=" '$(Configuration)' == 'Debug' " />
     <Exec Command="npm run production" Condition=" '$(Configuration)' != 'Debug' " />
 
     <!-- Include the newly-built files in the publish output -->
     <ItemGroup>
-      <DistFiles Include="$wwwroot\js\**" />
+      <DistFiles Include="wwwroot\scripts\**;wwwroot\styles\**" />
       <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>%(DistFiles.Identity)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

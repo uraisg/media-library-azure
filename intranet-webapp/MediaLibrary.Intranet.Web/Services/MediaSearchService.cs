@@ -74,7 +74,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 Filter = filterExpression,
 
                 // Enter media property names into this list, so only these values will be returned.
-                Select = new[] { "Id", "Name", "FileURL", "ThumbnailURL", "Location" },
+                Select = new[] { "Id", "Name", "Caption", "FileURL", "ThumbnailURL", "Location" },
 
                 // Order newest uploads first.
                 OrderBy = new[] { "UploadDate desc" },

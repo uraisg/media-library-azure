@@ -6,11 +6,14 @@ import TopBar from '@/components/TopBar'
 import Map from '@/components/Map'
 import FilterSettings from '@/components/FilterSettings'
 import SearchResultsView from '@/components/SearchResultsView'
-import { getSearchResults, selectSearchResult } from '@/slices/gallerySlice'
-import { useMap } from '@/contexts'
+import {
+  getSearchResults,
+  selectSearchResult,
+  setGridView,
+} from '@/slices/gallerySlice'
 
 const LayoutContainer = styled.div`
-  height: calc(100vh - 3.5rem);
+  height: calc(100vh - 4.5625rem);
   display: flex;
   flex-direction: column;
 `
@@ -23,13 +26,13 @@ const MainContainer = styled.div`
 `
 
 const Sidebar = styled.div`
-  flex: 0 0 66.666667%;
+  flex: 0 0 60%;
   display: flex;
   flex-direction: column;
 `
 
 const NotSidebar = styled.div`
-  flex: 0 0 33.333333%;
+  flex: 0 0 40%;
   min-width: 25%;
 `
 
@@ -38,8 +41,15 @@ const GalleryPage = () => {
   const location = useLocation()
   const history = useHistory()
 
-  const { searchTerm, filters, isFetching, results, page, totalPages } =
-    useSelector((state) => state.gallery)
+  const {
+    searchTerm,
+    filters,
+    isFetching,
+    results,
+    page,
+    totalPages,
+    gridView,
+  } = useSelector((state) => state.gallery)
   const areas = useSelector((state) => state.areas)
 
   const setSearchTerm = (newSearchTerm) => {
@@ -85,6 +95,10 @@ const GalleryPage = () => {
     // TODO: scroll results view to selection
   }
 
+  const handleSetView = (e) => {
+    dispatch(setGridView(e))
+  }
+
   useEffect(() => {
     // Extract search parameters from query string
     const searchParams = new URLSearchParams(location.search)
@@ -114,6 +128,8 @@ const GalleryPage = () => {
             filters={filters}
             setFilters={setFilters}
             areas={areas}
+            gridView={gridView}
+            onSetView={handleSetView}
           />
           <SearchResultsView
             isFetching={isFetching}
@@ -121,6 +137,7 @@ const GalleryPage = () => {
             page={page}
             totalPages={totalPages}
             onPageChange={setPage}
+            gridView={gridView}
           />
         </Sidebar>
         <NotSidebar>

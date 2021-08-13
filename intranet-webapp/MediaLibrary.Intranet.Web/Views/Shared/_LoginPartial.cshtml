@@ -1,20 +1,25 @@
 ﻿@using System.Security.Principal
 @using Microsoft.Identity.Web
-
-<ul class="navbar-nav">
 @if (User.Identity.IsAuthenticated)
 {
+    <ul class="navbar-nav ml-md-auto">
+        <li class="navbar-text mr-md-4">Hello @User.FindFirst(ClaimConstants.Name).Value</li>
+        <!-- The Account controller is not defined in this project. Instead, it is part of Microsoft.Identity.Web.UI nuget package and
+            it defines some well known actions such as SignUp/In, SignOut and EditProfile-->
         <li class="nav-item">
-            <span class="navbar-text">Hello @User.FindFirst(ClaimConstants.Name).Value!</span>
+            <form class="form-inline" method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">
+                <button type="submit" class="btn btn-primary">Sign Out</button>
+            </form>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
-        </li>
+    </ul>
 }
 else
 {
+    <ul class="navbar-nav ml-md-auto">
         <li class="nav-item">
-            <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+            <form class="form-inline" method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
         </li>
+    </ul>
 }
-</ul>
