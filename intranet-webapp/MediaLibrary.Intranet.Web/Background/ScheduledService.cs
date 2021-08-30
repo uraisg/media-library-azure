@@ -46,6 +46,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Task.Yield();
             do
             {
                 var now = DateTime.Now;
