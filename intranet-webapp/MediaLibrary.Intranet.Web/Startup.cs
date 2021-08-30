@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Linq;
 using MediaLibrary.Intranet.Web.Background;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -45,6 +46,12 @@ namespace MediaLibrary.Intranet.Web
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+
+            services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.SlidingExpiration = true;
+            });
 
             services.AddControllersWithViews(options =>
             {
