@@ -47,17 +47,26 @@ namespace MediaLibrary.Intranet.Web.Background
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
-            do
+
+            _logger.LogInformation("ScheduledService started");
+            while (!stoppingToken.IsCancellationRequested)
             {
-                var now = DateTime.Now;
-                if (now > _nextRun)
+                try
                 {
-                    await Process();
-                    _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
+                    var now = DateTime.Now;
+                    if (now > _nextRun)
+                    {
+                        await Process();
+                        _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
+                    }
                 }
-                await Task.Delay(5000, stoppingToken);
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unhandled exception occurred, will retry processing at next interval");
+                }
+
+                await Task.Delay(15000, stoppingToken);
             }
-            while (!stoppingToken.IsCancellationRequested);
         }
 
         private async Task Process()
