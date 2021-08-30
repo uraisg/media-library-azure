@@ -15,7 +15,7 @@ namespace MediaLibrary.Intranet.Web.Models
         public string fileURL { get; set; }
         public string thumbnailURL { get; set; }
         public string project { get; set; }
-        public string _event { get; set; }
+        public string @event { get; set; }
         public string locationName { get; set; }
         public string copyright { get; set; }
         public string partitionKey { get; set; }

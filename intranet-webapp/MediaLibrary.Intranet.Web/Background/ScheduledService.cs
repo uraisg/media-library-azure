@@ -137,7 +137,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     FileURL = "/api/assets/" + fileName,
                     ThumbnailURL = "/api/assets/" + thumbnailFileName,
                     Project = item.project,
-                    Event = item._event,
+                    Event = item.@event,
                     LocationName = item.locationName,
                     Copyright = item.copyright
                 };
@@ -186,7 +186,6 @@ namespace MediaLibrary.Intranet.Web.Background
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadAsStringAsync();
-                result = result.Replace("event", "_event");
                 var items = JsonConvert.DeserializeObject<List<InternetTableItems>>(result);
                 return items;
             }
