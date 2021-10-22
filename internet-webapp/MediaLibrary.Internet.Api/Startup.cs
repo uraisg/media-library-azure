@@ -1,4 +1,4 @@
-using AspNetCore.Authentication.ApiKey;
+﻿using AspNetCore.Authentication.ApiKey;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Xunit;
 
 namespace MediaLibrary.Internet.Tests

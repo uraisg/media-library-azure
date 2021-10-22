@@ -1,4 +1,4 @@
-namespace MediaLibrary.Intranet.Web.Models
+﻿namespace MediaLibrary.Intranet.Web.Models
 {
     public class ErrorViewModel
     {
