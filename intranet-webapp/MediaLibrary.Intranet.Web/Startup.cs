@@ -55,12 +55,21 @@ namespace MediaLibrary.Intranet.Web
                 options.SlidingExpiration = true;
             });
 
-            services.AddControllersWithViews(options =>
+            services.AddAuthorization(options =>
             {
-                var policy = new AuthorizationPolicyBuilder()
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+
+            services.AddControllersWithViews(options =>
+            {
+                options.CacheProfiles.Add("Private600",
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Client,
+                        Duration = 600
+                    });
             }).AddNewtonsoftJson(options =>
             {
                 // Use the default property (Pascal) casing
@@ -118,6 +127,23 @@ namespace MediaLibrary.Intranet.Web
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Configure default Cache-Control headers that are applied to controllers/actions without a [ResponseCache] attribute set,
+            // according to https://docs.microsoft.com/en-us/aspnet/core/performance/caching/middleware?view=aspnetcore-3.1#configuration
+            app.Use(async (context, next) =>
+            {
+                context.Response.GetTypedHeaders().CacheControl =
+                    new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
+                    {
+                        NoCache = true,
+                        NoStore = true,
+                        MaxAge = TimeSpan.Zero
+                    };
+                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Pragma] =
+                        new string[] { "no-cache" };
+
+                await next();
+            });
 
             app.UseEndpoints(endpoints =>
             {

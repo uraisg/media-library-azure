@@ -2,9 +2,11 @@
 using MediaLibrary.Internet.Web.Configuration;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -45,7 +47,22 @@ namespace MediaLibrary.Internet.Web
                 options.SlidingExpiration = true;
             });
 
-            services.AddControllersWithViews();
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
+
+            services.AddControllersWithViews(options =>
+            {
+                options.CacheProfiles.Add("Private600",
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Client,
+                        Duration = 600
+                    });
+            });
 
             services.AddRazorPages()
                 .AddMicrosoftIdentityUI();
@@ -77,6 +94,23 @@ namespace MediaLibrary.Internet.Web
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Configure default Cache-Control headers that are applied to controllers/actions without a [ResponseCache] attribute set,
+            // according to https://docs.microsoft.com/en-us/aspnet/core/performance/caching/middleware?view=aspnetcore-3.1#configuration
+            app.Use(async (context, next) =>
+            {
+                context.Response.GetTypedHeaders().CacheControl =
+                    new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
+                    {
+                        NoCache = true,
+                        NoStore = true,
+                        MaxAge = TimeSpan.Zero
+                    };
+                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Pragma] =
+                        new string[] { "no-cache" };
+
+                await next();
+            });
 
             app.UseEndpoints(endpoints =>
             {
