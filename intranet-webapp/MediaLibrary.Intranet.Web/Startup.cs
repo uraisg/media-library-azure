@@ -2,6 +2,7 @@
 using System.Linq;
 using MediaLibrary.Intranet.Web.Background;
 using MediaLibrary.Intranet.Web.Common;
+using MediaLibrary.Intranet.Web.Configuration;
 using MediaLibrary.Intranet.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -43,6 +44,7 @@ namespace MediaLibrary.Intranet.Web
                 // Handling SameSite cookie according to https://docs.microsoft.com/en-us/aspnet/core/security/samesite?view=aspnetcore-3.1
                 options.HandleSameSiteCookieCompatibility();
             });
+            services.AddCustomHostingConfig(Configuration);
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
@@ -95,6 +97,8 @@ namespace MediaLibrary.Intranet.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCustomHostingConfig();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

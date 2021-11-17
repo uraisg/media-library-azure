@@ -1,4 +1,5 @@
 ﻿using System;
+using MediaLibrary.Internet.Web.Configuration;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -33,6 +34,7 @@ namespace MediaLibrary.Internet.Web
                 // Handling SameSite cookie according to https://docs.microsoft.com/en-us/aspnet/core/security/samesite?view=aspnetcore-3.1
                 options.HandleSameSiteCookieCompatibility();
             });
+            services.AddCustomHostingConfig(Configuration);
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
@@ -54,6 +56,8 @@ namespace MediaLibrary.Internet.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCustomHostingConfig();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
