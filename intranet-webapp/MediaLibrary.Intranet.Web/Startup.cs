@@ -3,8 +3,6 @@ using MediaLibrary.Intranet.Web.Background;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Configuration;
 using MediaLibrary.Intranet.Web.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -38,16 +36,7 @@ namespace MediaLibrary.Intranet.Web
                 options.HandleSameSiteCookieCompatibility();
             });
             services.AddCustomHostingConfig(Configuration);
-
-            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
-
-            services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-            {
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-                options.SlidingExpiration = true;
-            });
-
+            services.AddCustomAuthenticationConfig(Configuration);
             services.AddAuthorization(options =>
             {
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -61,23 +50,6 @@ namespace MediaLibrary.Intranet.Web
             services.AddHostedService<ScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
             services.AddSingleton<MediaSearchService>();
-
-            services.PostConfigure<ApiBehaviorOptions>(options =>
-            {
-                var builtInFactory = options.InvalidModelStateResponseFactory;
-
-                options.InvalidModelStateResponseFactory = context =>
-                {
-                    // Log Automatic HTTP 400 responses triggered by model validation errors in ApiControllers
-                    // See https://github.com/dotnet/AspNetCore.Docs/issues/12157
-                    if (!context.ModelState.IsValid)
-                    {
-                        LogApiModelValidationErrors(context);
-                    }
-
-                    return builtInFactory(context);
-                };
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
