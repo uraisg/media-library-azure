@@ -1,8 +1,12 @@
 ﻿using System;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 
 namespace MediaLibrary.Intranet.Web.Configuration
@@ -14,6 +18,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
         public static IServiceCollection AddCustomAuthenticationConfig(this IServiceCollection services, IConfiguration config)
         {
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .EnableWafCompatibleTicketDataFormat()
                 // Add Microsoft identity platform sign-in
                 .AddMicrosoftIdentityWebApp(
                     // Microsoft identity platform options
@@ -32,9 +37,24 @@ namespace MediaLibrary.Intranet.Web.Configuration
                         // Expire cookies after inactive period
                         options.ExpireTimeSpan = TicketExpiry;
                         options.SlidingExpiration = true;
+
+                        // Use in-memory ticket store
+                        options.SessionStore = new MemoryCacheTicketStore(TicketExpiry);
                     });
 
             return services;
+        }
+
+        private static AuthenticationBuilder EnableWafCompatibleTicketDataFormat(this AuthenticationBuilder builder)
+        {
+            builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>>(
+                serviceProvider =>
+                    new CustomPostConfigureCookieAuthenticationOptions(
+                        serviceProvider.GetRequiredService<IDataProtectionProvider>()
+                    )
+            );
+
+            return builder;
         }
     }
 }
