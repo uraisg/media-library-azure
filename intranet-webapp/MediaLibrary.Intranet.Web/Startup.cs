@@ -98,6 +98,7 @@ namespace MediaLibrary.Intranet.Web
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCustomHostingConfig();
+            app.UseSecurityHeaders();
 
             if (env.IsDevelopment())
             {
@@ -107,8 +108,6 @@ namespace MediaLibrary.Intranet.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
             }
 
             app.UseHttpsRedirection();
