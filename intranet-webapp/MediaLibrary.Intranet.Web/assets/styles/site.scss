@@ -48,6 +48,19 @@ a.navbar-brand {
   border-top-right-radius: 0.2rem;
 }
 
+.nav-user-dropdown-toggle {
+  @media (min-width: map-get($grid-breakpoints, 'md')) {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+}
+
+.nav-profile-photo {
+  height: 36px;
+  display: inline-block;
+  vertical-align: -0.75rem;
+}
+
 .media-container {
   max-height: calc(100vh - 7.5625rem);
   text-align: center;
