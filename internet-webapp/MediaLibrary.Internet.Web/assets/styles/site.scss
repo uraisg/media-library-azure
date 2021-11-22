@@ -6,6 +6,29 @@ body {
   grid-template-rows: auto 1fr auto;
 }
 
+.nav-user-dropdown-toggle {
+  @media (min-width: map-get($grid-breakpoints, 'md')) {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+}
+
+.navbar {
+  user-select: none;
+}
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+.nav-profile-photo {
+  height: 36px;
+  display: inline-block;
+  vertical-align: -0.75rem;
+}
+
 .intro-section,
 .get-started-section {
   padding-top: 3rem;

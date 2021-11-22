@@ -1,14 +1,19 @@
-@using System.Security.Principal
+@using MediaLibrary.Internet.Web.Common
 @if (User.Identity.IsAuthenticated)
 {
     <ul class="navbar-nav ml-md-auto">
-        <li class="navbar-text mr-md-4">Hello @User.Identity.Name</li>
-        <!-- The Account controller is not defined in this project. Instead, it is part of Microsoft.Identity.Web.UI nuget package and
-            it defines some well known actions such as SignUp/In, SignOut and EditProfile-->
-        <li class="nav-item">
-            <form class="form-inline" method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">
-                <button type="submit" class="btn btn-primary">Sign Out</button>
-            </form>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle nav-user-dropdown-toggle" data-toggle="dropdown" href="#" role="button">
+                <img src="@User.GetUserGraphPhoto()" class="nav-profile-photo rounded-circle">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+                <h5 class="dropdown-item-text mb-0">@User.GetUserGraphDisplayName()</h5>
+                <p class="dropdown-item-text text-muted mb-0">@User.GetUserGraphEmail()</p>
+                <div class="dropdown-divider"></div>
+                <form class="form-inline" method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">
+                    <button type="submit" class="dropdown-item">Sign Out</button>
+                </form>
+            </div>
         </li>
     </ul>
 }
