@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using ImageMagick;
+using MediaLibrary.Internet.Web.Common;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
@@ -54,12 +54,19 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return View("~/Views/Home/Index.cshtml");
             }
 
-            List<IFormFile> files = model.File;
+            string email = User.GetUserGraphEmail();
 
-            //get current user claims
-            ClaimsPrincipal cp = this.User;
-            var claims = cp.Claims;
-            string email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+            {
+                _logger.LogError($"Could not get associated email address for user {User.Identity.Name}");
+
+                TempData["Alert.Type"] = "danger";
+                TempData["Alert.Message"] = "Could not find your email address.";
+                return View("~/Views/Home/Index.cshtml");
+            }
+
+            // Uploaded files
+            List<IFormFile> files = model.File;
 
             foreach (IFormFile file in files)
             {
