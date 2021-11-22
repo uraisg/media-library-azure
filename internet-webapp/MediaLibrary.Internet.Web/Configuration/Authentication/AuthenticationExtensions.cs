@@ -24,7 +24,7 @@ namespace MediaLibrary.Internet.Web.Configuration
                     // Microsoft identity platform options
                     options =>
                     {
-                        config.Bind("AzureAdB2C", options);
+                        config.Bind("AzureAd", options);
                     },
                     // Cookie authentication options
                     options =>
