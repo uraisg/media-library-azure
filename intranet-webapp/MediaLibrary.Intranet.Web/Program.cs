@@ -15,7 +15,7 @@ namespace MediaLibrary.Intranet.Web
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
-                        .UseKestrel(options => options.AddServerHeader = false)
+                        .ConfigureKestrel(options => options.AddServerHeader = false)
                         .UseStartup<Startup>();
                 });
     }
