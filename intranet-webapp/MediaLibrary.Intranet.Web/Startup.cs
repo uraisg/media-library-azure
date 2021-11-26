@@ -56,7 +56,7 @@ namespace MediaLibrary.Intranet.Web
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCustomHostingConfig();
-            app.UseSecurityHeaders();
+            app.UseCustomSecurityHeaders(Configuration, env.IsDevelopment());
 
             if (env.IsDevelopment())
             {
