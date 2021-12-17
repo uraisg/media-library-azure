@@ -81,3 +81,9 @@ a.navbar-brand {
   padding-bottom: 2rem;
   background-color: #363d4a;
 }
+
+.required::after {
+    content: "*";
+    font-weight: bold;
+    color: red;
+}

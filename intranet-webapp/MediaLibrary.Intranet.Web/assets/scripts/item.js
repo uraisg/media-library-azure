@@ -114,13 +114,16 @@ function formatDate(date) {
 function renderMediaDetails(data) {
   const fragment = new DocumentFragment()
   const template = document.querySelector('#details-row')
-  const attribs = new Map()
-  attribs.set('Name', 'Filename')
-  attribs.set('Caption', 'Caption')
-  attribs.set('Project', 'Project')
-  attribs.set('Event', 'Event')
+  const attribs = new Map
+  // Ui change 1: Hide Filename
+  // attribs.set('Name', 'Filename')
+  // Ui change 2: Hide Event (it will be synced with Project)
+  //   attribs.set('Event', 'Event')
+  // Ui change 3: Rename Project to 'Name' for simplicity
+  attribs.set('Project', 'Name')
   attribs.set('LocationName', 'Location')
   attribs.set('Copyright', 'Copyright')
+  attribs.set('Caption', 'Caption')
   for (const [key, label] of attribs) {
     if (data[key]?.trim()) {
       const clone = template.content.cloneNode(true)
