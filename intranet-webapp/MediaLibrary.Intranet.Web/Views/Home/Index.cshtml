@@ -35,191 +35,48 @@
     </environment>
 }
 <div class="container">
-
-    <!--Ui change: Search bar moved here - so that it would appear screenwide-->
-    <div class="input-group mt-3">
-        <input asp-for="SearchText" form="searchform" class="form-control border border-right-0" placeholder="Search..." autocomplete="off">
-        <span class="input-group-append">
-            <button class="btn btn-primary border-left-0" type="submit" form="searchform">
-                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
-                    <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
-                </svg>
-            </button>
-        </span>
-    </div>
-
-    <div class="row">
-        <div class="col-md-3 d-flex flex-column filter-sidebar">
-            <form id="filter-form" asp-controller="Home" asp-action="Index" method="get">
-                <input type="hidden" asp-for="SearchText" form="filter-form">
-                <input type="hidden" asp-for="Layout" form="filter-form">
-                <input type="hidden" asp-for="MinDateTaken" form="filter-form">
-                <input type="hidden" asp-for="MaxDateTaken" form="filter-form">
-            </form>
-            <h5 class="mt-3">
-                <!--Old Filters label here, commented out-->
-                <!--
-        Filters
-        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-filter" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
-        </svg>
-        -->
-                <!--Toggle layout views-->
-                <div class="results-count d-flex flex-no-wrap justify-content-between align-items-center my-3">
-                    <span class="d-block">@Html.DisplayFor(m => m.ResultList.Count) results</span>
-                    <div>
-                        <span class="mr-1">Layout:</span>
-                        <div class="btn-group">
-                            <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Grid }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Grid ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in grid layout">
-                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-grid" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
-                                </svg>
-                            </a>
-                            <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.List ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in list layout">
-                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
-                                    <path fill-rule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z" />
-                                </svg>
-                            </a>
-                            <!--
-    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Map ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in map layout">
-        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-map" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in map layout">
-            <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98l4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"></path>
-        </svg>
-    </a>-->
-                        </div>
+<div class="row">
+    <div class="col-md-3 d-flex flex-column filter-sidebar">
+        <form id="filter-form" asp-controller="Home" asp-action="Index" method="get">
+            <input type="hidden" asp-for="SearchText" form="filter-form">
+            <input type="hidden" asp-for="Layout" form="filter-form">
+            <input type="hidden" asp-for="MinDateTaken" form="filter-form">
+            <input type="hidden" asp-for="MaxDateTaken" form="filter-form">
+        </form>
+        <h5 class="mt-3">
+            Filters
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-filter" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+            </svg>
+        </h5>
+        <div class="flex-shrink overflow-auto">
+            <div class="form-group">
+                <label class="filter-heading">Date Taken</label>
+                <div class="input-group input-group-sm mb-1">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">From</span>
                     </div>
+                    <input id="filter-date-from" class="form-control" type="date" autocomplete="off">
                 </div>
-            </h5>
-
-            <!--Dropdown goes here-->
-            <!--DD_Location-->
-            <!--DD_Uploaded date
-
-            <!--Display next page results-->
-            @if (Model != null && Model.PageCount > 1)
-            {
-                // If there is more than one page of results, show the paging buttons.
-                <div class="text-center">
-                    <ul class="list-inline">
-                        @if (Model.CurrentPage > 0)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink("|<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", 0 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">|&lt;</li>
-                        }
-
-                        @if (Model.CurrentPage > 0)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink("<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage - 1 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">&lt;</li>
-                        }
-
-                        @for (var pn = Model.LeftMostPage; pn < Model.LeftMostPage + Model.PageRange; pn++)
-                        {
-                            @if (Model.CurrentPage == pn)
-                            {
-                                // Convert displayed page numbers to 1-based and not 0-based.
-                                <li class="list-inline-item font-weight-bold">@(pn + 1)</li>
-                            }
-                            else
-                            {
-                                <li class="list-inline-item">
-                                    @Html.ActionLink((pn + 1).ToString(), "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", pn } }), null)
-                                </li>
-                            }
-                        }
-
-                        @if (Model.CurrentPage < Model.PageCount - 1)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink(">", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage + 1 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">&gt;</li>
-                        }
-
-                        @if (Model.CurrentPage < Model.PageCount - 1)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink(">|", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.PageCount - 1 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">&gt;|</li>
-                        }
-                    </ul>
-                </div>
-            }
-
-            <div class="flex-shrink overflow-auto">
-                <!--List view here by default-->
-                @for (var i = 0; i < Model.ResultList.Results.Count; i++)
-                {
-                    string tag = string.Join(", ", Model.ResultList.Results[i].Document.Tag);
-                    string name = Model.ResultList.Results[i].Document.Name;
-                    string imgSrc = Model.ResultList.Results[i].Document.ThumbnailURL;
-                    string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.Id) });
-
-                    string fullDescription = Model.ResultList.Results[i].Document.Project;
-                    fullDescription += $"\nLocation: {Model.ResultList.Results[i].Document.LocationName}";
-                    fullDescription += $"\nTags: {tag}";
-
-                    <div class="media p-3 my-3 border rounded bg-light">
-                        <a href="@detailUrl"><img src="@imgSrc" class="mr-3 thumbnail" alt="@name"></a>
-                        <div class="media-body">
-                            <h5 class="mt-0"><a href="@detailUrl">@name</a></h5>
-                            <p class="mb-0">Location: @Model.ResultList.Results[i].Document.LocationName</p>
-                            <p class="mb-0">Tags: @tag</p>
-                        </div>
+                <div class="input-group input-group-sm">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">To</span>
                     </div>
-                }
+                    <input id="filter-date-to" class="form-control" type="date" autocomplete="off">
+                </div>
+            </div>
 
-                <!--Date taken-->
-                <!--
-        <div class="form-group">
-            <label class="filter-heading">Date Taken</label>
-            <div class="input-group input-group-sm mb-1">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">From</span>
-                </div>
-                <input id="filter-date-from" class="form-control" type="date" autocomplete="off">
+            <div class="form-group">
+                <label class="filter-heading" asp-for="SpatialFilter">Planning Area</label>
+                <select class="custom-select custom-select-sm" asp-for="SpatialFilter" asp-items="Model.SpatialCategories" form="filter-form" autocomplete="off">
+                    <option value="">&mdash; ALL &mdash;</option>
+                </select>
             </div>
-            <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">To</span>
-                </div>
-                <input id="filter-date-to" class="form-control" type="date" autocomplete="off">
-            </div>
-        </div>
-            -->
-                <!--Planning area-->
-                <!--
-        <div class="form-group">
-            <label class="filter-heading" asp-for="SpatialFilter">Planning Area</label>
-            <select class="custom-select custom-select-sm" asp-for="SpatialFilter" asp-items="Model.SpatialCategories" form="filter-form" autocomplete="off">
-                <option value="">&mdash; ALL &mdash;</option>
-            </select>
-        </div>
-        -->
-                <!--Locations-->
-                <!--
-        @{List<string> locations = Model.ResultList.Facets["LocationName"].Select(x => x.Value.ToString()).ToList();}
-        <div class="form-group">
-            <label class="filter-heading">Locations</label>
-            <ul class="list-unstyled">
+
+            @{List<string> locations = Model.ResultList.Facets["LocationName"].Select(x => x.Value.ToString()).ToList();}
+            <div class="form-group">
+                <label class="filter-heading">Locations</label>
+                <ul class="list-unstyled">
                 @for (var i = 0; i < locations.Count; i++)
                 {
                     var facetLink = $"{locations[i]} ({Model.ResultList.Facets["LocationName"][i].Count})";
@@ -230,15 +87,13 @@
                         <label class="custom-control-label w-100" for="@facetId">@facetLink</label>
                     </li>
                 }
-            </ul>
-        </div>
-        -->
-                <!--Tag-->
-                <!--
-        @{List<string> tags = Model.ResultList.Facets["Tag"].Select(x => x.Value.ToString()).ToList();}
-        <div class="form-group">
-            <label class="filter-heading">Tags</label>
-            <ul class="list-unstyled">
+                </ul>
+            </div>
+
+            @{List<string> tags = Model.ResultList.Facets["Tag"].Select(x => x.Value.ToString()).ToList();}
+            <div class="form-group">
+                <label class="filter-heading">Tags</label>
+                <ul class="list-unstyled">
                 @for (var i = 0; i < tags.Count; i++)
                 {
                     var facetLink = $"{tags[i]} ({Model.ResultList.Facets["Tag"][i].Count})";
@@ -249,55 +104,51 @@
                         <label class="custom-control-label w-100" for="@facetId">@facetLink</label>
                     </li>
                 }
-            </ul>
+                </ul>
+            </div>
         </div>
-        -->
+        <div class="mt-2 text-right">
+            <button class="btn btn-primary btn-sm disabled" type="submit" form="filter-form">Apply</button>
+            <a class="btn btn-link btn-sm" href="@Url.Action("Index", "Home", new { searchtext = Model.SearchText, layout = Model.Layout }, null)" role="button">Reset</a>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <form id="searchform" asp-controller="Home" asp-action="Index" method="get"></form>
+        <div class="input-group mt-3">
+            <input asp-for="SearchText" form="searchform" class="form-control border border-right-0" placeholder="Search..." autocomplete="off">
+            <span class="input-group-append">
+                <button class="btn btn-primary border-left-0" type="submit" form="searchform">
+                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
+                        <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+                    </svg>
+                </button>
+            </span>
+        </div>
 
-            </div>
-            <div class="mt-2 text-right">
-                <button class="btn btn-primary btn-sm disabled" type="submit" form="filter-form">Apply</button>
-                <a class="btn btn-link btn-sm" href="@Url.Action("Index", "Home", new { searchtext = Model.SearchText, layout = Model.Layout }, null)" role="button">Reset</a>
-            </div>
-        </div>
-
-        <div class="col-md-9">
-            <form id="searchform" asp-controller="Home" asp-action="Index" method="get"></form>
-            <!-- temp commented out, moved to outer
-    <div class="input-group mt-3">
-        <input asp-for="SearchText" form="searchform" class="form-control border border-right-0" placeholder="Search..." autocomplete="off">
-        <span class="input-group-append">
-            <button class="btn btn-primary border-left-0" type="submit" form="searchform">
-                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
-                    <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
-                </svg>
-            </button>
-        </span>
-    </div> -->
-            <!--View layout toggle button here, commented out as moved to sidebar
-    <div class="results-count d-flex flex-no-wrap justify-content-between align-items-center my-3">
-        <span class="d-block">@Html.DisplayFor(m => m.ResultList.Count) results</span>
-        <div>
-            <span class="mr-1">Layout:</span>
-            <div class="btn-group">
-                <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Grid }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Grid ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in grid layout">
-                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-grid" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
-                    </svg>
-                </a>
-                <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.List ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in list layout">
-                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
-                        <path fill-rule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z" />
-                    </svg>
-                </a>
-                <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Map ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in map layout">
-                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-map" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in map layout">
-                        <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98l4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"></path>
-                    </svg>
-                </a>
+        <div class="results-count d-flex flex-no-wrap justify-content-between align-items-center my-3">
+            <span class="d-block">@Html.DisplayFor(m => m.ResultList.Count) results</span>
+            <div>
+                <span class="mr-1">Layout:</span>
+                <div class="btn-group">
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Grid }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Grid ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in grid layout">
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-grid" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
+                        </svg>
+                    </a>
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.List }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.List ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in list layout">
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-view-list" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in list layout">
+                            <path fill-rule="evenodd" d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2zm0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14z" />
+                        </svg>
+                    </a>
+                    <a href="@Url.Action("Index", "Home", parms.Combine(new RouteValueDictionary() {{ "layout", DisplayMode.Map }}))" class="btn btn-sm btn-outline-primary @(@Model.Layout == DisplayMode.Map ? "active" : "")" role="button" data-toggle="tooltip" data-placement="bottom" title="View in map layout">
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-map" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="View in map layout">
+                            <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98l4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"></path>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </div>
-    </div>-->
         <div class="results">
             @if (Model.Layout == DisplayMode.Map)
             {
@@ -315,23 +166,6 @@
                     }
                 </div>
             }
-
-            else if (Model.Layout == DisplayMode.Grid)
-            {
-                <div id="gallery" class="justified-gallery">
-                    @for (var i = 0; i < Model.ResultList.Results.Count; i++)
-                    {
-                        string name = Model.ResultList.Results[i].Document.Name;
-                        string imgSrc = Model.ResultList.Results[i].Document.ThumbnailURL;
-                        string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.Id) });
-
-                        <a href="@detailUrl"><img src="@imgSrc" alt="@name"></a>
-                    }
-                </div>
-            }
-
-            <!--List results here, commented out, moved-->
-            <!--
             else if (Model.Layout == DisplayMode.List)
             {
                 @for (var i = 0; i < Model.ResultList.Results.Count; i++)
@@ -355,80 +189,88 @@
                     </div>
                 }
             }
-            -->
-
-        </div>
-            <!--Paging results here, temp commented off-->
-            <!--
-            @if (Model != null && Model.PageCount > 1)
+            else
             {
-                // If there is more than one page of results, show the paging buttons.
-                <div class="text-center">
-                    <ul class="list-inline">
-                        @if (Model.CurrentPage > 0)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink("|<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", 0 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">|&lt;</li>
-                        }
+                <div id="gallery" class="justified-gallery">
+                @for (var i = 0; i < Model.ResultList.Results.Count; i++)
+                {
+                    string name = Model.ResultList.Results[i].Document.Name;
+                    string imgSrc = Model.ResultList.Results[i].Document.ThumbnailURL;
+                    string detailUrl = Url.Action("Item", "Gallery", new { id = System.IO.Path.GetFileNameWithoutExtension(Model.ResultList.Results[i].Document.Id) });
 
-                        @if (Model.CurrentPage > 0)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink("<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage - 1 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">&lt;</li>
-                        }
-
-                        @for (var pn = Model.LeftMostPage; pn < Model.LeftMostPage + Model.PageRange; pn++)
-                        {
-                            @if (Model.CurrentPage == pn)
-                            {
-                                // Convert displayed page numbers to 1-based and not 0-based.
-                                <li class="list-inline-item font-weight-bold">@(pn + 1)</li>
-                            }
-                            else
-                            {
-                                <li class="list-inline-item">
-                                    @Html.ActionLink((pn + 1).ToString(), "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", pn } }), null)
-                                </li>
-                            }
-                        }
-
-                        @if (Model.CurrentPage < Model.PageCount - 1)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink(">", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage + 1 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">&gt;</li>
-                        }
-
-                        @if (Model.CurrentPage < Model.PageCount - 1)
-                        {
-                            <li class="list-inline-item">
-                                @Html.ActionLink(">|", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.PageCount - 1 } }), null)
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="list-inline-item">&gt;|</li>
-                        }
-                    </ul>
+                    <a href="@detailUrl"><img src="@imgSrc" alt="@name"></a>
+                }
                 </div>
             }
-                -->
         </div>
+        @if (Model != null && Model.PageCount > 1)
+        {
+            // If there is more than one page of results, show the paging buttons.
+            <div class="text-center">
+                <ul class="list-inline">
+                    @if (Model.CurrentPage > 0)
+                    {
+                        <li class="list-inline-item">
+                            @Html.ActionLink("|<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", 0 } }), null)
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-inline-item">|&lt;</li>
+                    }
+
+                    @if (Model.CurrentPage > 0)
+                    {
+                        <li class="list-inline-item">
+                            @Html.ActionLink("<", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage - 1 } }), null)
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-inline-item">&lt;</li>
+                    }
+
+                    @for (var pn = Model.LeftMostPage; pn < Model.LeftMostPage + Model.PageRange; pn++)
+                    {
+                        @if (Model.CurrentPage == pn)
+                        {
+                            // Convert displayed page numbers to 1-based and not 0-based.
+                            <li class="list-inline-item font-weight-bold">@(pn + 1)</li>
+                        }
+                        else
+                        {
+                            <li class="list-inline-item">
+                                @Html.ActionLink((pn + 1).ToString(), "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", pn } }), null)
+                            </li>
+                        }
+                    }
+
+                    @if (Model.CurrentPage < Model.PageCount - 1)
+                    {
+                        <li class="list-inline-item">
+                            @Html.ActionLink(">", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.CurrentPage + 1 } }), null)
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-inline-item">&gt;</li>
+                    }
+
+                    @if (Model.CurrentPage < Model.PageCount - 1)
+                    {
+                        <li class="list-inline-item">
+                            @Html.ActionLink(">|", "Index", "Home", parms.Combine(new RouteValueDictionary() { { "page", Model.PageCount - 1 } }), null)
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-inline-item">&gt;|</li>
+                    }
+                </ul>
+            </div>
+        }
     </div>
+</div>
 </div>
 
 @section Scripts {

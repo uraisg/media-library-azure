@@ -175,8 +175,6 @@ namespace MediaLibrary.Internet.Web.Controllers
                     json.FileURL = imageURL;
                     json.ThumbnailURL = thumbnailURL;
                     json.Project = model.Project;
-                    // Ui changes: commented out event as it's synced with project name
-                    //json.Event = model.Event;
                     json.LocationName = model.LocationText;
                     json.Copyright = model.Copyright;
 
