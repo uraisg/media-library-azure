@@ -59,7 +59,7 @@ namespace MediaLibrary.Intranet.Web.Common
             {
                 // Add the default profile photo
                 identity.AddClaim(
-                    new Claim(GraphClaimTypes.Photo, "/images/no-profile-photo.png"));
+                    new Claim(GraphClaimTypes.Photo, "~/images/no-profile-photo.png"));
                 return;
             }
 
