@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -115,12 +116,12 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 //first retrieve image
                 HttpContent imageContent = await GetImageByURL(item.fileURL);
-                string fileName = Path.GetFileName(item.fileURL);
+                string fileName = HttpUtility.UrlDecode(Path.GetFileName(item.fileURL));
                 await ImageUploadToBlob(imageBlobContainerClient, imageContent, fileName);
 
                 //retrieve thumbnail
                 HttpContent thumbnailContent = await GetImageByURL(item.thumbnailURL);
-                string thumbnailFileName = Path.GetFileName(item.thumbnailURL);
+                string thumbnailFileName = HttpUtility.UrlDecode(Path.GetFileName(item.thumbnailURL));
                 await ImageUploadToBlob(imageBlobContainerClient, thumbnailContent, thumbnailFileName);
 
                 //create new object to serialize to json
