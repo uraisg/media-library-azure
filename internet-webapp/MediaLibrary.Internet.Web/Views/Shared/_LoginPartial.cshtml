@@ -3,8 +3,8 @@
 {
     <ul class="navbar-nav ml-md-auto">
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle nav-user-dropdown-toggle" data-toggle="dropdown" href="#" role="button">
-                <img src="@User.GetUserGraphPhoto()" class="nav-profile-photo rounded-circle">
+            <a class="nav-link dropdown-toggle nav-user-dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-label="Account menu">
+                <img src="@Url.Content(User.GetUserGraphPhoto())" class="nav-profile-photo rounded-circle" alt="">
             </a>
             <div class="dropdown-menu dropdown-menu-right">
                 <h5 class="dropdown-item-text mb-0">@User.GetUserGraphDisplayName()</h5>
