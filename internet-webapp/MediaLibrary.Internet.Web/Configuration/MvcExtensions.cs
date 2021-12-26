@@ -10,6 +10,9 @@ namespace MediaLibrary.Internet.Web.Configuration
         {
             services.AddControllersWithViews(options =>
             {
+                // Enable Antiforgery Token Validation for unsafe HTTP methods by default
+                options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+
                 options.CacheProfiles.Add("Private600",
                     new CacheProfile()
                     {
