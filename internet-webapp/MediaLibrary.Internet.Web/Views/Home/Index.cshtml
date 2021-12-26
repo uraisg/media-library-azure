@@ -110,24 +110,12 @@ if (!string.IsNullOrEmpty(alertType))
         <div class="col-md-6">
             <div class="help-block mb-3">Provide more information to make future search easier!</div>
 
-            <!-- Ui changes: Added validation req -->
             <div class="form-group">
                 <label asp-for="Project" class="required"></label>
                 <input asp-for="Project" class="form-control">
                 <span asp-validation-for="Project" class="form-text text-danger"></span>
-
             </div>
 
-        <!--
-            Ui changes: Commented out event as it's synced into 1 field with Project Name (aka name)
-
-            <div class="form-group">
-            <label asp-for="Event"></label>
-            <input asp-for="Event" class="form-control">
-            </div>
-        -->
-
-            <!-- Ui changes: Added validation req -->
             <div class="form-group">
                 <label asp-for="LocationText" class="required"></label>
                 <input asp-for="LocationText" class="form-control">
