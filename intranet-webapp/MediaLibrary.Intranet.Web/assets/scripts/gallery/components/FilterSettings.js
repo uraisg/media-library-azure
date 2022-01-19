@@ -9,6 +9,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import Tooltip from 'react-bootstrap/Tooltip'
+import { current } from '@reduxjs/toolkit'
 
 const Container = styled.div`
   padding: 1rem;
@@ -84,10 +85,25 @@ const getButtonText = ({ filterType, postalCode, areaName }, areas) => {
   return text
 }
 
+const getButtonText2 = ({ filterType, date1, date2 }, dates) => {
+  let text = 'Date: '
+  if (filterType === 'none') {
+    text += 'All'
+  } else if (filterType === 'uploaded') {
+    console.log('getbuttontext2: ' + date1)
+    text += date1 + ' to ' + date2
+  } else if (filterType === 'taken') {
+    text += date1 + ' to ' + date2
+  }
+
+  return text
+}
+
 const FilterSettings = ({
   filters,
   setFilters,
   areas,
+  dates,
   gridView,
   onSetView,
 }) => {
@@ -95,6 +111,8 @@ const FilterSettings = ({
   const [currentFilters, setCurrentFilters] = useState({
     areaName: '',
     postalCode: '',
+    date1: '',
+    date2:'',
   })
 
   // Keep our UI consistent with filter settings in slice when they are updated
@@ -103,16 +121,36 @@ const FilterSettings = ({
       setCurrentFilters({
         areaName: '',
         postalCode: '',
+        date1: '',
+        date2: '',
       })
     } else if (filters.filterType === 'postal') {
       setCurrentFilters({
         areaName: '',
         postalCode: filters.postalCode,
+        date1: '',
+        date2:'',
       })
     } else if (filters.filterType === 'area') {
       setCurrentFilters({
         areaName: filters.areaName,
         postalCode: '',
+        date1: '',
+        date2:'',
+      })
+    } else if (filters.filterType === 'uploaded') {
+      setCurrentFilters({
+        areaName: '',
+        postalCode: '',
+        date1: filters.uploaded,
+        date2: filters.uploaded2,
+      })
+    } else if (filters.filterType === 'taken') {
+      setCurrentFilters({
+        areaName: '',
+        postalCode: '',
+        date1: filters.taken,
+        date2: filters.taken2,
       })
     }
     setKey(filters.filterType)
@@ -139,6 +177,18 @@ const FilterSettings = ({
         filterType: 'area',
         areaName: currentFilters.areaName,
       })
+    } else if (key === 'Uploaded') {
+      setFilters({
+        filterType: 'uploaded',
+        date1: currentFilters.uploaded,
+        date2: currentFilters.uploaded2,        
+      })
+    } else if (key === 'Taken') {
+      setFilters({
+        filterType: 'taken',
+        date1: currentFilters.taken,
+        date2: currentFilters.taken2,
+      })
     }
   }
 
@@ -159,9 +209,11 @@ const FilterSettings = ({
   ))
 
   const dropdownButtonText = getButtonText(filters, areas)
+  const dropdownButtonText2 = getButtonText2(filters, dates)
 
   return (
     <Container>
+      <div>
       <Dropdown>
         <Dropdown.Toggle
           size="sm"
@@ -233,6 +285,97 @@ const FilterSettings = ({
           </DropdownForm>
         </DropdownMenu>
       </Dropdown>
+      <Dropdown>
+        <Dropdown.Toggle
+          size="sm"
+          variant="outline-primary"   
+          id="dropdown-date-filter"
+        >
+          {dropdownButtonText2}
+        </Dropdown.Toggle>
+        <DropdownMenu>
+          <Dropdown.Header>Date selection</Dropdown.Header>
+          <DropdownForm id={formId} onSubmit={handleSubmit}>
+            <Tabs
+              id="date-filter-tabs"
+              className="mb-3"
+              justify
+              unmountOnExit={true}
+              activeKey={key}
+              onSelect={setKey}
+            >
+              <Tab
+                tabClassName="nav-link-sm"
+                eventKey="Uploaded"
+                title="Uploaded"
+              >
+                <Form.Group controlId="date-input">
+                  <Form.Label srOnly>Uploaded Date</Form.Label>
+                    <Form.Control
+                    form={formId}
+                    size="sm"
+                    type="date"
+                    placeholder="Enter uploaded date (from)"
+                    value={currentFilters.uploaded}
+                    required
+                    onChange={handleFiltersChange('uploaded')}
+                    
+                    />
+                </Form.Group>
+                <Form.Group controlId="date-input">
+                  <Form.Label srOnly>Uploaded Date</Form.Label>
+                  <Form.Control
+                    form={formId}
+                    size="sm"
+                    type="date"
+                    placeholder="Enter uploaded date (to)"
+                      value={currentFilters.uploaded2}
+                    //required
+                    onChange={handleFiltersChange('uploaded2')}
+                  />
+                </Form.Group>
+              </Tab>
+              <Tab
+                tabClassName="nav-link-sm"
+                eventKey="Taken"
+                title="Taken"
+              >
+                <Form.Group controlId="date-input">
+                  <Form.Label srOnly>Taken Date</Form.Label>
+                    <Form.Control
+                      form={formId}
+                      size="sm"
+                      type="date"
+                      placeholder="Enter taken date (from)"
+                      value={currentFilters.taken}
+                      required
+                      onChange={handleFiltersChange('taken')}
+                    />                                   
+                  </Form.Group>
+                  <Form.Group controlId="date-input">
+                    <Form.Label srOnly>Taken Date</Form.Label>
+                    <Form.Control
+                      form={formId}
+                      size="sm"
+                      type="date"
+                      placeholder="Enter taken date (to)"
+                      value={currentFilters.taken2}
+                      required
+                      onChange={handleFiltersChange('taken2')}
+                    />
+                  </Form.Group>
+              </Tab>
+            </Tabs>
+            <Button size="sm" variant="primary" type="submit">
+              Apply
+            </Button>
+            <Button size="sm" variant="link" onClick={handleReset}>
+              Reset
+            </Button>
+          </DropdownForm>
+        </DropdownMenu>
+        </Dropdown>
+      </div>
       <LayoutTypeSwitch gridView={gridView} setGridView={onSetView} />
     </Container>
   )
@@ -242,6 +385,7 @@ FilterSettings.propTypes = {
   filters: PropTypes.object.isRequired,
   setFilters: PropTypes.func.isRequired,
   areas: PropTypes.array.isRequired,
+  dates: PropTypes.array.isRequired,
 }
 
 export default FilterSettings

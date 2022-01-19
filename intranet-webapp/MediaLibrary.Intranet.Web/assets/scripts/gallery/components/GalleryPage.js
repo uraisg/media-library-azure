@@ -70,6 +70,10 @@ const GalleryPage = () => {
       searchParams.set('postalCode', newFilters.postalCode)
     } else if (newFilters.filterType === 'area') {
       searchParams.set('area', newFilters.areaName)
+    } else if (newFilters.filterType === 'uploaded') {
+      searchParams.set('uploadeddate', newFilters.date1 + ';' + newFilters.date2)
+    } else if (newFilters.filterType === 'taken') {
+      searchParams.set('takendate', newFilters.date1 + ';' + newFilters.date2)
     }
     history.push({
       search: `?${searchParams}`,
@@ -107,6 +111,8 @@ const GalleryPage = () => {
     const page = searchParams.get('page') || 1
     const postalCode = searchParams.get('postalCode')
     const areaName = searchParams.get('area')
+    const uploaddate = searchParams.get('uploadeddate')
+    const takendate = searchParams.get('takendate')
 
     let filters = { filterType: 'none' }
     if (postalCode) {
@@ -115,7 +121,20 @@ const GalleryPage = () => {
     if (areaName) {
       filters = { filterType: 'area', areaName }
     }
+    if (uploaddate) {
+      //split values from url and converts timestamp to long
+      let date1 = uploaddate.split(';')[0]
+      let date2 = uploaddate.split(';')[1]
 
+      filters = { filterType: 'uploaded', date1, date2 }
+    }
+    if (takendate) {
+      //split values from url and converts timestamp to long
+      let date1 = takendate.split(';')[0]
+      let date2 = takendate.split(';')[1]
+
+      filters = { filterType: 'taken', date1, date2 }
+    }
     dispatch(getSearchResults(q, filters, page))
   }, [location])
 

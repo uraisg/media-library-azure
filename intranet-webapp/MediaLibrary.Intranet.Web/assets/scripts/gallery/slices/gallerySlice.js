@@ -5,10 +5,12 @@ const galleryAdapter = createEntityAdapter()
 
 const initialState = galleryAdapter.getInitialState({
   searchTerm: '',
-  filters: {
-    filterType: 'none', // 'postal', 'area', or 'none'
+  filters: {   
+    filterType: '', // 'postal', 'area', or 'none'
     // postalCode: '120307',
     // areaName: 'JURONG',
+    date1:'', //refers to date (from)
+    date2: '', //refers to date (to)
   },
   page: 1,
   totalPages: null,
@@ -109,7 +111,18 @@ const getSearchResultsApi = async (searchTerm, filters, page) => {
     params.Lat = lat
   } else if (filters.filterType === 'area') {
     params.SpatialFilter = filters.areaName
-  }
+  } else if (filters.filterType === 'uploaded') {
+    console.log(Date.parse(filters.date1))
+    //converts date to long and divides by ms to s
+    params.mindatetaken = (Date.parse(filters.date1)) / 1000
+    params.maxdatetaken = (Date.parse(filters.date2)) / 1000
+  } else if (filters.filterType === 'taken') {
+    //converts date to long and divides by ms to s
+    params.mindatetaken = (Date.parse(filters.date1)) / 1000
+    params.maxdatetaken = (Date.parse(filters.date2)) / 1000
+  } 
+
+
 
   url.search = new URLSearchParams(params)
 

@@ -25,7 +25,7 @@
   "devDependencies": {
     "@babel/preset-react": "^7.12.10",
     "bootstrap": "^4.6.0",
-    "laravel-mix": "^6.0.34",
+    "laravel-mix": "^6.0.39",
     "popper.js": "^1.16.1",
     "postcss": "^8.3.5",
     "resolve-url-loader": "^4.0.0",
