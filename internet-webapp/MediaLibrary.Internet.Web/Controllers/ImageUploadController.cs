@@ -29,6 +29,8 @@ namespace MediaLibrary.Internet.Web.Controllers
     public class ImageUploadController : Controller
     {
         private static readonly string TransferPartitionKey = "transfer";
+        private static readonly int ComputerVisionMaxFileSize = 4 * 1024 * 1024; // 4MB
+        private static readonly int DefaultJpegQuality = 80;
 
         private readonly AppSettings _appSettings;
         private readonly ILogger _logger;
@@ -101,63 +103,60 @@ namespace MediaLibrary.Internet.Web.Controllers
 
                 try
                 {
-
-                    MemoryStream ms = new MemoryStream();
-                    file.CopyTo(ms);
-
-                    byte[] data = ms.ToArray();
-
-                    MemoryStream uploadImage = new MemoryStream(data);
-                    Stream extractMetadataImage = new MemoryStream(data);
-                    Stream imageStream = new MemoryStream(data);
-                    Stream thumbnailStream = new MemoryStream(data);
+                    byte[] data;
+                    using (var ms = new MemoryStream())
+                    {
+                        await file.CopyToAsync(ms);
+                        data = ms.ToArray();
+                    }
 
                     //upload to a separate container to retrieve image URL
                     //use unique id together with file name to avoid duplication
                     string id = GenerateId();
                     string blobFileName = id + "_" + untrustedFileName;
-                    string imageURL = await ImageUploadToBlob(blobFileName, uploadImage, file.ContentType, _appSettings);
+                    string imageURL;
+                    using (var uploadImage = new MemoryStream(data, false))
+                    {
+                        imageURL = await ImageUploadToBlob(blobFileName, uploadImage, file.ContentType, _appSettings);
+                    }
 
                     //extract image metadata
-                    IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(extractMetadataImage);
+                    IReadOnlyList<MetadataExtractor.Directory> directories;
+                    using (var extractMetadataImage = new MemoryStream(data, false))
+                    {
+                        directories = ImageMetadataReader.ReadMetadata(extractMetadataImage);
+                    }
 
-                    //Get tagging from cognitive services
-                    //Cognitive services can only take in file size less than 4MB
-                    //Do a check on filesize to get tags and generate thumbnail
+                    // Check image size as Cognitive Services can only accept images less than 4MB in size
+                    byte[] fitted = FitImageForAnalysis(data);
+
                     ImageAnalysis computerVisionResult;
                     string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb.jpg";
-                    string thumbnailURL = string.Empty;
-                    int quality = 75;
-
-                    if (data.Length > 4000000)
+                    string thumbnailURL;
+                    if (fitted != null)
                     {
-                        using (var memStream = new MemoryStream())
+                        // Get tags and content-aware thumbnail from Cognitive Services
+                        using (var thumbnailStream = new MemoryStream(fitted, false))
+                        using (var imageStream = new MemoryStream(fitted, false))
                         {
-                            while (data.Length > 4000000)
-                            {
-                                using (var image = new MagickImage(data))
-                                {
-                                    image.Quality = quality;
-                                    image.Write(memStream);
-                                    data = memStream.ToArray();
-                                    _logger.LogInformation($"Compressing: {data.Length}");
-                                    //prevent memory leak
-                                    memStream.SetLength(0);
-                                }
-                            }
-
-                            _logger.LogInformation($"Final: {data.Length}");
-                            Stream thumbStream = new MemoryStream(data);
-                            thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbStream, _appSettings);
-
-                            Stream tagStream = new MemoryStream(data);
-                            computerVisionResult = await CallCSComputerVisionAsync(tagStream, _appSettings);
+                            thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
+                            computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
                         }
                     }
                     else
                     {
-                        thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
-                        computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
+                        // Unable to fit within size limit
+                        // Skip calling Cognitive Services and return empty analysis results
+                        using (var thumbnailStream = new MemoryStream(data, false))
+                        using (var imageStream = new MemoryStream(data, false))
+                        {
+                            thumbnailURL = await GenerateThumbnailMagickAsync(thumbnailFileName, thumbnailStream, _appSettings);
+                            computerVisionResult = new ImageAnalysis()
+                            {
+                                Tags = Array.Empty<ImageTag>(),
+                                Description = new ImageDescriptionDetails(null, Array.Empty<ImageCaption>())
+                            };
+                        }
                     }
 
                     //create json for indexing
@@ -248,6 +247,96 @@ namespace MediaLibrary.Internet.Web.Controllers
             return url;
         }
 
+        /// <summary>
+        /// Try to generate a smaller (in bytes) version of an image that is within the maximum size limit of Cognitive Services APIs.
+        /// </summary>
+        /// <param name="data">The byte array to read the image from.</param>
+        /// <returns>The smaller image. Returns <c>null</c> if image cannot be fitted within size limit.</returns>
+        private byte[] FitImageForAnalysis(byte[] data)
+        {
+            // Check if file is oversized
+            if (data.Length <= ComputerVisionMaxFileSize)
+            {
+                return data;
+            }
+
+            _logger.LogInformation($"Image is oversized, resizing");
+
+
+            byte[] data1;
+            using (var image = new MagickImage(data))
+            using (var ms = new MemoryStream())
+            {
+                long pixelCount = image.Width * image.Height;
+                if (pixelCount > 25_000_000)
+                {
+                    var targetPercentage = new Percentage(Math.Round(Math.Sqrt(25_000_000d / pixelCount) * 100));
+                    image.Resize(targetPercentage);
+                    image.Strip();
+                    image.Quality = DefaultJpegQuality;
+                    image.Write(ms);
+                    data1 = ms.ToArray();
+                    _logger.LogInformation($"Scaling to ~25MP: {image.Width}x{image.Height}, {data1.Length} bytes");
+                }
+                else
+                {
+                    data1 = data;
+                }
+            }
+
+            if (data1.Length <= ComputerVisionMaxFileSize)
+            {
+                return data1;
+            }
+
+            // Fit dimensions to file size
+            byte[] data2 = data1;
+            for (var i = 1; i <= 10; i++)
+            {
+                var targetPercentage = new Percentage(Math.Round(Math.Pow(0.95, i) * 100));
+                using (var image = new MagickImage(data1))
+                using (var ms = new MemoryStream())
+                {
+
+                    image.Resize(targetPercentage);
+                    image.Strip();
+                    image.Quality = DefaultJpegQuality;
+                    image.Write(ms);
+                    data2 = ms.ToArray();
+                    _logger.LogInformation($"Resizing: {image.Width}x{image.Height}, {data2.Length} bytes");
+                }
+
+                if (data2.Length <= ComputerVisionMaxFileSize)
+                {
+                    return data2;
+                }
+            }
+
+            // Fit quality to file size
+            byte[] data3 = data2;
+            for (var targetQuality = DefaultJpegQuality; targetQuality >= 50; targetQuality -= 5)
+            {
+                using (var image = new MagickImage(data1))
+                using (var ms = new MemoryStream())
+                {
+                    image.Strip();
+                    image.Quality = targetQuality;
+                    image.Write(ms);
+                    data3 = ms.ToArray();
+                    _logger.LogInformation($"Reducing quality: q={targetQuality}, {data3.Length} bytes");
+                }
+
+                if (data3.Length <= ComputerVisionMaxFileSize)
+                {
+                    return data3;
+                }
+            }
+
+            // Give up
+            _logger.LogInformation($"Failed to fit image within size limit");
+            return null;
+        }
+
         private static DateTime GetTimestamp(IReadOnlyList<MetadataExtractor.Directory> directories)
         {
             var time = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
@@ -311,6 +400,37 @@ namespace MediaLibrary.Internet.Web.Controllers
             };
         }
 
+        /// <summary>
+        /// Generate a thumbnail image using IM and upload to blob storage.
+        /// </summary>
+        /// <returns>The URL for the thumbnail image.</returns>
+        private static async Task<string> GenerateThumbnailMagickAsync(string filename, Stream imageStream, AppSettings appSettings)
+        {
+            int width = int.Parse(appSettings.ThumbWidth);
+            int height = int.Parse(appSettings.ThumbHeight);
+
+            byte[] thumbnailImageData;
+            using (var image = new MagickImage(imageStream))
+            using (var ms = new MemoryStream())
+            {
+                image.Strip();
+                image.Resize(new MagickGeometry(width, height)
+                {
+                    IgnoreAspectRatio = true
+                });
+                image.Write(ms);
+                thumbnailImageData = ms.ToArray();
+            }
+
+            var result = new MemoryStream(thumbnailImageData);
+            string bloburl = await ImageUploadToBlob(filename, result, "image/jpeg", appSettings);
+            return bloburl;
+        }
+
+        /// <summary>
+        /// Generate a thumbnail image using Cognitive Services and upload to blob storage.
+        /// </summary>
+        /// <returns>The URL for the thumbnail image.</returns>
         private static async Task<string> GenerateThumbnailAsync(string filename, Stream image, AppSettings appSettings)
         {
             string subscriptionKey = appSettings.ComputerVisionApiKey;
