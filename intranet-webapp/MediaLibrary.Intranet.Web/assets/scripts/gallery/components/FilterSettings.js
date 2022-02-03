@@ -9,12 +9,20 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import Tooltip from 'react-bootstrap/Tooltip'
-import { current } from '@reduxjs/toolkit'
 
 const Container = styled.div`
   padding: 1rem;
+  margin: 0 -0.25rem;
   display: flex;
   justify-content: space-between;
+`
+
+const PushRight = styled.div`
+  margin: 0 0.25rem 0 auto;
+`
+
+const StyledDropdown = styled(Dropdown)`
+  margin: 0 0.25rem;
 `
 
 const DropdownMenu = styled(Dropdown.Menu)`
@@ -39,7 +47,7 @@ const TooltipOverlay = ({ message, placement = 'bottom', ...props }) => {
 
 const LayoutTypeSwitch = ({ gridView, setGridView }) => {
   return (
-    <div>
+    <PushRight>
       <span className="mr-2">
         <small className="font-weight-bold">Layout</small>
       </span>
@@ -67,7 +75,7 @@ const LayoutTypeSwitch = ({ gridView, setGridView }) => {
           </Button>
         </TooltipOverlay>
       </ButtonGroup>
-    </div>
+    </PushRight>
   )
 }
 
@@ -213,8 +221,7 @@ const FilterSettings = ({
 
   return (
     <Container>
-      <div>
-      <Dropdown>
+      <StyledDropdown>
         <Dropdown.Toggle
           size="sm"
           variant="outline-primary"
@@ -284,8 +291,8 @@ const FilterSettings = ({
             </Button>
           </DropdownForm>
         </DropdownMenu>
-      </Dropdown>
-      <Dropdown>
+      </StyledDropdown>
+      <StyledDropdown>
         <Dropdown.Toggle
           size="sm"
           variant="outline-primary"   
@@ -374,8 +381,7 @@ const FilterSettings = ({
             </Button>
           </DropdownForm>
         </DropdownMenu>
-        </Dropdown>
-      </div>
+      </StyledDropdown>
       <LayoutTypeSwitch gridView={gridView} setGridView={onSetView} />
     </Container>
   )

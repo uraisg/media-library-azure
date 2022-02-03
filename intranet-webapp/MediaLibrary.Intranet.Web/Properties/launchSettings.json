@@ -1,12 +1,10 @@
-{
+﻿{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:1090",
-      "sslPort": 44391,
-      //to disable this if port to uat
-      "runtimeArgs": [ "--disable-web-security" ]
+      "sslPort": 44391
     }
   },
   "profiles": {
