@@ -1,15 +1,23 @@
 import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
 import { queryPostalCode } from '@/api/onemap'
 
+export const SpatialFilters = {
+  All: 'none',
+  Postal: 'postal',
+  Area: 'area',
+}
 const galleryAdapter = createEntityAdapter()
 
 const initialState = galleryAdapter.getInitialState({
   searchTerm: '',
-  filters: {   
-    filterType: '', // 'postal', 'area', or 'none'
-    // postalCode: '120307',
-    // areaName: 'JURONG',
-    date1:'', //refers to date (from)
+  filters: {
+    spatial: {
+      type: SpatialFilters.All,
+      // postalCode: '609601',
+      // areaName: 'JURONG',
+    },
+    filterType: '', // 'uploaded', or 'taken'
+    date1: '', //refers to date (from)
     date2: '', //refers to date (to)
   },
   page: 1,
@@ -46,7 +54,7 @@ const gallerySlice = createSlice({
       state.error = action.payload
     },
     selectSearchResult(state, action) {
-      state.results.forEach(result => {
+      state.results.forEach((result) => {
         if (result.id === action.payload) {
           result.isSelected = true
         } else if (result.isSelected) {
@@ -67,7 +75,7 @@ export const {
   getSearchResultsSuccess,
   getSearchResultsFailed,
   selectSearchResult,
-  setGridView
+  setGridView,
 } = gallerySlice.actions
 
 export default gallerySlice.reducer
@@ -105,13 +113,15 @@ const getSearchResultsApi = async (searchTerm, filters, page) => {
   }
 
   // Convert filters to search API parameters
-  if (filters.filterType === 'postal') {
-    const [lng, lat] = await queryPostalCode(filters.postalCode)
+  if (filters.spatial.type === SpatialFilters.Postal) {
+    const [lng, lat] = await queryPostalCode(filters.spatial.postalCode)
     params.Lng = lng
     params.Lat = lat
-  } else if (filters.filterType === 'area') {
-    params.SpatialFilter = filters.areaName
-  } else if (filters.filterType === 'uploaded') {
+  } else if (filters.spatial.type === SpatialFilters.Area) {
+    params.SpatialFilter = filters.spatial.areaName
+  }
+
+  if (filters.filterType === 'uploaded') {
     console.log(Date.parse(filters.date1))
     //converts date to long and divides by ms to s
     params.mindatetaken = (Date.parse(filters.date1)) / 1000

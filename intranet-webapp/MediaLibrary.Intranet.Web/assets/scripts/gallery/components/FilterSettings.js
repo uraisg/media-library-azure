@@ -9,6 +9,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import Tooltip from 'react-bootstrap/Tooltip'
+import SpatialFilter from '@/components/SpatialFilter'
 
 const Container = styled.div`
   padding: 1rem;
@@ -79,26 +80,11 @@ const LayoutTypeSwitch = ({ gridView, setGridView }) => {
   )
 }
 
-const getButtonText = ({ filterType, postalCode, areaName }, areas) => {
-  let text = 'Location: '
-
-  if (filterType === 'none') {
-    text += 'All'
-  } else if (filterType === 'postal') {
-    text += postalCode
-  } else if (filterType === 'area') {
-    text += areas.find((a) => a.Id == areaName)?.Name || areaName
-  }
-
-  return text
-}
-
-const getButtonText2 = ({ filterType, date1, date2 }, dates) => {
+const getButtonText2 = ({ filterType, date1, date2 }) => {
   let text = 'Date: '
   if (filterType === 'none') {
     text += 'All'
   } else if (filterType === 'uploaded') {
-    console.log('getbuttontext2: ' + date1)
     text += date1 + ' to ' + date2
   } else if (filterType === 'taken') {
     text += date1 + ' to ' + date2
@@ -111,7 +97,6 @@ const FilterSettings = ({
   filters,
   setFilters,
   areas,
-  dates,
   gridView,
   onSetView,
 }) => {
@@ -119,49 +104,37 @@ const FilterSettings = ({
   const [currentFilters, setCurrentFilters] = useState({
     areaName: '',
     postalCode: '',
-    date1: '',
-    date2:'',
   })
 
-  // Keep our UI consistent with filter settings in slice when they are updated
-  useEffect(() => {
+  const resetCurrentFilters = () => {
     if (filters.filterType === 'none') {
       setCurrentFilters({
-        areaName: '',
-        postalCode: '',
-        date1: '',
-        date2: '',
-      })
-    } else if (filters.filterType === 'postal') {
-      setCurrentFilters({
-        areaName: '',
-        postalCode: filters.postalCode,
-        date1: '',
-        date2:'',
-      })
-    } else if (filters.filterType === 'area') {
-      setCurrentFilters({
-        areaName: filters.areaName,
-        postalCode: '',
-        date1: '',
-        date2:'',
+        uploaded: '',
+        uploaded2: '',
+        taken: '',
+        taken2: '',
       })
     } else if (filters.filterType === 'uploaded') {
       setCurrentFilters({
-        areaName: '',
-        postalCode: '',
-        date1: filters.uploaded,
-        date2: filters.uploaded2,
+        uploaded: filters.date1,
+        uploaded2: filters.date2,
+        taken: '',
+        taken2: '',
       })
     } else if (filters.filterType === 'taken') {
       setCurrentFilters({
-        areaName: '',
-        postalCode: '',
-        date1: filters.taken,
-        date2: filters.taken2,
+        uploaded: '',
+        uploaded2: '',
+        taken: filters.date1,
+        taken2: filters.date2,
       })
     }
     setKey(filters.filterType)
+  }
+
+  // Keep our UI consistent with filter settings in slice when they are updated
+  useEffect(() => {
+    resetCurrentFilters()
   }, [filters])
 
   const handleFiltersChange = (key) => (e) => {
@@ -172,24 +145,20 @@ const FilterSettings = ({
     })
   }
 
+  const handleToggle = (isOpen) => {
+    if (!isOpen) {
+      resetCurrentFilters()
+    }
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     // Check which tab is active and set the filter specific to it
-    if (key === 'postal') {
-      setFilters({
-        filterType: 'postal',
-        postalCode: currentFilters.postalCode,
-      })
-    } else if (key === 'area') {
-      setFilters({
-        filterType: 'area',
-        areaName: currentFilters.areaName,
-      })
-    } else if (key === 'Uploaded') {
+    if (key === 'Uploaded') {
       setFilters({
         filterType: 'uploaded',
         date1: currentFilters.uploaded,
-        date2: currentFilters.uploaded2,        
+        date2: currentFilters.uploaded2,
       })
     } else if (key === 'Taken') {
       setFilters({
@@ -210,92 +179,15 @@ const FilterSettings = ({
     () => 'filter-form-' + Math.random().toString(36).substr(2, 9)
   )
 
-  const areasOptions = areas.map((area) => (
-    <option key={area.Id} value={area.Id}>
-      {area.Name}
-    </option>
-  ))
-
-  const dropdownButtonText = getButtonText(filters, areas)
-  const dropdownButtonText2 = getButtonText2(filters, dates)
+  const dropdownButtonText2 = getButtonText2(filters)
 
   return (
     <Container>
-      <StyledDropdown>
+      <SpatialFilter filters={filters} setFilters={setFilters} areas={areas} />
+      <StyledDropdown onToggle={handleToggle}>
         <Dropdown.Toggle
           size="sm"
           variant="outline-primary"
-          id="dropdown-location-filter"
-        >
-          {dropdownButtonText}
-        </Dropdown.Toggle>
-        <DropdownMenu>
-          <Dropdown.Header>Location type</Dropdown.Header>
-          <DropdownForm id={formId} onSubmit={handleSubmit}>
-            <Tabs
-              id="location-filter-tabs"
-              className="mb-3"
-              justify
-              unmountOnExit={true}
-              activeKey={key}
-              onSelect={setKey}
-            >
-              <Tab
-                tabClassName="nav-link-sm"
-                eventKey="postal"
-                title="Postal Code"
-              >
-                <Form.Group controlId="postal-input">
-                  <Form.Label srOnly>Postal Code</Form.Label>
-                  <Form.Control
-                    form={formId}
-                    size="sm"
-                    type="tel"
-                    maxLength={6}
-                    pattern="[0-9]{6}"
-                    placeholder="Enter postal code (6 digits)"
-                    value={currentFilters.postalCode}
-                    required
-                    onChange={handleFiltersChange('postalCode')}
-                  />
-                </Form.Group>
-              </Tab>
-              <Tab
-                tabClassName="nav-link-sm"
-                eventKey="area"
-                title="Planning Area"
-              >
-                <Form.Group controlId="area-select">
-                  <Form.Label srOnly>Planning Area</Form.Label>
-                  <Form.Control
-                    form={formId}
-                    size="sm"
-                    as="select"
-                    value={currentFilters.areaName ?? ''}
-                    required
-                    onChange={handleFiltersChange('areaName')}
-                  >
-                    <option value="" disabled>
-                      Select an area
-                    </option>
-                    {areasOptions}
-                  </Form.Control>
-                </Form.Group>
-              </Tab>
-            </Tabs>
-            <Button size="sm" variant="primary" type="submit">
-              Apply
-            </Button>
-            <Button size="sm" variant="link" onClick={handleReset}>
-              Reset
-            </Button>
-          </DropdownForm>
-        </DropdownMenu>
-      </StyledDropdown>
-      <StyledDropdown>
-        <Dropdown.Toggle
-          size="sm"
-          variant="outline-primary"   
           id="dropdown-date-filter"
         >
           {dropdownButtonText2}
@@ -326,7 +218,7 @@ const FilterSettings = ({
                     value={currentFilters.uploaded}
                     required
                     onChange={handleFiltersChange('uploaded')}
-                    
+
                     />
                 </Form.Group>
                 <Form.Group controlId="date-input">
@@ -357,7 +249,7 @@ const FilterSettings = ({
                       value={currentFilters.taken}
                       required
                       onChange={handleFiltersChange('taken')}
-                    />                                   
+                    />
                   </Form.Group>
                   <Form.Group controlId="date-input">
                     <Form.Label srOnly>Taken Date</Form.Label>
@@ -391,7 +283,6 @@ FilterSettings.propTypes = {
   filters: PropTypes.object.isRequired,
   setFilters: PropTypes.func.isRequired,
   areas: PropTypes.array.isRequired,
-  dates: PropTypes.array.isRequired,
 }
 
 export default FilterSettings
