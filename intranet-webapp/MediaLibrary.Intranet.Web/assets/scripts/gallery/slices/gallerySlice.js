@@ -6,6 +6,13 @@ export const SpatialFilters = {
   Postal: 'postal',
   Area: 'area',
 }
+
+export const DateFilters = {
+  All: 'none',
+  Uploaded: 'uploaded',
+  Taken: 'taken',
+}
+
 const galleryAdapter = createEntityAdapter()
 
 const initialState = galleryAdapter.getInitialState({
@@ -15,6 +22,11 @@ const initialState = galleryAdapter.getInitialState({
       type: SpatialFilters.All,
       // postalCode: '609601',
       // areaName: 'JURONG',
+    },
+    temporal: {
+      type: DateFilters.All,
+      // dateFrom: '2017-06-01',
+      // dateTo: '2021-06-01',
     },
     filterType: '', // 'uploaded', or 'taken'
     date1: '', //refers to date (from)

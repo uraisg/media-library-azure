@@ -8,6 +8,7 @@ import FilterSettings from '@/components/FilterSettings'
 import SearchResultsView from '@/components/SearchResultsView'
 import {
   SpatialFilters,
+  DateFilters,
   getSearchResults,
   selectSearchResult,
   setGridView,
@@ -81,6 +82,24 @@ const GalleryPage = () => {
       }
     }
 
+    if (newFilters.temporal) {
+      searchParams.delete('uploadeddate')
+      searchParams.delete('takendate')
+      if (newFilters.temporal.type === DateFilters.Uploaded) {
+        searchParams.set(
+          'uploadeddate',
+          newFilters.temporal.dateFrom + ';' + newFilters.temporal.dateTo
+        )
+        searchParams.delete('takendate')
+      } else if (newFilters.temporal.type === DateFilters.Taken) {
+        searchParams.set(
+          'takendate',
+          newFilters.temporal.dateFrom + ';' + newFilters.temporal.dateTo
+        )
+        searchParams.delete('uploadeddate')
+      }
+    }
+
     if (newFilters.filterType === 'none') {
       searchParams.delete('uploadeddate')
       searchParams.delete('takendate')
@@ -139,6 +158,16 @@ const GalleryPage = () => {
       spatial = { type: SpatialFilters.Area, areaName }
     }
 
+    let temporal = { type: DateFilters.All }
+    if (uploaddate) {
+      const [dateFrom, dateTo] = uploaddate.split(';')
+      temporal = { type: DateFilters.Uploaded, dateFrom, dateTo }
+    }
+    if (takendate) {
+      const [dateFrom, dateTo] = takendate.split(';')
+      temporal = { type: DateFilters.Taken, dateFrom, dateTo }
+    }
+
     let filters = { filterType: 'none' }
     if (uploaddate) {
       //split values from url and converts timestamp to long
@@ -155,7 +184,7 @@ const GalleryPage = () => {
       filters = { filterType: 'taken', date1, date2 }
     }
 
-    filters = { spatial, ...filters }
+    filters = { spatial, temporal, ...filters }
     dispatch(getSearchResults(q, filters, page))
   }, [location])
 
