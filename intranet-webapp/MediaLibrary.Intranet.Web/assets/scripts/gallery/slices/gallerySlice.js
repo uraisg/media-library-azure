@@ -1,4 +1,5 @@
 import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
+import { getUnixTime, parseISO } from 'date-fns'
 import { queryPostalCode } from '@/api/onemap'
 
 export const SpatialFilters = {
@@ -28,9 +29,6 @@ const initialState = galleryAdapter.getInitialState({
       // dateFrom: '2017-06-01',
       // dateTo: '2021-06-01',
     },
-    filterType: '', // 'uploaded', or 'taken'
-    date1: '', //refers to date (from)
-    date2: '', //refers to date (to)
   },
   page: 1,
   totalPages: null,
@@ -125,6 +123,8 @@ const getSearchResultsApi = async (searchTerm, filters, page) => {
   }
 
   // Convert filters to search API parameters
+
+  // Set spatial parameters
   if (filters.spatial.type === SpatialFilters.Postal) {
     const [lng, lat] = await queryPostalCode(filters.spatial.postalCode)
     params.Lng = lng
@@ -133,18 +133,22 @@ const getSearchResultsApi = async (searchTerm, filters, page) => {
     params.SpatialFilter = filters.spatial.areaName
   }
 
-  if (filters.filterType === 'uploaded') {
-    console.log(Date.parse(filters.date1))
-    //converts date to long and divides by ms to s
-    params.mindatetaken = (Date.parse(filters.date1)) / 1000
-    params.maxdatetaken = (Date.parse(filters.date2)) / 1000
-  } else if (filters.filterType === 'taken') {
-    //converts date to long and divides by ms to s
-    params.mindatetaken = (Date.parse(filters.date1)) / 1000
-    params.maxdatetaken = (Date.parse(filters.date2)) / 1000
-  } 
-
-
+  // Set date parameters
+  if (filters.temporal.type === DateFilters.Uploaded) {
+    if (filters.temporal.dateFrom) {
+      params.mindateuploaded = getUnixTime(parseISO(filters.temporal.dateFrom))
+    }
+    if (filters.temporal.dateTo) {
+      params.maxdateuploaded = getUnixTime(parseISO(filters.temporal.dateTo))
+    }
+  } else if (filters.temporal.type === DateFilters.Taken) {
+    if (filters.temporal.dateFrom) {
+      params.mindatetaken = getUnixTime(parseISO(filters.temporal.dateFrom))
+    }
+    if (filters.temporal.dateTo) {
+      params.maxdatetaken = getUnixTime(parseISO(filters.temporal.dateTo))
+    }
+  }
 
   url.search = new URLSearchParams(params)
 

@@ -88,27 +88,16 @@ const GalleryPage = () => {
       if (newFilters.temporal.type === DateFilters.Uploaded) {
         searchParams.set(
           'uploadeddate',
-          newFilters.temporal.dateFrom + ';' + newFilters.temporal.dateTo
+          newFilters.temporal.dateFrom + '_' + newFilters.temporal.dateTo
         )
         searchParams.delete('takendate')
       } else if (newFilters.temporal.type === DateFilters.Taken) {
         searchParams.set(
           'takendate',
-          newFilters.temporal.dateFrom + ';' + newFilters.temporal.dateTo
+          newFilters.temporal.dateFrom + '_' + newFilters.temporal.dateTo
         )
         searchParams.delete('uploadeddate')
       }
-    }
-
-    if (newFilters.filterType === 'none') {
-      searchParams.delete('uploadeddate')
-      searchParams.delete('takendate')
-    } else if (newFilters.filterType === 'uploaded') {
-      searchParams.set('uploadeddate', newFilters.date1 + ';' + newFilters.date2)
-      searchParams.delete('takendate')
-    } else if (newFilters.filterType === 'taken') {
-      searchParams.set('takendate', newFilters.date1 + ';' + newFilters.date2)
-      searchParams.delete('uploadeddate')
     }
 
     history.push({
@@ -160,31 +149,15 @@ const GalleryPage = () => {
 
     let temporal = { type: DateFilters.All }
     if (uploaddate) {
-      const [dateFrom, dateTo] = uploaddate.split(';')
+      const [dateFrom, dateTo] = uploaddate.split('_')
       temporal = { type: DateFilters.Uploaded, dateFrom, dateTo }
     }
     if (takendate) {
-      const [dateFrom, dateTo] = takendate.split(';')
+      const [dateFrom, dateTo] = takendate.split('_')
       temporal = { type: DateFilters.Taken, dateFrom, dateTo }
     }
 
-    let filters = { filterType: 'none' }
-    if (uploaddate) {
-      //split values from url and converts timestamp to long
-      let date1 = uploaddate.split(';')[0]
-      let date2 = uploaddate.split(';')[1]
-
-      filters = { filterType: 'uploaded', date1, date2 }
-    }
-    if (takendate) {
-      //split values from url and converts timestamp to long
-      let date1 = takendate.split(';')[0]
-      let date2 = takendate.split(';')[1]
-
-      filters = { filterType: 'taken', date1, date2 }
-    }
-
-    filters = { spatial, temporal, ...filters }
+    const filters = { spatial, temporal }
     dispatch(getSearchResults(q, filters, page))
   }, [location])
 
