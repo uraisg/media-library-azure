@@ -40,6 +40,9 @@ function renderMetadataSection(data) {
   const template = document.querySelector('#metadata-section')
   const clone = template.content.cloneNode(true)
 
+  const author = clone.querySelector('.metadata-author span')
+  author.textContent = data['Author']
+
   const geo = clone.querySelector('.metadata-geo')
   if (data['Location']) {
     const toggle = geo.querySelector('.dropdown-toggle')
