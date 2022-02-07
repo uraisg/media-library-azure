@@ -107,7 +107,7 @@ function getStaticMapUrl(coords, zoom) {
 }
 
 function formatDate(date) {
-  const options = { year: 'numeric', month: 'short', day: '2-digit' }
+  const options = { year: 'numeric', month: 'short', day: 'numeric' }
   return new Intl.DateTimeFormat('default', options).format(new Date(date))
 }
 
