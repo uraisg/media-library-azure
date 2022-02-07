@@ -16,7 +16,7 @@ store.dispatch(fetchAreas())
 
 render(
   <Provider store={store}>
-    <Router basename="/s">
+    <Router basename={window.location.pathname}>
       <App />
     </Router>
   </Provider>,

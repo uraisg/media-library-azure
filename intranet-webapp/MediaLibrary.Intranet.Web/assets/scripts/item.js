@@ -107,7 +107,7 @@ function getStaticMapUrl(coords, zoom) {
 }
 
 function formatDate(date) {
-  const options = { year: 'numeric', month: 'short', day: '2-digit' }
+  const options = { year: 'numeric', month: 'short', day: 'numeric' }
   return new Intl.DateTimeFormat('default', options).format(new Date(date))
 }
 
@@ -138,10 +138,8 @@ function renderTagList(tags) {
   tags.forEach(function (tag) {
     const a = template.content.firstElementChild.cloneNode(true)
     a.textContent = tag
-    a.href = `${a.href}?TagFilter=${encodeURIComponent(tag).replace(
-      /%20/g,
-      '+'
-    )}`
+    // TODO: restore link once tag search syntax is in place
+    a.href = '#'
     fragment.appendChild(a)
   })
   return fragment
