@@ -7,6 +7,8 @@ import Map from '@/components/Map'
 import FilterSettings from '@/components/FilterSettings'
 import SearchResultsView from '@/components/SearchResultsView'
 import {
+  SpatialFilters,
+  DateFilters,
   getSearchResults,
   selectSearchResult,
   setGridView,
@@ -63,14 +65,41 @@ const GalleryPage = () => {
   }
 
   const setFilters = (newFilters) => {
-    const searchParams = new URLSearchParams({
-      q: searchTerm,
-    })
-    if (newFilters.filterType === 'postal') {
-      searchParams.set('postalCode', newFilters.postalCode)
-    } else if (newFilters.filterType === 'area') {
-      searchParams.set('area', newFilters.areaName)
+    const searchParams = new URLSearchParams(location.search)
+    if (searchTerm) {
+      searchParams.set('q', searchTerm)
+    } else {
+      searchParams.delete('q')
     }
+
+    if (newFilters.spatial) {
+      searchParams.delete('postalCode')
+      searchParams.delete('area')
+      if (newFilters.spatial.type === SpatialFilters.Postal) {
+        searchParams.set('postalCode', newFilters.spatial.postalCode)
+      } else if (newFilters.spatial.type === SpatialFilters.Area) {
+        searchParams.set('area', newFilters.spatial.areaName)
+      }
+    }
+
+    if (newFilters.temporal) {
+      searchParams.delete('uploadeddate')
+      searchParams.delete('takendate')
+      if (newFilters.temporal.type === DateFilters.Uploaded) {
+        searchParams.set(
+          'uploadeddate',
+          newFilters.temporal.dateFrom + '_' + newFilters.temporal.dateTo
+        )
+        searchParams.delete('takendate')
+      } else if (newFilters.temporal.type === DateFilters.Taken) {
+        searchParams.set(
+          'takendate',
+          newFilters.temporal.dateFrom + '_' + newFilters.temporal.dateTo
+        )
+        searchParams.delete('uploadeddate')
+      }
+    }
+
     history.push({
       search: `?${searchParams}`,
     })
@@ -107,15 +136,28 @@ const GalleryPage = () => {
     const page = searchParams.get('page') || 1
     const postalCode = searchParams.get('postalCode')
     const areaName = searchParams.get('area')
+    const uploaddate = searchParams.get('uploadeddate')
+    const takendate = searchParams.get('takendate')
 
-    let filters = { filterType: 'none' }
+    let spatial = { type: SpatialFilters.All }
     if (postalCode) {
-      filters = { filterType: 'postal', postalCode }
+      spatial = { type: SpatialFilters.Postal, postalCode }
     }
     if (areaName) {
-      filters = { filterType: 'area', areaName }
+      spatial = { type: SpatialFilters.Area, areaName }
     }
 
+    let temporal = { type: DateFilters.All }
+    if (uploaddate) {
+      const [dateFrom, dateTo] = uploaddate.split('_')
+      temporal = { type: DateFilters.Uploaded, dateFrom, dateTo }
+    }
+    if (takendate) {
+      const [dateFrom, dateTo] = takendate.split('_')
+      temporal = { type: DateFilters.Taken, dateFrom, dateTo }
+    }
+
+    const filters = { spatial, temporal }
     dispatch(getSearchResults(q, filters, page))
   }, [location])
 

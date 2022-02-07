@@ -135,7 +135,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 SpatialFilter = model.SpatialFilter,
                 DistanceSearch = point != null ? new GeoDistanceSearch() { Point = point, Radius = 500 } : null,
                 MinDateTaken = model.MinDateTaken,
-                MaxDateTaken = model.MaxDateTaken
+                MaxDateTaken = model.MaxDateTaken,
+                MinDateUploaded = model.MinDateUploaded,
+                MaxDateUploaded = model.MaxDateUploaded
             };
 
             var result = await _mediaSearchService.QueryAsync(model.SearchText, searchOptions, GlobalVariables.ResultsPerPage, skip);

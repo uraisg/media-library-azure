@@ -55,6 +55,12 @@ namespace MediaLibrary.Intranet.Web.Models
         // Unix timestamp representation (seconds)
         public long? MaxDateTaken { get; set; }
 
+        // Unix timestamp representation (seconds)
+        public long? MinDateUploaded { get; set; }
+
+        // Unix timestamp representation (seconds)
+        public long? MaxDateUploaded { get; set; }
+
         public string SpatialFilter { get; set; }
 
         public IList<SelectListItem> SpatialCategories { get; set; }

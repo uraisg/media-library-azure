@@ -118,8 +118,20 @@ namespace MediaLibrary.Intranet.Web.Services
 
             if (o.MaxDateTaken != null)
             {
-                string minDateTakenString = DateTimeOffset.FromUnixTimeSeconds(o.MaxDateTaken.Value).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK", CultureInfo.InvariantCulture);
-                subexpressions.Add($"DateTaken le {minDateTakenString}");
+                string maxDateTakenString = DateTimeOffset.FromUnixTimeSeconds(o.MaxDateTaken.Value).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                subexpressions.Add($"DateTaken le {maxDateTakenString}");
+            }
+
+            if (o.MinDateUploaded != null)
+            {
+                string minDateUploadedString = DateTimeOffset.FromUnixTimeSeconds(o.MinDateUploaded.Value).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                subexpressions.Add($"UploadDate ge {minDateUploadedString}");
+            }
+
+            if (o.MaxDateUploaded != null)
+            {
+                string maxDateUploadedString = DateTimeOffset.FromUnixTimeSeconds(o.MaxDateUploaded.Value).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                subexpressions.Add($"UploadDate le {maxDateUploadedString}");
             }
 
             string spatialExpression = TransformSpatialFilter(o.SpatialFilter);

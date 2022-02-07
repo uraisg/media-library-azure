@@ -1,14 +1,34 @@
 import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
+import { getUnixTime, parseISO } from 'date-fns'
 import { queryPostalCode } from '@/api/onemap'
+
+export const SpatialFilters = {
+  All: 'none',
+  Postal: 'postal',
+  Area: 'area',
+}
+
+export const DateFilters = {
+  All: 'none',
+  Uploaded: 'uploaded',
+  Taken: 'taken',
+}
 
 const galleryAdapter = createEntityAdapter()
 
 const initialState = galleryAdapter.getInitialState({
   searchTerm: '',
   filters: {
-    filterType: 'none', // 'postal', 'area', or 'none'
-    // postalCode: '120307',
-    // areaName: 'JURONG',
+    spatial: {
+      type: SpatialFilters.All,
+      // postalCode: '609601',
+      // areaName: 'JURONG',
+    },
+    temporal: {
+      type: DateFilters.All,
+      // dateFrom: '2017-06-01',
+      // dateTo: '2021-06-01',
+    },
   },
   page: 1,
   totalPages: null,
@@ -44,7 +64,7 @@ const gallerySlice = createSlice({
       state.error = action.payload
     },
     selectSearchResult(state, action) {
-      state.results.forEach(result => {
+      state.results.forEach((result) => {
         if (result.id === action.payload) {
           result.isSelected = true
         } else if (result.isSelected) {
@@ -65,7 +85,7 @@ export const {
   getSearchResultsSuccess,
   getSearchResultsFailed,
   selectSearchResult,
-  setGridView
+  setGridView,
 } = gallerySlice.actions
 
 export default gallerySlice.reducer
@@ -103,12 +123,31 @@ const getSearchResultsApi = async (searchTerm, filters, page) => {
   }
 
   // Convert filters to search API parameters
-  if (filters.filterType === 'postal') {
-    const [lng, lat] = await queryPostalCode(filters.postalCode)
+
+  // Set spatial parameters
+  if (filters.spatial.type === SpatialFilters.Postal) {
+    const [lng, lat] = await queryPostalCode(filters.spatial.postalCode)
     params.Lng = lng
     params.Lat = lat
-  } else if (filters.filterType === 'area') {
-    params.SpatialFilter = filters.areaName
+  } else if (filters.spatial.type === SpatialFilters.Area) {
+    params.SpatialFilter = filters.spatial.areaName
+  }
+
+  // Set date parameters
+  if (filters.temporal.type === DateFilters.Uploaded) {
+    if (filters.temporal.dateFrom) {
+      params.mindateuploaded = getUnixTime(parseISO(filters.temporal.dateFrom))
+    }
+    if (filters.temporal.dateTo) {
+      params.maxdateuploaded = getUnixTime(parseISO(filters.temporal.dateTo))
+    }
+  } else if (filters.temporal.type === DateFilters.Taken) {
+    if (filters.temporal.dateFrom) {
+      params.mindatetaken = getUnixTime(parseISO(filters.temporal.dateFrom))
+    }
+    if (filters.temporal.dateTo) {
+      params.maxdatetaken = getUnixTime(parseISO(filters.temporal.dateTo))
+    }
   }
 
   url.search = new URLSearchParams(params)
