@@ -10,12 +10,12 @@ namespace MediaLibrary.Internet.Web.Models
         [Display(Name = "Image(s) to upload")]
         public List<IFormFile> File { get; set; }
         [Required]
-        [Display(Name = "Name", Prompt = "your project or event name")]
+        [Display(Name = "Name")]
         public string Project { get; set; }
         [Required]
-        [Display(Name = "Location", Prompt = "e.g., building name, road name")]
+        [Display(Name = "Location")]
         public string LocationText { get; set; }
-        [Display(Name = "Copyright", Prompt = "Copyright owner")]
+        [Display(Name = "Copyright owner")]
         public string Copyright { get; set; }
     }
 }

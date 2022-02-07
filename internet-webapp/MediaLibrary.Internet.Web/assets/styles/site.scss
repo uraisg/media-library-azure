@@ -83,7 +83,12 @@ a.navbar-brand {
 }
 
 .required::after {
-    content: "*";
-    font-weight: bold;
-    color: red;
+  content: "*";
+  font-weight: $font-weight-bold;
+  color: $red;
+  margin-left: 0.1rem;
+}
+
+.form-text.small {
+  font-size: 90%;
 }
