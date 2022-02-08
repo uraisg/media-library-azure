@@ -14,24 +14,32 @@ namespace MediaLibrary.Internet.Web.Configuration
             }
 
             // Host name of configured AAD instance
-            var aadInstanceHost = new Uri(config.GetSection("AzureAD").GetValue<string>("Instance")).Host;
+            var aadInstanceHost = "";
+            var aadInstance = config.GetSection("AzureAD").GetValue<string>("Instance");
+            if (!string.IsNullOrEmpty(aadInstance))
+            {
+                aadInstanceHost = " " + new Uri(aadInstance).Host;
+            }
 
-            var policyCollection = new HeaderPolicyCollection()
-                .AddDefaultSecurityHeaders()
-                .AddContentSecurityPolicy(builder =>
-                {
-                    builder.AddFormAction().Self().From(aadInstanceHost);
-                    var scriptSrc = builder.AddScriptSrc().Self();
-                    if (isDevelopment)
-                    {
-                        // Allow eval() script in development
-                        scriptSrc.UnsafeEval();
-                    }
-                    builder.AddObjectSrc().None();
-                    builder.AddFrameAncestors().None();
-                });
+            // Allow eval() script in development
+            var scriptSrcUnsafeEval = "";
+            if (isDevelopment)
+            {
+                scriptSrcUnsafeEval = " 'unsafe-eval'";
+            }
 
-            app.UseSecurityHeaders(policyCollection);
+            app.UseHsts();
+            app.Use(async (context, next) =>
+            {
+                var headers = context.Response.Headers;
+                headers["Content-Security-Policy"] = $"form-action 'self'{aadInstanceHost}; script-src 'self'{scriptSrcUnsafeEval}; object-src 'none'; frame-ancestors 'none'";
+                headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                headers["X-Content-Type-Options"] = "nosniff";
+                headers["X-Frame-Options"] = "DENY";
+                headers["X-XSS-Protection"] = "1; mode=block";
+
+                await next();
+            });
 
             return app;
         }
