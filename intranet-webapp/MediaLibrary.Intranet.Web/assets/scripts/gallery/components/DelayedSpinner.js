@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import Spinner from 'react-bootstrap/Spinner'
 
 const DelayedSpinner = ({ size }) => {
@@ -13,6 +14,10 @@ const DelayedSpinner = ({ size }) => {
   return (
     showSpinner && <Spinner size={size} animation="border" variant="primary" />
   )
+}
+
+DelayedSpinner.propTypes = {
+  size: PropTypes.string,
 }
 
 export default DelayedSpinner

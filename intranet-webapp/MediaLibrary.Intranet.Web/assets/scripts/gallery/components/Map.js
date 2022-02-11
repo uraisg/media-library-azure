@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import L from 'leaflet'
 import { useMap, useInitMap } from '@/contexts'
@@ -116,6 +117,12 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
   }, [results])
 
   return <MapContainer ref={mapRef} />
+}
+
+Map.propTypes = {
+  results: PropTypes.array,
+  onMapClick: PropTypes.func,
+  onMarkerClick: PropTypes.func,
 }
 
 export default Map

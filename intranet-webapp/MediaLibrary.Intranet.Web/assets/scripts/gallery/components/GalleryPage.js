@@ -114,7 +114,7 @@ const GalleryPage = () => {
     })
   }
 
-  const handleMapClick = (e) => {
+  const handleMapClick = () => {
     dispatch(selectSearchResult(null))
   }
 
