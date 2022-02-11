@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Security.Claims;
-using Microsoft.Identity.Web;
 using Microsoft.Graph;
+using Microsoft.Identity.Web;
 
 namespace MediaLibrary.Internet.Web.Common
 {
-    public static class GraphClaimTypes {
+    public static class GraphClaimTypes
+    {
         public const string DisplayName = "graph_name";
         public const string Email = "graph_email";
         public const string Photo = "graph_photo";
@@ -48,7 +49,7 @@ namespace MediaLibrary.Internet.Web.Common
                     // Non-personal accounts store email in the Mail property
                     // They can have a user principal name but no email address
                     // Only personal accounts should assume UPN = email
-                    claimsPrincipal.IsPersonalAccount()? user.UserPrincipalName : user.Mail));
+                    claimsPrincipal.IsPersonalAccount() ? user.UserPrincipalName : user.Mail));
         }
 
         public static void AddUserGraphPhoto(this ClaimsPrincipal claimsPrincipal, Stream photoStream)
