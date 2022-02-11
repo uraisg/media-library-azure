@@ -3,21 +3,11 @@
 }
 
 @section Styles {
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="~/lib/leaflet/leaflet.min.css" />
-    </environment>
+    <link rel="stylesheet" href="~/styles/leaflet.css">
 }
 
 @section Scripts {
-    <environment include="Development">
-        <script src="~/lib/leaflet/leaflet-src.js"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/lib/leaflet/leaflet.js"></script>
-    </environment>
+    <script src="~/scripts/leaflet.js"></script>
     <script src="~/scripts/gallery.js"></script>
 }
 

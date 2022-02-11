@@ -23,11 +23,15 @@
     "last 2 iOS major versions"
   ],
   "devDependencies": {
-    "bootstrap": "^4.6.1",
     "laravel-mix": "^6.0.41",
-    "popper.js": "^1.16.1",
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.49.7",
     "sass-loader": "^12.4.0"
+  },
+  "dependencies": {
+    "bootstrap": "^4.6.1",
+    "jquery": "^3.6.0",
+    "jquery-validation": "^1.19.3",
+    "jquery-validation-unobtrusive": "^3.2.12"
   }
 }
