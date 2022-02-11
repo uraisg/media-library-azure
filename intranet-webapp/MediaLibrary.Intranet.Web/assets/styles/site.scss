@@ -4,38 +4,6 @@
   user-select: none;
 }
 
-.filter-sidebar {
-  user-select: none;
-  font-size: 90%;
-  font-weight: 300;
-  position: sticky;
-  max-height: calc(100vh - 5rem);
-  top: 4.5625rem;
-
-  h5 {
-    font-size: 1rem;
-  }
-
-  .filter-heading {
-    font-weight: 400;
-  }
-}
-
-.results .media .thumbnail {
-  width: 150px;
-}
-
-#map {
-  width: 100%;
-  height: calc(100vh - 14rem);
-  margin-bottom: 1rem;
-}
-
-.popup-img {
-  max-width: 150px;
-  height: auto;
-}
-
 a.navbar-brand {
   white-space: normal;
   text-align: center;
