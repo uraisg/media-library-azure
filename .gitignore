@@ -392,9 +392,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Bundled and minified static assets
-**/wwwroot/css/*.min.css
-**/wwwroot/js/*.min.js
-**/wwwroot/js/mix-manifest.json
 **/wwwroot/scripts/
 **/wwwroot/styles/
 **/wwwroot/mix-manifest.json

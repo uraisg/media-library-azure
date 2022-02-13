@@ -1,5 +1,4 @@
-﻿using System;
-using MediaLibrary.Internet.Web.Configuration;
+﻿using MediaLibrary.Internet.Web.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -62,7 +61,14 @@ namespace MediaLibrary.Internet.Web
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                OnPrepareResponse = (context) =>
+                {
+                    context.Context.Response.Headers["Cache-Control"] = "no-cache";
+                    context.Context.Response.Headers["Pragma"] = "no-cache";
+                }
+            });
             app.UseCookiePolicy();
 
             app.UseRouting();
@@ -74,15 +80,8 @@ namespace MediaLibrary.Internet.Web
             // according to https://docs.microsoft.com/en-us/aspnet/core/performance/caching/middleware?view=aspnetcore-3.1#configuration
             app.Use(async (context, next) =>
             {
-                context.Response.GetTypedHeaders().CacheControl =
-                    new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
-                    {
-                        NoCache = true,
-                        NoStore = true,
-                        MaxAge = TimeSpan.Zero
-                    };
-                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Pragma] =
-                        new string[] { "no-cache" };
+                context.Response.Headers["Cache-Control"] = "no-store, no-cache, max-age=0";
+                context.Response.Headers["Pragma"] = "no-cache";
 
                 await next();
             });

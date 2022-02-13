@@ -3,27 +3,11 @@
 }
 
 @section Styles {
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
-        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.css" />
-        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.Default.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="~/lib/leaflet/leaflet.min.css" />
-        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.css" />
-        <link rel="stylesheet" href="~/lib/leaflet-markercluster/MarkerCluster.Default.css" />
-    </environment>
+    <link rel="stylesheet" href="~/styles/leaflet.css">
 }
 
 @section Scripts {
-    <environment include="Development">
-        <script src="~/lib/leaflet/leaflet-src.js"></script>
-        <script src="~/lib/leaflet-markercluster/leaflet.markercluster-src.js"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/lib/leaflet/leaflet.js"></script>
-        <script src="~/lib/leaflet-markercluster/leaflet.markercluster.js"></script>
-    </environment>
+    <script src="~/scripts/leaflet.js"></script>
     <script src="~/scripts/gallery.js"></script>
 }
 

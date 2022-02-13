@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 const ThumbnailLink = styled.a`
@@ -32,6 +33,10 @@ const MediaList = ({ results }) => {
   })
 
   return <div className="media-list">{renderedItems}</div>
+}
+
+MediaList.propTypes = {
+  results: PropTypes.array,
 }
 
 export default MediaList

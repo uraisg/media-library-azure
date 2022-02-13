@@ -117,7 +117,7 @@ function formatDate(date) {
 function renderMediaDetails(data) {
   const fragment = new DocumentFragment()
   const template = document.querySelector('#details-row')
-  const attribs = new Map
+  const attribs = new Map()
   attribs.set('Project', 'Name')
   attribs.set('LocationName', 'Location')
   attribs.set('Copyright', 'Copyright')

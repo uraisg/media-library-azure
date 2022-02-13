@@ -49,7 +49,7 @@ const gallerySlice = createSlice({
       state.filters = filters
       state.page = page
     },
-    getSearchResultsRequest(state, action) {
+    getSearchResultsRequest(state) {
       state.isFetching = true
     },
     getSearchResultsSuccess(state, action) {
@@ -91,7 +91,7 @@ export const {
 export default gallerySlice.reducer
 
 export const getSearchResults = (searchTerm, filters, page = 1) => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     // First, update search parameters in state
     dispatch(displayMedia({ searchTerm, filters, page }))
     // Inform app that a search request is being made

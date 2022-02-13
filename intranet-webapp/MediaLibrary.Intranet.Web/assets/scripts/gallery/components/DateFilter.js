@@ -52,7 +52,7 @@ const DateFilter = ({ filters, setFilters }) => {
     resetInputs()
   }, [filters])
 
-  const handleToggle = (isOpen, e, metadata) => {
+  const handleToggle = (isOpen) => {
     setShow(isOpen)
     if (!isOpen) {
       resetInputs()

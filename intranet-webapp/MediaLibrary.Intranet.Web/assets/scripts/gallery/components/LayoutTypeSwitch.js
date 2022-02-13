@@ -17,6 +17,12 @@ const TooltipOverlay = ({ message, placement = 'bottom', ...props }) => {
   )
 }
 
+TooltipOverlay.propTypes = {
+  message: PropTypes.string,
+  placement: PropTypes.string,
+  children: PropTypes.element,
+}
+
 const LayoutTypeSwitch = ({ gridView, setGridView }) => {
   return (
     <div>

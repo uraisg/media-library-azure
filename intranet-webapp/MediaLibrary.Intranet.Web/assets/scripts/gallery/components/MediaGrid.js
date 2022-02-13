@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 import Gallery from 'react-grid-gallery'
 import Button from 'react-bootstrap/Button'
 
@@ -14,7 +15,7 @@ const MediaGrid = ({ results }) => {
   }
 
   // Use name as caption in modal
-  results = results.map(result => {
+  results = results.map((result) => {
     const name = result.name
     return {
       ...result,
@@ -32,12 +33,21 @@ const MediaGrid = ({ results }) => {
       enableImageSelection={false}
       currentImageWillChange={onCurrentImageChange}
       customControls={[
-        <Button size="sm" variant="light" key="showDetails" onClick={showDetails}>
+        <Button
+          size="sm"
+          variant="light"
+          key="showDetails"
+          onClick={showDetails}
+        >
           Show details
         </Button>,
       ]}
     />
   )
+}
+
+MediaGrid.propTypes = {
+  results: PropTypes.array,
 }
 
 export default MediaGrid

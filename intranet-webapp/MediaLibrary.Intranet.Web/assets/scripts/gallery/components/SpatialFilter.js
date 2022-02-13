@@ -53,7 +53,7 @@ const SpatialFilter = ({ filters, setFilters, areas }) => {
     resetInputs()
   }, [filters])
 
-  const handleToggle = (isOpen, e, metadata) => {
+  const handleToggle = (isOpen) => {
     setShow(isOpen)
     if (!isOpen) {
       resetInputs()

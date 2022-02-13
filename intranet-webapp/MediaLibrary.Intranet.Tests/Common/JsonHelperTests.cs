@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;

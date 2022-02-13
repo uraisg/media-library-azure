@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState } from 'react'
+import PropTypes from 'prop-types'
 
 const MapContext = createContext({
   map: undefined,
@@ -21,6 +22,10 @@ const MapProvider = ({ children }) => {
   }
 
   return <MapContext.Provider value={value}>{children}</MapContext.Provider>
+}
+
+MapProvider.propTypes = {
+  children: PropTypes.element,
 }
 
 const useMap = () => {

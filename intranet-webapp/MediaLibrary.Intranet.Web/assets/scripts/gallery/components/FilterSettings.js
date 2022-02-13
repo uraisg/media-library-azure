@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import DateFilter from '@/components/DateFilter'
@@ -37,6 +37,8 @@ FilterSettings.propTypes = {
   filters: PropTypes.object.isRequired,
   setFilters: PropTypes.func.isRequired,
   areas: PropTypes.array.isRequired,
+  gridView: PropTypes.bool.isRequired,
+  onSetView: PropTypes.func.isRequired,
 }
 
 export default FilterSettings
