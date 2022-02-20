@@ -279,15 +279,15 @@ namespace MediaLibrary.Internet.Web.Controllers
             using (var ms = new MemoryStream())
             {
                 long pixelCount = image.Width * image.Height;
-                if (pixelCount > 25_000_000)
+                if (pixelCount > 20_000_000)
                 {
-                    var targetPercentage = new Percentage(Math.Round(Math.Sqrt(25_000_000d / pixelCount) * 100));
-                    image.Resize(targetPercentage);
+                    var targetPercentage = new Percentage(Math.Round(Math.Sqrt(20_000_000d / pixelCount) * 100));
+                    image.Scale(targetPercentage);
                     image.Strip();
                     image.Quality = DefaultJpegQuality;
-                    image.Write(ms);
+                    image.Write(ms, MagickFormat.Jpeg);
                     data1 = ms.ToArray();
-                    _logger.LogInformation("Scaling to ~25MP: {Width}x{Height}, {Size} bytes", image.Width, image.Height, data1.Length);
+                    _logger.LogInformation("Scaling to ~20MP: {Width}x{Height}, {Size} bytes", image.Width, image.Height, data1.Length);
                 }
                 else
                 {
@@ -312,7 +312,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     image.Resize(targetPercentage);
                     image.Strip();
                     image.Quality = DefaultJpegQuality;
-                    image.Write(ms);
+                    image.Write(ms, MagickFormat.Jpeg);
                     data2 = ms.ToArray();
                     _logger.LogInformation("Resizing: {Width}x{Height}, {Size} bytes", image.Width, image.Height, data2.Length);
                 }
@@ -332,7 +332,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 {
                     image.Strip();
                     image.Quality = targetQuality;
-                    image.Write(ms);
+                    image.Write(ms, MagickFormat.Jpeg);
                     data3 = ms.ToArray();
                     _logger.LogInformation("Reducing quality: q={Quality}, {Size} bytes", targetQuality, data3.Length);
                 }
@@ -425,11 +425,11 @@ namespace MediaLibrary.Internet.Web.Controllers
             using (var ms = new MemoryStream())
             {
                 image.Strip();
-                image.Resize(new MagickGeometry(width, height)
+                image.Thumbnail(new MagickGeometry(width, height)
                 {
                     IgnoreAspectRatio = true
                 });
-                image.Write(ms);
+                image.Write(ms, MagickFormat.Jpeg);
                 thumbnailImageData = ms.ToArray();
             }
 
