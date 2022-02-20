@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -49,6 +50,8 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPost("FileUpload")]
         public async Task<IActionResult> Index(UploadFormModel model)
         {
+            _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
+
             if (!ModelState.IsValid)
             {
                 TempData["Alert.Type"] = "danger";
@@ -56,11 +59,14 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return View("~/Views/Home/Index.cshtml");
             }
 
+            var traceId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+            using var scope = _logger.BeginScope("{UserName} {TraceID}", User.Identity.Name, traceId);
+
             string email = User.GetUserGraphEmail();
 
             if (string.IsNullOrEmpty(email))
             {
-                _logger.LogError($"Could not get associated email address for user {User.Identity.Name}");
+                _logger.LogError("Could not get associated email address for user {UserName}", User.Identity.Name);
 
                 TempData["Alert.Type"] = "danger";
                 TempData["Alert.Message"] = "Could not find your email address.";
@@ -75,12 +81,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                 string untrustedFileName = Path.GetFileName(file.FileName);
                 string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
 
-                _logger.LogInformation($"Upload file name: {untrustedFileName}, size: {file.Length}");
+                _logger.LogInformation("Upload file name: {FileName}, size: {FileSize}", untrustedFileName, file.Length);
 
                 // Check the file length
                 if (file.Length == 0)
                 {
-                    _logger.LogWarning($"File {untrustedFileName} is empty.");
+                    _logger.LogWarning("File {FileName} is empty.", untrustedFileName);
 
                     ModelState.AddModelError(file.Name, $"File {encodedFileName} is empty.");
                     TempData["Alert.Type"] = "danger";
@@ -91,7 +97,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 // Check the content type and file extension
                 if (!IsValidImage(file))
                 {
-                    _logger.LogWarning($"File {untrustedFileName} does not have allowed file extension.");
+                    _logger.LogWarning("File {FileName} does not have allowed file extension.", untrustedFileName);
 
                     ModelState.AddModelError(file.Name,
                         $"File {encodedFileName} does not have allowed file extension. " +
@@ -128,7 +134,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                     }
 
                     // Check image size as Cognitive Services can only accept images less than 4MB in size
+
+                    _logger.LogInformation("Starting FitImageForAnalysis");
+                    var watch = Stopwatch.StartNew();
                     byte[] fitted = FitImageForAnalysis(data);
+                    watch.Stop();
+                    _logger.LogInformation("Finished FitImageForAnalysis after {Elapsed} ms", watch.ElapsedMilliseconds);
 
                     ImageAnalysis computerVisionResult;
                     string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb.jpg";
@@ -181,7 +192,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"File {untrustedFileName} failed to upload.");
+                    _logger.LogError(e, "File {FileName} failed to upload.", untrustedFileName);
 
                     ModelState.AddModelError(file.Name, $"File {encodedFileName} could not be uploaded.");
                     TempData["Alert.Type"] = "danger";
@@ -191,7 +202,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             ModelState.Clear();
             TempData["Alert.Type"] = "success";
-            TempData["Alert.Message"] = "Items have been uploaded successfully";
+            TempData["Alert.Message"] = "Your items have been uploaded successfully, and will be copied to intranet in 10 minutes.";
             return View("~/Views/Home/Index.cshtml");
         }
 
@@ -260,7 +271,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return data;
             }
 
-            _logger.LogInformation($"Image is oversized, resizing");
+            _logger.LogInformation("Image is oversized, resizing");
 
 
             byte[] data1;
@@ -268,15 +279,15 @@ namespace MediaLibrary.Internet.Web.Controllers
             using (var ms = new MemoryStream())
             {
                 long pixelCount = image.Width * image.Height;
-                if (pixelCount > 25_000_000)
+                if (pixelCount > 20_000_000)
                 {
-                    var targetPercentage = new Percentage(Math.Round(Math.Sqrt(25_000_000d / pixelCount) * 100));
-                    image.Resize(targetPercentage);
+                    var targetPercentage = new Percentage(Math.Round(Math.Sqrt(20_000_000d / pixelCount) * 100));
+                    image.Scale(targetPercentage);
                     image.Strip();
                     image.Quality = DefaultJpegQuality;
-                    image.Write(ms);
+                    image.Write(ms, MagickFormat.Jpeg);
                     data1 = ms.ToArray();
-                    _logger.LogInformation($"Scaling to ~25MP: {image.Width}x{image.Height}, {data1.Length} bytes");
+                    _logger.LogInformation("Scaling to ~20MP: {Width}x{Height}, {Size} bytes", image.Width, image.Height, data1.Length);
                 }
                 else
                 {
@@ -301,9 +312,9 @@ namespace MediaLibrary.Internet.Web.Controllers
                     image.Resize(targetPercentage);
                     image.Strip();
                     image.Quality = DefaultJpegQuality;
-                    image.Write(ms);
+                    image.Write(ms, MagickFormat.Jpeg);
                     data2 = ms.ToArray();
-                    _logger.LogInformation($"Resizing: {image.Width}x{image.Height}, {data2.Length} bytes");
+                    _logger.LogInformation("Resizing: {Width}x{Height}, {Size} bytes", image.Width, image.Height, data2.Length);
                 }
 
                 if (data2.Length <= ComputerVisionMaxFileSize)
@@ -321,9 +332,9 @@ namespace MediaLibrary.Internet.Web.Controllers
                 {
                     image.Strip();
                     image.Quality = targetQuality;
-                    image.Write(ms);
+                    image.Write(ms, MagickFormat.Jpeg);
                     data3 = ms.ToArray();
-                    _logger.LogInformation($"Reducing quality: q={targetQuality}, {data3.Length} bytes");
+                    _logger.LogInformation("Reducing quality: q={Quality}, {Size} bytes", targetQuality, data3.Length);
                 }
 
                 if (data3.Length <= ComputerVisionMaxFileSize)
@@ -333,7 +344,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
 
             // Give up
-            _logger.LogInformation($"Failed to fit image within size limit");
+            _logger.LogInformation("Failed to fit image within size limit");
             return null;
         }
 
@@ -414,11 +425,11 @@ namespace MediaLibrary.Internet.Web.Controllers
             using (var ms = new MemoryStream())
             {
                 image.Strip();
-                image.Resize(new MagickGeometry(width, height)
+                image.Thumbnail(new MagickGeometry(width, height)
                 {
                     IgnoreAspectRatio = true
                 });
-                image.Write(ms);
+                image.Write(ms, MagickFormat.Jpeg);
                 thumbnailImageData = ms.ToArray();
             }
 
