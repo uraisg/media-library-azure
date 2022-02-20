@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -49,12 +50,17 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPost("FileUpload")]
         public async Task<IActionResult> Index(UploadFormModel model)
         {
+            _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
+
             if (!ModelState.IsValid)
             {
                 TempData["Alert.Type"] = "danger";
                 TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
                 return View("~/Views/Home/Index.cshtml");
             }
+
+            var traceId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+            using var scope = _logger.BeginScope("{UserName} {TraceID}", User.Identity.Name, traceId);
 
             string email = User.GetUserGraphEmail();
 
@@ -128,7 +134,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                     }
 
                     // Check image size as Cognitive Services can only accept images less than 4MB in size
+
+                    _logger.LogInformation("Starting FitImageForAnalysis");
+                    var watch = Stopwatch.StartNew();
                     byte[] fitted = FitImageForAnalysis(data);
+                    watch.Stop();
+                    _logger.LogInformation("Finished FitImageForAnalysis after {Elapsed} ms", watch.ElapsedMilliseconds);
 
                     ImageAnalysis computerVisionResult;
                     string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb.jpg";
