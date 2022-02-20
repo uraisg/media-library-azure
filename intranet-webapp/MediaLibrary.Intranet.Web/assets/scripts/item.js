@@ -124,7 +124,7 @@ function renderMediaDetails(data) {
   attribs.set('Caption', 'Caption')
   for (const [key, label] of attribs) {
     if (data[key]?.trim()) {
-      const clone = template.content.cloneNode(true)
+      const clone = template.content.firstElementChild.cloneNode(true)
       const dt = clone.querySelector('dt')
       const dd = clone.querySelector('dd')
       dt.textContent = label
