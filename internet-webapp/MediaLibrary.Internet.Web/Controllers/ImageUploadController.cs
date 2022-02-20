@@ -60,7 +60,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             if (string.IsNullOrEmpty(email))
             {
-                _logger.LogError($"Could not get associated email address for user {User.Identity.Name}");
+                _logger.LogError("Could not get associated email address for user {UserName}", User.Identity.Name);
 
                 TempData["Alert.Type"] = "danger";
                 TempData["Alert.Message"] = "Could not find your email address.";
@@ -75,12 +75,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                 string untrustedFileName = Path.GetFileName(file.FileName);
                 string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
 
-                _logger.LogInformation($"Upload file name: {untrustedFileName}, size: {file.Length}");
+                _logger.LogInformation("Upload file name: {FileName}, size: {FileSize}", untrustedFileName, file.Length);
 
                 // Check the file length
                 if (file.Length == 0)
                 {
-                    _logger.LogWarning($"File {untrustedFileName} is empty.");
+                    _logger.LogWarning("File {FileName} is empty.", untrustedFileName);
 
                     ModelState.AddModelError(file.Name, $"File {encodedFileName} is empty.");
                     TempData["Alert.Type"] = "danger";
@@ -91,7 +91,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 // Check the content type and file extension
                 if (!IsValidImage(file))
                 {
-                    _logger.LogWarning($"File {untrustedFileName} does not have allowed file extension.");
+                    _logger.LogWarning("File {FileName} does not have allowed file extension.", untrustedFileName);
 
                     ModelState.AddModelError(file.Name,
                         $"File {encodedFileName} does not have allowed file extension. " +
@@ -181,7 +181,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"File {untrustedFileName} failed to upload.");
+                    _logger.LogError(e, "File {FileName} failed to upload.", untrustedFileName);
 
                     ModelState.AddModelError(file.Name, $"File {encodedFileName} could not be uploaded.");
                     TempData["Alert.Type"] = "danger";
@@ -260,7 +260,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return data;
             }
 
-            _logger.LogInformation($"Image is oversized, resizing");
+            _logger.LogInformation("Image is oversized, resizing");
 
 
             byte[] data1;
@@ -276,7 +276,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     image.Quality = DefaultJpegQuality;
                     image.Write(ms);
                     data1 = ms.ToArray();
-                    _logger.LogInformation($"Scaling to ~25MP: {image.Width}x{image.Height}, {data1.Length} bytes");
+                    _logger.LogInformation("Scaling to ~25MP: {Width}x{Height}, {Size} bytes", image.Width, image.Height, data1.Length);
                 }
                 else
                 {
@@ -303,7 +303,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     image.Quality = DefaultJpegQuality;
                     image.Write(ms);
                     data2 = ms.ToArray();
-                    _logger.LogInformation($"Resizing: {image.Width}x{image.Height}, {data2.Length} bytes");
+                    _logger.LogInformation("Resizing: {Width}x{Height}, {Size} bytes", image.Width, image.Height, data2.Length);
                 }
 
                 if (data2.Length <= ComputerVisionMaxFileSize)
@@ -323,7 +323,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     image.Quality = targetQuality;
                     image.Write(ms);
                     data3 = ms.ToArray();
-                    _logger.LogInformation($"Reducing quality: q={targetQuality}, {data3.Length} bytes");
+                    _logger.LogInformation("Reducing quality: q={Quality}, {Size} bytes", targetQuality, data3.Length);
                 }
 
                 if (data3.Length <= ComputerVisionMaxFileSize)
@@ -333,7 +333,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
 
             // Give up
-            _logger.LogInformation($"Failed to fit image within size limit");
+            _logger.LogInformation("Failed to fit image within size limit");
             return null;
         }
 
