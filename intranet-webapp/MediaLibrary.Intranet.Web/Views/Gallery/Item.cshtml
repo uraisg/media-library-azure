@@ -1,10 +1,12 @@
-﻿<div class="container-lg mt-4">
+﻿@using Microsoft.AspNetCore.Routing;
+
+<div class="container-lg mt-4">
     <div class="row">
         <div class="media-container col-md-8">
             <a class="mx-auto" href="#" download>
                 <img id="main-media"
-                    src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23d7d8d9%22%3E%3C%2Frect%3E%3C%2Fsvg%3E"
-                    alt="" data-fileinfoid="@ViewData["mediaId"]">
+                     src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23d7d8d9%22%3E%3C%2Frect%3E%3C%2Fsvg%3E"
+                     alt="" data-fileinfoid="@ViewData["mediaId"]">
             </a>
         </div>
         <div class="col-md-4">
@@ -15,6 +17,12 @@
 </div>
 
 <template id="metadata-section">
+    <!--admin functions-->
+    <div class="d-flex flex-row ml-auto pr-3">
+        @*<a href="@Html.ActionLink("Edit page","~/Gallery/Edit")" class="btn btn-outline-primary btn-sm mr-2"> Edit</a>*@
+        <a href="@Url.Action("Edit", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-primary btn-sm mr-2">Edit</a>
+        <a href="" class="btn btn-outline-danger btn-sm mr-2">Delete</a>
+    </div>
     <div class="col-12">
         <h6>Info</h6>
         <div class="metadata-author">

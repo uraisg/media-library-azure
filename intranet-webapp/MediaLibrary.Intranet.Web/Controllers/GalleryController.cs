@@ -20,5 +20,21 @@ namespace MediaLibrary.Intranet.Web.Controllers
             ViewData["mediaId"] = id;
             return View();
         }
+
+        public IActionResult Edit([BindRequired, FromRoute] string id)
+        {
+            if (!ModelState.IsValid)
+            {                
+                return NotFound();
+            }
+
+            ViewData["mediaId"] = id;
+            return View();
+        }
+
+       // [HttpPost]
+       // public IActionResult Edit(MediaItem id) {
+       // }
     }
 }
+

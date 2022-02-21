@@ -1,0 +1,154 @@
+﻿<div class="container-lg mt-4">
+    <div class="row">
+        <div class="media-container col-md-8">
+            <a class="mx-auto" href="#" download>
+                <img id="main-media"
+                     src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23d7d8d9%22%3E%3C%2Frect%3E%3C%2Fsvg%3E"
+                     alt="" data-fileinfoid="@ViewData["mediaId"]">
+            </a>
+        </div>
+        <div class="col-md-4">
+            <hr class="d-block d-md-none" />
+            <div class="col-12">
+                <h6>Info</h6>
+                <dl class="row mb-0">
+                    <dt class="col-lg-3">Geotag</dt>
+                    <dd class="col-lg-9"><input type="text" id="formControlInput1" class="form-control form-control-sm" disabled=""></dd>
+
+                    <dt class="col-lg-3">Taken</dt>
+                    <dd class="col-lg-9"><input id="formControlInput2" class="form-control form-control-sm" type="date" disabled=""></dd>
+
+                    <dt class="col-lg-3">Uploaded</dt>
+                    <dd class="col-lg-9"><input id="formControlInput3" class="form-control form-control-sm" type="date" disabled=""></dd>
+
+                </dl>
+            </div>
+            <div class="metadata-details col-12 mt-3">
+                <h6>Details</h6>
+                <dl class="row mb-0">
+                    <dt class="col-lg-3">Name</dt>
+                    <dd class="col-lg-9"> <input type="text" id="formControlInput4" class="form-control form-control-sm"></dd>
+
+                    <dt class="col-lg-3">Location</dt>
+                    <dd class="col-lg-9"><input type="text" id="formControlInput5" class="form-control form-control-sm"></dd>
+
+                    <dt class="col-lg-3">Copyright</dt>
+                    <dd class="col-lg-9"><input type="text" id="formControlInput6" class="form-control form-control-sm"></dd>
+                    <dt class="col-lg-3">Caption</dt>
+                    <dd class="col-lg-9"><textarea id="formControlTextarea1" class="form-control form-control-sm" rows="3" style="height: 77px;"></textarea></dd>
+                </dl>
+            </div>
+            <div class="row metadata-container"></div>
+            <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
+                <a href="" class="btn btn-info btn-sm mr-2">Add a tag</a>
+                <a href="" class="btn btn-sm mr-2">Edit all tags</a>
+            </div>
+            @*
+                          <div class="metadata-tags col-12 mt-3">
+                              <h6>Tags</h6>
+                              <div style="" class="mb-2">
+                                  <a class="btn btn-outline-secondary btn-xs mb-2 mr-2" id="dialogPop">
+                                      <div id="displaytext">water</div><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1
+                bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="">
+                                      outdoor<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="">
+                                      sky<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="">
+                                      sunset<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="">
+                                      landscape<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="">
+                                      cloud<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="">
+                                      sun<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="">
+                                      sunrise<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                                      </svg>
+                                  </a><a href="" class="btn  btn-xs mb-2 mr-2">+ Add a tag</a>
+                              </div>
+                              <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
+                                  <a href="" class="btn btn-primary btn-sm mr-2">Save</a>
+                                  <a href="" class="btn btn-outline-secondary btn-sm mr-2">Cancel</a>
+                              </div>
+                          </div>
+            *@
+        </div>
+    </div>
+
+    <template id="metadata-section">
+        <div class="metadata-tags col-12 mt-3">
+            <h6>Tags</h6>
+            <div></div>
+        </div>
+    </template>
+
+    @*<template id="details-row">
+            <dt class="col-lg-3"></dt>
+            <dd class="col-lg-9"></dd>
+        </template>*@
+
+    <template id="tags-btn">
+        <a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="@Url.Action("Index", "Home")" contenteditable="true">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+            </svg>
+        </a>
+    </template>
+
+    <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
+        <a href="" class="btn btn-primary btn-sm mr-2">Save</a>
+        <a href="" class="btn btn-outline-secondary btn-sm mr-2">Cancel</a>
+    </div>
+
+    <!--
+    <template id="tags-btn">
+        <a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="@Url.Action("Index", "Home")"></a>
+    </template>-->
+    <!--<div style="display:none" id="divDialog" />-->
+
+    @section Scripts {
+
+        @*function removeDivFunction() {
+        var element = document.getElementsByClassName("btn btn-outline-secondary btn-xs mb-2 mr-2")[0];
+        var element = document.getElementsByClassName("btn btn-outline-secondary btn-xs mb-2 mr-2")[0];
+        element.parentNode.removeChild(element);
+        }*@
+        <script src="~/scripts/edit.js"></script>
+    }
+
+    @*
+        @section Scripts {
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    $('a.btn btn-outline-secondary btn-xs mb-2 mr-2').click(function () {
+                        var dad = $(this).parent().parent();
+                        dad.find('.displaytext').hide(); // change this
+                        dad.find('input[type="text"]').show().first().focus();
+                    });
+
+                    $('input[type=text]').focusout(function () {
+                        var dad = $(this).parent();
+                        $(this).hide();
+                        dad.find('.displaytext').show(); // and this
+                    });
+                });
+            </script>
+        }
+
+    *@
