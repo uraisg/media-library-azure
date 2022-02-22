@@ -116,12 +116,14 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 //first retrieve image
                 HttpContent imageContent = await GetImageByURL(item.fileURL);
-                string fileName = HttpUtility.UrlDecode(Path.GetFileName(item.fileURL));
+                string encodedFileName = Path.GetFileName(item.fileURL);
+                string fileName = HttpUtility.UrlDecode(encodedFileName);
                 await ImageUploadToBlob(imageBlobContainerClient, imageContent, fileName);
 
                 //retrieve thumbnail
                 HttpContent thumbnailContent = await GetImageByURL(item.thumbnailURL);
-                string thumbnailFileName = HttpUtility.UrlDecode(Path.GetFileName(item.thumbnailURL));
+                string encodedThumbnailFileName = Path.GetFileName(item.thumbnailURL);
+                string thumbnailFileName = HttpUtility.UrlDecode(encodedThumbnailFileName);
                 await ImageUploadToBlob(imageBlobContainerClient, thumbnailContent, thumbnailFileName);
 
                 //create new object to serialize to json
@@ -135,8 +137,8 @@ namespace MediaLibrary.Intranet.Web.Background
                     Caption = item.caption,
                     Author = item.author,
                     UploadDate = item.uploadDate,
-                    FileURL = "/api/assets/" + fileName,
-                    ThumbnailURL = "/api/assets/" + thumbnailFileName,
+                    FileURL = "/api/assets/" + encodedFileName,
+                    ThumbnailURL = "/api/assets/" + encodedThumbnailFileName,
                     Project = item.project,
                     Event = item.@event,
                     LocationName = item.locationName,
