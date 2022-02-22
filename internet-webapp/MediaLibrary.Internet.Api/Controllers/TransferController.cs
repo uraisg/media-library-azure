@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -110,11 +109,11 @@ namespace MediaLibrary.Internet.Api.Controllers
             }
 
             var blobUriBuilder = new BlobUriBuilder(new Uri(entity.FileURL));
-            BlobClient blobClient = blobContainerClient.GetBlobClient(HttpUtility.UrlDecode(blobUriBuilder.BlobName));
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
             await blobClient.DeleteIfExistsAsync();
 
             blobUriBuilder = new BlobUriBuilder(new Uri(entity.ThumbnailURL));
-            blobClient = blobContainerClient.GetBlobClient(HttpUtility.UrlDecode(blobUriBuilder.BlobName));
+            blobClient = blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
             await blobClient.DeleteIfExistsAsync();
 
             TableOperation deleteOperation = TableOperation.Delete(entity);
@@ -142,7 +141,7 @@ namespace MediaLibrary.Internet.Api.Controllers
 
             // Authenticate with storage and download image via URL
             var blobUriBuilder = new BlobUriBuilder(new Uri(parms.Path));
-            BlobClient blobClient = new BlobClient(storageConnectionString, containerName, HttpUtility.UrlDecode(blobUriBuilder.BlobName));
+            BlobClient blobClient = new BlobClient(storageConnectionString, containerName, blobUriBuilder.BlobName);
             try
             {
                 BlobDownloadInfo download = await blobClient.DownloadAsync();
