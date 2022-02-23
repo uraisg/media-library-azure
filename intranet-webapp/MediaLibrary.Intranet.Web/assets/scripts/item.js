@@ -129,7 +129,7 @@ function renderMediaDetails(data) {
       const dd = clone.querySelector('dd')
       dt.textContent = label
       dd.textContent = data[key]
-      fragment.appendChild(clone)
+      fragment.append(dt, dd)
     }
   }
   return fragment
