@@ -2,6 +2,7 @@
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Configuration;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,6 +45,7 @@ namespace MediaLibrary.Intranet.Web
             });
             services.AddCustomMvcConfig();
 
+            services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHttpClient();
             services.AddHostedService<ScheduledService>();
