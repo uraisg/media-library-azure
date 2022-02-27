@@ -176,12 +176,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                     json.RowKey = id;
                     json.Id = id;
                     json.Name = file.FileName;
-                    json.DateTaken = GetTimestamp(directories);
+                    json.DateTaken = GetTimestamp(directories, _appSettings.UploadTimeZone);
                     json.Location = JsonConvert.SerializeObject(GetCoordinate(directories));
                     json.Tag = GenerateTags(computerVisionResult);
                     json.Caption = GenerateCaption(computerVisionResult);
                     json.Author = email;
-                    json.UploadDate = DateTime.UtcNow.AddHours(8).Date;
+                    json.UploadDate = TruncateMilliseconds(DateTime.UtcNow);
                     json.FileURL = imageURL;
                     json.ThumbnailURL = thumbnailURL;
                     json.Project = model.Project;
@@ -348,27 +348,31 @@ namespace MediaLibrary.Internet.Web.Controllers
             return null;
         }
 
-        private static DateTime GetTimestamp(IReadOnlyList<MetadataExtractor.Directory> directories)
+        private static DateTime GetTimestamp(IReadOnlyList<MetadataExtractor.Directory> directories, string uploadTimeZone)
         {
-            var time = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+            var subIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+            if (subIfdDirectory != null && subIfdDirectory.TryGetDateTime(ExifDirectoryBase.TagDateTimeOriginal, out var dateTimeOriginal))
+            {
+                dateTimeOriginal = TruncateMilliseconds(dateTimeOriginal);
+                try
+                {
+                    var tzi = TimeZoneInfo.FindSystemTimeZoneById(uploadTimeZone);
+                    return TimeZoneInfo.ConvertTimeToUtc(dateTimeOriginal, tzi);
+                }
+                catch (Exception e) when (e is ArgumentNullException || e is TimeZoneNotFoundException)
+                {
+                    // Assume photo time zone is same as server local time zone
+                    return TimeZoneInfo.ConvertTimeToUtc(dateTimeOriginal);
+                }
+            }
 
-            if (time != null)
-            {
-                if (time.TryGetDateTime(ExifDirectoryBase.TagDateTime, out var dateTime))
-                {
-                    return dateTime.Date;
-                }
-                else
-                {
-                    //error handling for timestamp not found, use current time
-                    return DateTime.UtcNow.AddHours(8).Date;
-                }
-            }
-            else
-            {
-                //error handling for timestamp not available, use current time
-                return DateTime.UtcNow.AddHours(8).Date;
-            }
+            //error handling for timestamp not available, use current time
+            return TruncateMilliseconds(DateTime.UtcNow);
+        }
+
+        public static DateTime TruncateMilliseconds(DateTime dateTime)
+        {
+            return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerSecond));
         }
 
         /// <summary>
