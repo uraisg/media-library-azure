@@ -1,61 +1,3 @@
-/*
-$('a.edit').click(function () {
-  var dad = $(this).parent().parent();
-  dad.find('.displaytext').hide(); // change this
-  dad.find('input[type="text"]').show().first().focus();
-});
-
-$('input[type=text]').focusout(function () {
-  var dad = $(this).parent();
-  $(this).hide();
-  dad.find('.displaytext').show(); // and this
-});*/
-
-/*
-$(function () {
-  $("#editTag").click(function () { DisplayUpdateTag(); });
-});
-
-function DisplayUpdateTag() {
-
-  var applyButton = {
-    text: "OK",
-    click: OKButton
-  }
-  var cancelButton = {
-    text: "Cancel",
-    click: CloseDialog
-  }
-
-  function OKButton() {
-    var newTag;
-    newTag = $("#UpdatedTag").val()
-    $("#Tag").val(newTag)
-    CloseDialog();
-  }
-
-  function CloseDialog() {
-    $("#divDialog").dialog("close");
-  }
-}
-
-
-$("#divDialog").dialog({
-  buttons: [applyButton, cancelButton],
-  height: 500,
-  width: 500,
-  modal: true,
-  title: "Revise Customer Data"
-});
-
-$.get("/Home/Edit/",
-  { tag: $("#CustomerId").val() },
-  function (dialogHTML) {
-    $("#divDialog").html(dialogHTML);
-    // ... code to open the dialog 
-  });
-  */
-
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
   const fileInfoId = img.dataset.fileinfoid
@@ -96,9 +38,6 @@ function loadFileInfo() {
 }
 
 function renderMetadataSection(data) {
-  
-  /*Set into new form fields for editing*/
-  //====================================//
 
   //location
   var geo1 = document.querySelector('#formControlInput1')
@@ -139,6 +78,7 @@ function renderMetadataSection(data) {
     caption2.value = data['Caption']
   }
 
+  //populate tags in page
   const template = document.querySelector('#metadata-section')
   const clone = template.content.cloneNode(true)
   const tags = clone.querySelector('.metadata-tags div')
@@ -148,6 +88,12 @@ function renderMetadataSection(data) {
   targetClone.appendChild(clone)
   target.parentNode.replaceChild(targetClone, target)
 
+  //stores tag data into set for tag index identification & deletion later
+  const tagSet = new Set(data['Tag']);
+  //listens for mouse click on tag delete
+  tagarea.addEventListener("click", (e) => removeTag(e, tagSet));
+  //adds tag on btn click
+  addTag(tagSet);
 }
 
 //Tags
@@ -159,24 +105,67 @@ function renderTagList(tags) {
     const a = template.content.firstElementChild.cloneNode(true)
     const b = template.content.firstElementChild.firstElementChild.cloneNode(true)
     a.textContent = tag
-    a.href = `${a.href}?TagFilter=${encodeURIComponent(tag).replace(
-      /%20/g,
-      '+'
-    )}`
     //appends delete icon (x)
     a.appendChild(b)
     fragment.appendChild(a)
-    //fragment.appendChild(b)
   })
   return fragment
 }
 
-function removeTag() {
-  //document.querySelector('.ml-1 bi bi-x-circle-fill text-secondary').parentNode.removeChild('.ml-1 bi bi-x-circle-fill text-secondary');
-  var element = document.getElementsByClassName("ml-1 bi bi-x-circle-fill text-secondary")[0];
-  element.parentNode.removeChild(element);
+loadFileInfo();
+
+function removeTag(e,tagSet) {
+  var target = e.target;
+  //gets text of clicked target
+  var targetTxt = target.textContent.trim();
+
+  //checks index of item in set
+  var index = Array.from(tagSet).indexOf(targetTxt);
+
+  //gets tag's element based on index selection
+  var element = document.getElementsByClassName("ml-1 bi bi-x-circle-fill text-secondary")[index];
+
+  //removes selected tag
+  element.parentNode.parentNode.removeChild(element.parentNode);
+
+  tagSet.delete(targetTxt);
+  return (tagSet);
 }
 
-loadFileInfo()
-removeTag()
+function addTag(tagSet) {
+  document.getElementById('addTag').onclick = function () {
+    //gets text from field
+    var newTag = document.getElementById('newTagInput').value;
+
+    //checks for unique values in set, before allowing adding
+    if (tagSet.has(newTag)) {
+      //disallows adding
+      document.querySelector('.tags-notif').innerHTML =
+        '<div class="alert alert-warning w-100" style="margin:20px">' +
+        '<strong>Sorry!</strong> You cannot add in duplicate tags!' +
+        '</div>'
+    }
+    else {
+      //removes text if present
+      document.querySelector('.tags-notif').innerHTML = "";
+
+      //creates a clone of existing tag template
+      const fragment = new DocumentFragment();
+      var tagtemplate = document.querySelector('#tags-btn');
+      var a = tagtemplate.content.firstElementChild.cloneNode(true);
+      var b = tagtemplate.content.firstElementChild.firstElementChild.cloneNode(true);
+      //appends new text
+      a.textContent = newTag;
+      a.appendChild(b);
+      fragment.appendChild(a);
+
+      var tagarea = document.getElementById('tagarea');
+      //adds in a new tag in page, last item order
+      tagarea.append(fragment);
+      //adds tag into set to allow for deletion later
+      tagSet.add(newTag);
+    }    
+  }
+  return (tagSet);
+}
 
