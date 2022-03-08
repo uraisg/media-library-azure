@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,14 @@ namespace MediaLibrary.Intranet.Web.Configuration
     {
         public static IServiceCollection AddCustomMvcConfig(this IServiceCollection services)
         {
+            // Customise Antiforgery options
+            // AddControllersWithViews() internally calls AddAntiforgery()
+            services.AddAntiforgery(options =>
+            {
+                // Improve cookie security
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
             services.AddControllersWithViews(options =>
             {
                 // Enable Antiforgery Token Validation for unsafe HTTP methods by default
