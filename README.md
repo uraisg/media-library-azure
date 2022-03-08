@@ -9,14 +9,14 @@ Media Library implements the capabilities of internet uploading and intranet ret
 # Stucture
 ## Internet
 - User will be logging in through GCC account.
-- Image will be scan using AI tool.
+- Image will be scan using [Azure Computer Vision](https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/).
 - Image will be returned with taggings.
 - Image is stored in blob/table storage.
 
-## Intranet
+## Intranet`
 - User will be logging in through GCC account.
 - Retrieval of images in blob storage.
-- Search function using Azure tool to filter images accordingly.
+- Search function using [Azure Cognitive Search](https://azure.microsoft.com/en-gb/services/search/?&ef_id=Cj0KCQiA95aRBhCsARIsAC2xvfzvQwS-ryM0INNBTTZWAWe89cpJcrKThlQAqPWsOJUvsN0Ex_26wUUaAlPoEALw_wcB:G:s&OCID=AID2200252_SEM_Cj0KCQiA95aRBhCsARIsAC2xvfzvQwS-ryM0INNBTTZWAWe89cpJcrKThlQAqPWsOJUvsN0Ex_26wUUaAlPoEALw_wcB:G:s&gclid=Cj0KCQiA95aRBhCsARIsAC2xvfzvQwS-ryM0INNBTTZWAWe89cpJcrKThlQAqPWsOJUvsN0Ex_26wUUaAlPoEALw_wcB#overview) to filter images accordingly - geospatial or indexing.
 - Retrival of details using API.
 
 # Installing
