@@ -13,5 +13,6 @@
         public string SearchIndexName { get; set; }
         public string ApiDomain { get; set; }
         public string ApiKey { get; set; }
+        public string AdminUsers { get; set; }
     }
 }
