@@ -47,7 +47,7 @@
                 @*<a id="editTags" href="" class="btn btn-sm mr-2">Edit all tags</a>*@
             </div>
             <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
-                <a href="" class="btn btn-primary btn-sm mr-2">Save</a>
+                <a id="saveData" class="btn btn-primary btn-sm mr-2">Save</a>
                 <a href="@Url.Action("Item", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-secondary btn-sm mr-2">Cancel</a>
             </div>
             <div class="row tags-notif"></div>
@@ -65,7 +65,7 @@
     <template id="tags-btn">
         <a class="btn btn-outline-secondary btn-xs mb-2 mr-2">
             <svg id="xbtn" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+                <path class="deleteBtn" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
             </svg>
         </a>
     </template>

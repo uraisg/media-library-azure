@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
+using MediaLibrary.Intranet.Web.Background;
+using System.IO;
+using MediaLibrary.Intranet.Web.Common;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -21,6 +24,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly AppSettings _appSettings;
         private readonly ILogger<WebApiController> _logger;
         private readonly MediaSearchService _mediaSearchService;
+        //private readonly ScheduledService _scheduledService;
 
         private static BlobContainerClient _blobContainerClient = null;
 
@@ -28,10 +32,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
             IOptions<AppSettings> appSettings,
             ILogger<WebApiController> logger,
             MediaSearchService mediaSearchService)
+            //ScheduledService scheduledService)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
             _mediaSearchService = mediaSearchService;
+            //_scheduledService = scheduledService;
 
             InitStorage();
         }
@@ -86,6 +92,28 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpPost("/api/media/{id}", Name = nameof(UpdateMediaItem))]
+        public async Task<IActionResult> UpdateMediaItem(string id)
+        {
+            try
+            {
+                await ScheduledService.Update(id);
+                //return newJson
+                return Ok(new MediaItem());
+            }
+            catch(Exception e)
+            {
+                Console.Write("error", e);
+                return BadRequest();
+            }
+            
+        }
+
+        private IActionResult Json(object p)
+        {
+            throw new NotImplementedException();
         }
 
         [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
