@@ -12,6 +12,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
+using MediaLibrary.Intranet.Web.Background;
+using System.IO;
+using MediaLibrary.Intranet.Web.Common;
+using System.Diagnostics;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -21,13 +25,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly AppSettings _appSettings;
         private readonly ILogger<WebApiController> _logger;
         private readonly MediaSearchService _mediaSearchService;
-
+        private ScheduledService _scheduledService;
         private static BlobContainerClient _blobContainerClient = null;
 
         public WebApiController(
             IOptions<AppSettings> appSettings,
             ILogger<WebApiController> logger,
             MediaSearchService mediaSearchService)
+           // ScheduledService scheduledService)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
@@ -86,6 +91,26 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpPost("/api/media/{id}", Name = nameof(UpdateMediaItem))]
+        public async Task<IActionResult> UpdateMediaItem(string id, [FromBody] MediaItem mediaItem)
+        {
+            try
+            {               
+                //await _scheduledService.Update(id,mediaItem);
+                return Ok();
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e);
+            }
+            
+        }
+
+        private IActionResult Json(object p)
+        {
+            throw new NotImplementedException();
         }
 
         [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
