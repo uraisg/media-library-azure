@@ -105,7 +105,7 @@ function getStaticMapUrl(coords, zoom) {
   const lng = coords[0].toFixed(decimalPlaces)
   return (
     'https://developers.onemap.sg/commonapi/staticmap/getStaticImage?layerchosen=default&' +
-    `lat=${lat}&lng=${lng}&zoom=${zoom}&height=256&width=256&points=[${lat},${lng},"4,119,191",""]`
+    `lat=${lat}&lng=${lng}&zoom=${zoom}&height=256&width=256`
   )
 }
 
