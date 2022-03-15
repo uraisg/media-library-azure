@@ -32,9 +32,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return View();
         }
 
-       // [HttpPost]
-       // public IActionResult Edit(MediaItem id) {
-       // }
     }
 }
 

@@ -1,4 +1,4 @@
-﻿{
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -12,6 +12,9 @@
       "commandName": "Project",
       "launchBrowser": true,
       "applicationUrl": "https://localhost:44391;http://localhost:5004",
+      "runtimeArgs": [
+        "--disable-web-security"
+      ],
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"

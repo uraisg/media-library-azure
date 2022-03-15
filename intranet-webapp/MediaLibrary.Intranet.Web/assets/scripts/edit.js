@@ -237,35 +237,10 @@ function saveData(data) {
       Copyright: copyright,
     }
     var newJson = JSON.stringify(obj);
-    console.log(newJson);
+    //console.log(newJson);
 
     updateFileInfo(newJson);
   }
-
-  function updateFileInfo(newJson) {
-    const img = document.querySelector('#main-media')
-    const fileInfoId = img.dataset.fileinfoid
-
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
-      },
-      credentials: 'include',
-      body: 'foo=bar&lorem=ipsum'
-    })
-      .then(res.json())
-      .then(res => {
-        // Handle response 
-        console.log('Response: ', res);
-      })
-      .catch(err => {
-        // Handle error 
-        console.log('Error message: ', error);
-      });
-  }
-
-
 
   function updateFileInfo(newJson) {
     const img = document.querySelector('#main-media')

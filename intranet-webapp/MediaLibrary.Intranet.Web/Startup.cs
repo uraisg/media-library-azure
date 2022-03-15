@@ -51,6 +51,7 @@ namespace MediaLibrary.Intranet.Web
             services.AddHostedService<ScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
             services.AddSingleton<MediaSearchService>();
+            services.AddSingleton<ItemService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
