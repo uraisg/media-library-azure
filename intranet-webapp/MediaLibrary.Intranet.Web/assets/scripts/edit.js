@@ -38,25 +38,6 @@ function loadFileInfo() {
 }
 
 function renderMetadataSection(data) {
-
-  //location
-  var geo1 = document.querySelector('#formControlInput1')
-  if (data['Location']) {
-    var coordinates = data['Location'].coordinates
-    geo1.value = formatLatLng(coordinates)
-  }
-
-  //taken & uploaded date
-  var taken2 = document.querySelector('#formControlInput2')
-  var uploaded2 = document.querySelector('#formControlInput3')
-  //splits and takes only YYYY-MM-DD, ignores the T values behind
-  if (data['DateTaken']) {
-    taken2.value = data['DateTaken'].split("T")[0];
-  }
-  if (data['UploadDate']) {
-    uploaded2.value = data['UploadDate'].split("T")[0];
-  }
-
   //details
   var name2 = document.querySelector('#formControlInput4');
   var location2 = document.querySelector('#formControlInput5');
@@ -77,9 +58,50 @@ function renderMetadataSection(data) {
     caption2.value = data['Caption'];
   }
 
-  //populate tags in page
   const template = document.querySelector('#metadata-section');
   const clone = template.content.cloneNode(true);
+
+  const author = clone.querySelector('.metadata-author span')
+  author.textContent = data['Author']
+
+  const geo = clone.querySelector('.metadata-geo')
+  if (data['Location']) {
+    const toggle = geo.querySelector('.dropdown-toggle')
+    const menu = geo.querySelector('.dropdown-menu')
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation()
+    })
+
+    const img = menu.querySelector('img')
+    const img2 = menu.querySelector('img:not(:first-of-type)')
+    const coordinates = data['Location'].coordinates
+    toggle.textContent = formatLatLng(coordinates)
+    img.src = getStaticMapUrl(coordinates, 15)
+    img2.src = getStaticMapUrl(coordinates, 17)
+    ;['mouseenter', 'touchstart'].forEach((type) => {
+      img2.addEventListener(type, (e) => {
+        e.preventDefault()
+        img2.classList.add('visible')
+      })
+    })
+    ;['mouseleave', 'touchend', 'touchcancel'].forEach((type) => {
+      img2.addEventListener(type, (e) => {
+        e.preventDefault()
+
+        img2.classList.remove('visible')
+      })
+    })
+  } else {
+    const span = geo.querySelector('span')
+    span.textContent = 'No geotag'
+  }
+
+  const taken = clone.querySelector('.metadata-taken span')
+  const uploaded = clone.querySelector('.metadata-uploaded span')
+  taken.textContent += formatDate(data['DateTaken'])
+  uploaded.textContent += formatDate(data['UploadDate'])
+
+  //populate tags in page
   const tags = clone.querySelector('.metadata-tags div');
   tags.appendChild(renderTagList(data['Tag']));
   const target = document.querySelector('.metadata-container');
@@ -102,6 +124,21 @@ function formatLatLng(coords) {
   return (
     coords[1].toFixed(decimalPlaces) + ', ' + coords[0].toFixed(decimalPlaces)
   )
+}
+
+function getStaticMapUrl(coords, zoom) {
+  const decimalPlaces = 5
+  const lat = coords[1].toFixed(decimalPlaces)
+  const lng = coords[0].toFixed(decimalPlaces)
+  return (
+    'https://developers.onemap.sg/commonapi/staticmap/getStaticImage?layerchosen=default&' +
+    `lat=${lat}&lng=${lng}&zoom=${zoom}&height=256&width=256`
+  )
+}
+
+function formatDate(date) {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' }
+  return new Intl.DateTimeFormat('default', options).format(new Date(date))
 }
 
 //Tags
