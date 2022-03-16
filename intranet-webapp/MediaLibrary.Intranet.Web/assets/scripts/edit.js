@@ -1,7 +1,6 @@
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
   const fileInfoId = img.dataset.fileinfoid
-
   if (!fileInfoId) return
 
   fetch(`/api/media/${fileInfoId}`, {
@@ -38,26 +37,6 @@ function loadFileInfo() {
 }
 
 function renderMetadataSection(data) {
-  //details
-  var name2 = document.querySelector('#formControlInput4');
-  var location2 = document.querySelector('#formControlInput5');
-  var copyright2 = document.querySelector('#formControlInput6');
-  var caption2 = document.querySelector('#formControlTextarea1');
-
-  if (data['Project']) {
-    name2.value = data['Project'];
-  }
-  if (data['LocationName']) {
-    location2.value = data['LocationName'];
-  }
-  if (data['Copyright']) {
-    copyright2.value = data['Copyright'];
-  }
-
-  if (data['Caption']) {
-    caption2.value = data['Caption'];
-  }
-
   const template = document.querySelector('#metadata-section');
   const clone = template.content.cloneNode(true);
 
@@ -101,6 +80,9 @@ function renderMetadataSection(data) {
   taken.textContent += formatDate(data['DateTaken'])
   uploaded.textContent += formatDate(data['UploadDate'])
 
+  const detailsForm = clone.querySelector('.metadata-details form')
+  initFormValues(detailsForm, data)
+
   //populate tags in page
   const tags = clone.querySelector('.metadata-tags div');
   tags.appendChild(renderTagList(data['Tag']));
@@ -139,6 +121,11 @@ function getStaticMapUrl(coords, zoom) {
 function formatDate(date) {
   const options = { year: 'numeric', month: 'short', day: 'numeric' }
   return new Intl.DateTimeFormat('default', options).format(new Date(date))
+}
+
+function initFormValues(form, data) {
+  const attribs = ['Project', 'LocationName', 'Copyright', 'Caption']
+  attribs.forEach((attrib) => form.elements[attrib].value = data[attrib])
 }
 
 //Tags
@@ -240,19 +227,11 @@ function saveData(data) {
 
     var finalTagSet = new Set();
 
-    //reads all data
-    var name = document.getElementById('formControlInput4').value;
-    var locationName = document.getElementById('formControlInput5').value;
-    var copyright = document.getElementById('formControlInput6').value;
-    var caption = document.getElementById('formControlTextarea1').value;
-
-    //For two optional fields
-    if (!copyright) {
-      copyright = null;
-    }
-    if (!caption) {
-      caption = null;
-    }
+    // Read new details from form
+    const detailsForm = document.querySelector('.metadata-details form')
+    const newValues = ['Project', 'LocationName', 'Copyright', 'Caption'].reduce((obj, attrib) => {
+      return { ...obj, [attrib]: detailsForm.elements[attrib].value.trim() || null }
+    }, {})
 
     //gets the no. of tags
     var tagAmt = document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2').length;
@@ -269,15 +248,14 @@ function saveData(data) {
       DateTaken: data['DateTaken'],
       Location: data['Location'],
       Tag: Array.from(finalTagSet),
-      Caption: caption,
+      Caption: newValues['Caption'],
       Author: data['Author'],
       UploadDate: data['UploadDate'],
       FileURL: data['FileURL'],
       ThumbnailURL: data['ThumbnailURL'],
-      Project: name,
-      //Event: data['Event'],
-      LocationName: locationName,
-      Copyright: copyright,
+      Project: newValues['Project'],
+      LocationName: newValues['LocationName'],
+      Copyright: newValues['Copyright'],
     }
     var newJson = JSON.stringify(obj);
     //console.log(newJson);
@@ -298,7 +276,6 @@ function saveData(data) {
       },
       mode: 'same-origin',
       credentials: 'same-origin',
-      data: newJson,
       body: newJson
     })
       .then((response) => {

@@ -11,21 +11,6 @@
         </div>
         <div class="col-md-4">
             <hr class="d-block d-md-none" />
-            <div class="metadata-details col-12 mt-3">
-                <h6>Details</h6>
-                <dl class="row mb-0">
-                    <dt class="col-lg-3">Name</dt>
-                    <dd class="col-lg-9"> <input type="text" id="formControlInput4" class="form-control form-control-sm" required="required"></dd>
-
-                    <dt class="col-lg-3">Location</dt>
-                    <dd class="col-lg-9"><input type="text" id="formControlInput5" class="form-control form-control-sm" required="required"></dd>
-
-                    <dt class="col-lg-3">Copyright</dt>
-                    <dd class="col-lg-9"><input type="text" id="formControlInput6" class="form-control form-control-sm"></dd>
-                    <dt class="col-lg-3">Caption</dt>
-                    <dd class="col-lg-9"><textarea id="formControlTextarea1" class="form-control form-control-sm" rows="3" style="height: 77px;"></textarea></dd>
-                </dl>
-            </div>
             <div class="row metadata-container"></div>
             <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
                 <a id="addTag" class="btn btn-info btn-sm mr-2">Add a tag</a>
@@ -81,6 +66,21 @@
             </svg>
             <span>Uploaded on </span>
         </div>
+    </div>
+    <div class="metadata-details col-12 mt-3">
+        <h6>Details</h6>
+        <form>
+            <dl class="row mb-0">
+                <dt class="col-lg-3">Name</dt>
+                <dd class="col-lg-9"><input type="text" name="Project" class="form-control form-control-sm" required></dd>
+                <dt class="col-lg-3">Location</dt>
+                <dd class="col-lg-9"><input type="text" name="LocationName" class="form-control form-control-sm" required></dd>
+                <dt class="col-lg-3">Copyright</dt>
+                <dd class="col-lg-9"><input type="text" name="Copyright" class="form-control form-control-sm"></dd>
+                <dt class="col-lg-3">Caption</dt>
+                <dd class="col-lg-9"><textarea name="Caption" class="form-control form-control-sm" rows="3"></textarea></dd>
+            </dl>
+        </form>
     </div>
     <div class="metadata-tags col-12 mt-3">
         <h6>Tags</h6>
