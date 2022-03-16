@@ -272,7 +272,10 @@ function saveData(data) {
     fetch(`/api/media/${fileInfoId}`, {
       method: 'POST',
       headers: {
-        "Content-type": "application/json; charset=utf-8"
+        'Content-type': 'application/json',
+        RequestVerificationToken: document.getElementById(
+          'RequestVerificationToken'
+        ).value,
       },
       mode: 'same-origin',
       credentials: 'same-origin',
