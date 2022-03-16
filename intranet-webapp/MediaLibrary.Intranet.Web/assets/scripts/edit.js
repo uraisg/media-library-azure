@@ -42,9 +42,8 @@ function renderMetadataSection(data) {
   //location
   var geo1 = document.querySelector('#formControlInput1')
   if (data['Location']) {
-    var coordinates2 = data['Location'].coordinates
-    console.log(coordinates2)
-    geo1.value = formatLatLng(coordinates2)
+    var coordinates = data['Location'].coordinates
+    geo1.value = formatLatLng(coordinates)
   }
 
   //taken & uploaded date
@@ -96,6 +95,13 @@ function renderMetadataSection(data) {
   addTag(tagSet);
   //saves data on btn click
   saveData(data);
+}
+
+function formatLatLng(coords) {
+  const decimalPlaces = 5
+  return (
+    coords[1].toFixed(decimalPlaces) + ', ' + coords[0].toFixed(decimalPlaces)
+  )
 }
 
 //Tags
@@ -178,7 +184,7 @@ function addTag(tagSet) {
         tagarea.append(fragment);
         //adds tag into set to allow for deletion later
         tagSet.add(newTag);
-      }  
+      }
     }
     else {
       //disallows adding
@@ -187,7 +193,7 @@ function addTag(tagSet) {
         'You cannot add a <strong>blank</strong> tag!' +
         '</div>'
     }
-  
+
   }
   return (tagSet);
 }
