@@ -98,7 +98,7 @@ function renderMetadataSection(data) {
   //adds tag on btn click
   addTag(tagSet);
   //saves data on btn click
-  saveData(data);
+  document.querySelector('#saveData').addEventListener("click", () => saveData(data['Id']))
 }
 
 function formatLatLng(coords) {
@@ -222,86 +222,58 @@ function addTag(tagSet) {
   return (tagSet);
 }
 
-function saveData(data) {
-  document.getElementById('saveData').onclick = function () {
+function saveData(id) {
+  var finalTagSet = new Set();
 
-    var finalTagSet = new Set();
+  // Read new details from form
+  const detailsForm = document.querySelector('.metadata-details form')
+  const newValues = ['Project', 'LocationName', 'Copyright', 'Caption'].reduce((obj, attrib) => {
+    return { ...obj, [attrib]: detailsForm.elements[attrib].value.trim() || null }
+  }, {})
 
-    // Read new details from form
-    const detailsForm = document.querySelector('.metadata-details form')
-    const newValues = ['Project', 'LocationName', 'Copyright', 'Caption'].reduce((obj, attrib) => {
-      return { ...obj, [attrib]: detailsForm.elements[attrib].value.trim() || null }
-    }, {})
+  //gets the no. of tags
+  var tagAmt = document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2').length;
 
-    //gets the no. of tags
-    var tagAmt = document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2').length;
-
-    //populates ftagset
-    for (i = 0; i < tagAmt; i++) {
-      finalTagSet.add(document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2')[i].textContent.trim());
-    }
-
-    //convert to json object
-    const obj = {
-      Id: data['Id'],
-      Name: data['Name'],
-      DateTaken: data['DateTaken'],
-      Location: data['Location'],
-      Tag: Array.from(finalTagSet),
-      Caption: newValues['Caption'],
-      Author: data['Author'],
-      UploadDate: data['UploadDate'],
-      FileURL: data['FileURL'],
-      ThumbnailURL: data['ThumbnailURL'],
-      Project: newValues['Project'],
-      LocationName: newValues['LocationName'],
-      Copyright: newValues['Copyright'],
-    }
-    var newJson = JSON.stringify(obj);
-    //console.log(newJson);
-
-    updateFileInfo(newJson);
+  //populates ftagset
+  for (i = 0; i < tagAmt; i++) {
+    finalTagSet.add(document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2')[i].textContent.trim());
   }
 
-  function updateFileInfo(newJson) {
-    const img = document.querySelector('#main-media')
-    const fileInfoId = img.dataset.fileinfoid
-
-    if (!fileInfoId) return
-
-    fetch(`/api/media/${fileInfoId}`, {
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-        RequestVerificationToken: document.getElementById(
-          'RequestVerificationToken'
-        ).value,
-      },
-      mode: 'same-origin',
-      credentials: 'same-origin',
-      body: newJson
+  // Call API with updated data
+  postUpdate(id, {
+    Tag: Array.from(finalTagSet),
+    Caption: newValues['Caption'],
+    Project: newValues['Project'],
+    LocationName: newValues['LocationName'],
+    Copyright: newValues['Copyright'],
+  })
+    .then(() => {
+      window.location = `/Gallery/Item/${id}`
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status}`)
-        }
-        const contentType = response.headers.get('content-type')
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new TypeError("Oops, we haven't got JSON!")
-        }
-        return response.json()
-      })
-      .then((data) => {
-        console.log('Response: ', data);
-      })
-      .catch((error) => {
-        document.querySelector('.metadata-container').innerHTML =
-          '<div class="alert alert-warning w-100">' +
-          '<strong>Sorry!</strong> We have problems updating the media details.' +
-          '</div>'
-        document.title = 'Oops! ' + document.title
-        console.error('Error message: ', error)
-      })
-  }
+    .catch((error) => {
+      document.querySelector('.tags-notif').innerHTML =
+        '<div class="alert alert-warning w-100">' +
+        '<strong>Sorry!</strong> We have problems updating the media details.' +
+        '</div>'
+      console.error(error)
+    })
+}
 
+function postUpdate(id, updatedData) {
+  return fetch(`/api/media/${id}`, {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+      RequestVerificationToken: document.getElementById(
+        'RequestVerificationToken'
+      ).value,
+    },
+    mode: 'same-origin',
+    credentials: 'same-origin',
+    body: JSON.stringify(updatedData),
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.status}`)
+    }
+  })
 }
