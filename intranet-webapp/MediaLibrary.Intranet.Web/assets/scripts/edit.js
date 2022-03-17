@@ -223,25 +223,19 @@ function addTag(tagSet) {
 }
 
 function saveData(id) {
-  var finalTagSet = new Set();
-
   // Read new details from form
   const detailsForm = document.querySelector('.metadata-details form')
   const newValues = ['Project', 'LocationName', 'Copyright', 'Caption'].reduce((obj, attrib) => {
     return { ...obj, [attrib]: detailsForm.elements[attrib].value.trim() || null }
   }, {})
 
-  //gets the no. of tags
-  var tagAmt = document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2').length;
-
-  //populates ftagset
-  for (i = 0; i < tagAmt; i++) {
-    finalTagSet.add(document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2')[i].textContent.trim());
-  }
+  // Read new tag list
+  const tagElems = document.querySelectorAll('#tagarea .tagger-tag')
+  const tagList = Array.prototype.map.call(tagElems, (el) => el.textContent.trim())
 
   // Call API with updated data
   postUpdate(id, {
-    Tag: Array.from(finalTagSet),
+    Tag: tagList,
     Caption: newValues['Caption'],
     Project: newValues['Project'],
     LocationName: newValues['LocationName'],
