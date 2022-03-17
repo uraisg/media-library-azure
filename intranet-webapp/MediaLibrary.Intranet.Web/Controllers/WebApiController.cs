@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
-using MediaLibrary.Intranet.Web.Background;
-using System.IO;
-using MediaLibrary.Intranet.Web.Common;
-using System.Net.Http;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Authorization;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -104,19 +101,25 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpPost("/api/media/{id}", Name = nameof(UpdateMediaItem))]
         public async Task<IActionResult> UpdateMediaItem(string id, [FromBody] MediaItem mediaItem)
         {
+            _logger.LogInformation("{UserName} called UpdateMediaItem action for id {id}", User.GetUserGraphDisplayName(), id);
+
             // TODO: get item info and check if user is author
-
-            try
+            MediaItem itemToUpdate = await _itemService.GetItemAsync(id);
+            if (itemToUpdate == null)
             {
-                await _itemService.Update(id, mediaItem);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                Console.Write("Error: ", e);
-                return BadRequest();
+                return NotFound();
             }
 
+            itemToUpdate.Tag = mediaItem.Tag;
+            itemToUpdate.Caption = mediaItem.Caption;
+            itemToUpdate.Project = mediaItem.Project;
+            itemToUpdate.LocationName = mediaItem.LocationName;
+            itemToUpdate.Copyright = mediaItem.Copyright;
+
+            await _itemService.Update(id, itemToUpdate);
+            _logger.LogInformation("Updated item details for id {id}", id);
+
+            return NoContent();
         }
 
         private IActionResult Json(object p)
