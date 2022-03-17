@@ -25,7 +25,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly ILogger<WebApiController> _logger;
         private readonly MediaSearchService _mediaSearchService;
         private readonly ItemService _itemService;
-        private readonly IHttpClientFactory _clientFactory;
 
         private static BlobContainerClient _blobContainerClient = null;
 
@@ -33,14 +32,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
             IOptions<AppSettings> appSettings,
             ILogger<WebApiController> logger,
             MediaSearchService mediaSearchService,
-            ItemService itemService,
-            IHttpClientFactory clientFactory)
+            ItemService itemService)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
             _mediaSearchService = mediaSearchService;
             _itemService = itemService;
-            _clientFactory = clientFactory;
 
             InitStorage();
         }
