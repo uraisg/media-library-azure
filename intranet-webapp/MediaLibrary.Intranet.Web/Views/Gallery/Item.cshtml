@@ -1,5 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Routing;
 
+@{
+    var showAdminActions = (bool)ViewData["showAdminActions"];
+}
+
 <div class="container-lg mt-4">
     <div class="row">
         <div class="media-container col-md-8">
@@ -11,18 +15,21 @@
         </div>
         <div class="col-md-4">
             <hr class="d-block d-md-none" />
+            @if (showAdminActions)
+            {
+            <div class="row">
+                <div class="d-flex flex-row ml-auto pr-3">
+                    <a href="@Url.Action("Edit", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-primary btn-sm mr-2">Edit</a>
+                    <a href="" class="btn btn-outline-danger btn-sm mr-2">Delete</a>
+                </div>
+            </div>
+            }
             <div class="row metadata-container"></div>
         </div>
     </div>
 </div>
 
 <template id="metadata-section">
-    <!--admin functions-->
-    <div class="d-flex flex-row ml-auto pr-3">
-        @*<a href="@Html.ActionLink("Edit page","~/Gallery/Edit")" class="btn btn-outline-primary btn-sm mr-2"> Edit</a>*@
-        <a href="@Url.Action("Edit", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-primary btn-sm mr-2">Edit</a>
-        <a href="" class="btn btn-outline-danger btn-sm mr-2">Delete</a>
-    </div>
     <div class="col-12">
         <h6>Info</h6>
         <div class="metadata-author">

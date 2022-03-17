@@ -17,6 +17,7 @@ using System.IO;
 using MediaLibrary.Intranet.Web.Common;
 using System.Net.Http;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -99,9 +100,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
         }
 
+        [Authorize(Roles = UserRole.Admin)]
         [HttpPost("/api/media/{id}", Name = nameof(UpdateMediaItem))]
         public async Task<IActionResult> UpdateMediaItem(string id, [FromBody] MediaItem mediaItem)
         {
+            // TODO: get item info and check if user is author
+
             try
             {
                 await _itemService.Update(id, mediaItem);
