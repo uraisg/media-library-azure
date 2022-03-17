@@ -41,11 +41,10 @@ function renderMetadataSection(data) {
 
   //location
   var geo1 = document.querySelector('#formControlInput1')
-  
-  if (data['location']) {
-    var coordinates2 = data['location'].coordinates
+  if (data['Location']) {
+    var coordinates2 = data['Location'].coordinates
     console.log(coordinates2)
-    geo1.value = formatlatlng(coordinates2)
+    geo1.value = formatLatLng(coordinates2)
   }
 
   //taken & uploaded date
@@ -97,13 +96,6 @@ function renderMetadataSection(data) {
   addTag(tagSet);
   //saves data on btn click
   saveData(data);
-}
-
-function formatLatLng(coords) {
-  const decimalPlaces = 5
-  return (
-    coords[1].toFixed(decimalPlaces) + ', ' + coords[0].toFixed(decimalPlaces)
-  )
 }
 
 //Tags
@@ -223,8 +215,7 @@ function saveData(data) {
     var tagAmt = document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2').length;
 
     //populates ftagset
-    let i = 0;
-    for (i; i < tagAmt; i++) {
+    for (i = 0; i < tagAmt; i++) {
       finalTagSet.add(document.getElementsByClassName('btn btn-outline-secondary btn-xs mb-2 mr-2')[i].textContent.trim());
     }
 
@@ -246,6 +237,7 @@ function saveData(data) {
       Copyright: copyright,
     }
     var newJson = JSON.stringify(obj);
+    //console.log(newJson);
 
     updateFileInfo(newJson);
   }
@@ -253,15 +245,13 @@ function saveData(data) {
   function updateFileInfo(newJson) {
     const img = document.querySelector('#main-media')
     const fileInfoId = img.dataset.fileinfoid
-    const csrfToken = document.getElementById("RequestVerificationToken").value;
 
     if (!fileInfoId) return
 
     fetch(`/api/media/${fileInfoId}`, {
       method: 'POST',
       headers: {
-        "Content-type": "application/json; charset=utf-8",
-        "RequestVerificationToken": csrfToken
+        "Content-type": "application/json; charset=utf-8"
       },
       mode: 'same-origin',
       credentials: 'same-origin',

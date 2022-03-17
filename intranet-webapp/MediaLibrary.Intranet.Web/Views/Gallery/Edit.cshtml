@@ -1,9 +1,4 @@
 ﻿@using Microsoft.AspNetCore.Routing;
-@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery;
-
-@{
-    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
-}
 
 <div class="container-lg mt-4">
     <div class="row">
@@ -14,8 +9,6 @@
                      alt="" data-fileinfoid="@ViewData["mediaId"]">
             </a>
         </div>
-
-        <input id="RequestVerificationToken" type="hidden" value="@requestToken" />
         <div class="col-md-4">
             <hr class="d-block d-md-none" />
             <div class="col-12">
@@ -51,6 +44,7 @@
             <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
                 <a id="addTag" class="btn btn-info btn-sm mr-2">Add a tag</a>
                 <dd class="col-lg-6"><input type="text" id="newTagInput" class="form-control form-control-sm"></dd>
+                @*<a id="editTags" href="" class="btn btn-sm mr-2">Edit all tags</a>*@
             </div>
             <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
                 <a id="saveData" class="btn btn-primary btn-sm mr-2">Save</a>
@@ -61,21 +55,27 @@
     </div>
 </div>
 
-<template id="metadata-section">
-    <div class="metadata-tags col-12 mt-3">
-        <h6>Tags</h6>
-        <div id="tagarea"></div>
+    <template id="metadata-section">
+        <div class="metadata-tags col-12 mt-3">
+            <h6>Tags</h6>
+            <div id="tagarea"></div>
+        </div>
+    </template>
+
+    <template id="tags-btn">
+        <a class="btn btn-outline-secondary btn-xs mb-2 mr-2">
+            <svg id="xbtn" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+                <path class="deleteBtn" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+            </svg>
+        </a>
+    </template>
+   
+    @*
+    <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
+        <a href="" class="btn btn-primary btn-sm mr-2">Save</a>
+        <a href="@Url.Action("Item", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-secondary btn-sm mr-2">Cancel</a>
     </div>
-</template>
-
-<template id="tags-btn">
-    <a class="btn btn-outline-secondary btn-xs mb-2 mr-2">
-        <svg id="xbtn" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
-            <path class="deleteBtn" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
-        </svg>
-    </a>
-</template>
-
-@section Scripts {
-    <script src="~/scripts/edit.js"></script>
-}
+    *@
+    @section Scripts {
+        <script src="~/scripts/edit.js"></script>
+    }
