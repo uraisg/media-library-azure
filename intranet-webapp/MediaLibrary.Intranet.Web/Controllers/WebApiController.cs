@@ -88,7 +88,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             _logger.LogInformation("Getting item details for id {id}", id);
 
-            var item = await _mediaSearchService.GetItemAsync(id);
+            MediaItem item = await _itemService.GetItemAsync(id);
 
             if (item != null)
             {

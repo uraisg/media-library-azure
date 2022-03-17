@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
+using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Threading.Tasks;
-using Azure.Storage.Blobs.Models;
-using MediaLibrary.Intranet.Web.Common;
-using System.IO;
-using System.Diagnostics;
 
 namespace MediaLibrary.Intranet.Web.Services
 {
@@ -24,7 +25,40 @@ namespace MediaLibrary.Intranet.Web.Services
             _appSettings = appSettings.Value;
             _logger = logger;
             _clientFactory = httpClientFactory;
-           
+        }
+
+        public async Task<MediaItem> GetItemAsync(string id)
+        {
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
+            string storageAccountName = _appSettings.MediaStorageAccountName;
+            string indexContainerName = _appSettings.MediaStorageIndexContainer;
+
+            // Initialize blob container client
+            BlobContainerClient indexBlobContainerClient;
+
+            if (!string.IsNullOrEmpty(storageConnectionString))
+            {
+                indexBlobContainerClient = new BlobContainerClient(storageConnectionString, indexContainerName);
+            }
+            else
+            {
+                string indexContainerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                    storageAccountName, indexContainerName);
+                indexBlobContainerClient = new BlobContainerClient(new Uri(indexContainerEndpoint), new DefaultAzureCredential());
+            }
+
+            string fileName = id + ".json";
+            BlobClient blobClient = indexBlobContainerClient.GetBlobClient(fileName);
+
+            try
+            {
+                BlobDownloadInfo download = await blobClient.DownloadAsync();
+                return JsonHelper.ReadJsonFromStream<MediaItem>(download.Content);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            {
+                return null;
+            }
         }
 
         public async Task Update(string id, MediaItem mediaItem)
@@ -82,4 +116,3 @@ namespace MediaLibrary.Intranet.Web.Services
 
     }
 }
-
