@@ -116,15 +116,10 @@ namespace MediaLibrary.Intranet.Web.Controllers
             itemToUpdate.LocationName = mediaItem.LocationName;
             itemToUpdate.Copyright = mediaItem.Copyright;
 
-            await _itemService.Update(id, itemToUpdate);
+            await _itemService.UpdateItemAsync(id, itemToUpdate);
             _logger.LogInformation("Updated item details for id {id}", id);
 
             return NoContent();
-        }
-
-        private IActionResult Json(object p)
-        {
-            throw new NotImplementedException();
         }
 
         [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]

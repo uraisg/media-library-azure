@@ -37,8 +37,8 @@ function loadFileInfo() {
 }
 
 function renderMetadataSection(data) {
-  const template = document.querySelector('#metadata-section');
-  const clone = template.content.cloneNode(true);
+  const template = document.querySelector('#metadata-section')
+  const clone = template.content.cloneNode(true)
 
   const author = clone.querySelector('.metadata-author span')
   author.textContent = data['Author']
@@ -84,21 +84,23 @@ function renderMetadataSection(data) {
   initFormValues(detailsForm, data)
 
   //populate tags in page
-  const tags = clone.querySelector('.metadata-tags div');
-  tags.appendChild(renderTagList(data['Tag']));
-  const target = document.querySelector('.metadata-container');
-  const targetClone = target.cloneNode(false);
-  targetClone.appendChild(clone);
-  target.parentNode.replaceChild(targetClone, target);
+  const tags = clone.querySelector('.metadata-tags div')
+  tags.appendChild(renderTagList(data['Tag']))
+  const target = document.querySelector('.metadata-container')
+  const targetClone = target.cloneNode(false)
+  targetClone.appendChild(clone)
+  target.parentNode.replaceChild(targetClone, target)
 
   //stores tag data into set for tag index identification & deletion later
-  const tagSet = new Set(data['Tag']);
+  const tagSet = new Set(data['Tag'])
   //listens for mouse click on tag delete
-  tagarea.addEventListener("click", (e) => removeTag(e, tagSet));
+  tagarea.addEventListener('click', (e) => removeTag(e, tagSet))
   //adds tag on btn click
-  addTag(tagSet);
+  addTag(tagSet)
   //saves data on btn click
-  document.querySelector('#saveData').addEventListener("click", () => saveData(data['Id']))
+  document
+    .querySelector('#saveData')
+    .addEventListener('click', () => saveData(data['Id']))
 }
 
 function formatLatLng(coords) {
@@ -125,47 +127,47 @@ function formatDate(date) {
 
 function initFormValues(form, data) {
   const attribs = ['Project', 'LocationName', 'Copyright', 'Caption']
-  attribs.forEach((attrib) => form.elements[attrib].value = data[attrib])
+  attribs.forEach((attrib) => (form.elements[attrib].value = data[attrib]))
 }
 
 //Tags
 function renderTagList(tags) {
-  const fragment = new DocumentFragment();
-  const template = document.querySelector('#tags-btn');
+  const fragment = new DocumentFragment()
+  const template = document.querySelector('#tags-btn')
 
   tags.forEach(function (tag) {
-    const a = template.content.firstElementChild.cloneNode(true);
-    const b = template.content.firstElementChild.firstElementChild.cloneNode(true);
-    a.textContent = tag;
+    const a = template.content.firstElementChild.cloneNode(true)
+    const b = template.content.firstElementChild.firstElementChild.cloneNode(true)
+    a.textContent = tag
     //appends delete icon (x)
-    a.appendChild(b);
-    fragment.appendChild(a);
+    a.appendChild(b)
+    fragment.appendChild(a)
   })
-  return fragment;
+  return fragment
 }
 
-loadFileInfo();
+loadFileInfo()
 
-function removeTag(e,tagSet) {
-  var target = e.target;
+function removeTag(e, tagSet) {
+  var target = e.target
   //validation against user clicking wrong area
-  if (target.toString() == "[object SVGPathElement]") {
+  if (target.toString() === '[object SVGPathElement]') {
     //[identifies as object svgpathelement - correct click]
 
     //gets text of clicked target (the x button)
-    var targetTxt = target.parentElement.parentElement.textContent.trim();
+    var targetTxt = target.parentElement.parentElement.textContent.trim()
 
     //checks index of item in set
-    var index = Array.from(tagSet).indexOf(targetTxt);
+    var index = Array.from(tagSet).indexOf(targetTxt)
 
     //gets tag's element based on index selection
-    var element = document.getElementsByClassName("ml-1 bi bi-x-circle-fill text-secondary")[index];
+    var element = document.getElementsByClassName("ml-1 bi bi-x-circle-fill text-secondary")[index]
 
     //removes selected tag
-    element.parentNode.parentNode.removeChild(element.parentNode);
+    element.parentNode.parentNode.removeChild(element.parentNode)
 
-    tagSet.delete(targetTxt);
-    return (tagSet);
+    tagSet.delete(targetTxt)
+    return tagSet
   }
   else {
     //clicked wrong area - can be the "text" area beside the x btn (undefined) or the div area surrounding tags [object HTMLDivElement]
@@ -177,7 +179,7 @@ function removeTag(e,tagSet) {
 function addTag(tagSet) {
   document.getElementById('addTag').onclick = function () {
     //gets text from field
-    var newTag = document.getElementById('newTagInput').value;
+    var newTag = document.getElementById('newTagInput').value
 
     //blank validation
     if (newTag) {
@@ -188,38 +190,35 @@ function addTag(tagSet) {
           '<div class="alert alert-warning w-100" style="margin:20px">' +
           '<strong>Sorry!</strong> You cannot add in duplicate tags!' +
           '</div>'
-      }
-      else {
+      } else {
         //removes text if present
-        document.querySelector('.tags-notif').innerHTML = "";
+        document.querySelector('.tags-notif').innerHTML = ''
 
         //creates a clone of existing tag template
-        const fragment = new DocumentFragment();
-        var tagtemplate = document.querySelector('#tags-btn');
-        var a = tagtemplate.content.firstElementChild.cloneNode(true);
-        var b = tagtemplate.content.firstElementChild.firstElementChild.cloneNode(true);
+        const fragment = new DocumentFragment()
+        var tagtemplate = document.querySelector('#tags-btn')
+        var a = tagtemplate.content.firstElementChild.cloneNode(true)
+        var b = tagtemplate.content.firstElementChild.firstElementChild.cloneNode(true)
         //appends new text
-        a.textContent = newTag;
-        a.appendChild(b);
-        fragment.appendChild(a);
+        a.textContent = newTag
+        a.appendChild(b)
+        fragment.appendChild(a)
 
-        var tagarea = document.getElementById('tagarea');
+        var tagarea = document.getElementById('tagarea')
         //adds in a new tag in page, last item order
-        tagarea.append(fragment);
+        tagarea.append(fragment)
         //adds tag into set to allow for deletion later
-        tagSet.add(newTag);
+        tagSet.add(newTag)
       }
-    }
-    else {
+    } else {
       //disallows adding
       document.querySelector('.tags-notif').innerHTML =
         '<div class="alert alert-warning w-100" style="margin:20px">' +
         'You cannot add a <strong>blank</strong> tag!' +
         '</div>'
     }
-
   }
-  return (tagSet);
+  return tagSet
 }
 
 function saveData(id) {
