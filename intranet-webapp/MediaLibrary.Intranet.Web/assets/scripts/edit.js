@@ -98,6 +98,13 @@ function renderMetadataSection(data) {
   saveData(data);
 }
 
+function formatLatLng(coords) {
+  const decimalPlaces = 5
+  return (
+    coords[1].toFixed(decimalPlaces) + ', ' + coords[0].toFixed(decimalPlaces)
+  )
+}
+
 //Tags
 function renderTagList(tags) {
   const fragment = new DocumentFragment();
