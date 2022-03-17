@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using MediaLibrary.Intranet.Web.Common;
 using System.IO;
-using System.Diagnostics;
 
 namespace MediaLibrary.Intranet.Web.Services
 {
@@ -29,6 +28,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public async Task Update(string id, MediaItem mediaItem)
         {
+            _logger.LogInformation("Editing item..");
+
             string storageConnectionString = _appSettings.MediaStorageConnectionString;
             string storageAccountName = _appSettings.MediaStorageAccountName;
             string imageContainerName = _appSettings.MediaStorageImageContainer;
@@ -61,7 +62,6 @@ namespace MediaLibrary.Intranet.Web.Services
 
         private static async Task UpdateBlob(BlobContainerClient blobContainerClient, MediaItem mediaItem, string fileName)
         {
-            Debug.Write("Updating..");
 
             //convert string to stream
             var stream = new MemoryStream();
