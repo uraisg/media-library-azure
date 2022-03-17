@@ -260,7 +260,8 @@ function saveData(data) {
     fetch(`/api/media/${fileInfoId}`, {
       method: 'POST',
       headers: {
-        "Content-type": "application/json; charset=utf-8"
+        "Content-type": "application/json; charset=utf-8",
+        "RequestVerificationToken": csrfToken
       },
       mode: 'same-origin',
       credentials: 'same-origin',
