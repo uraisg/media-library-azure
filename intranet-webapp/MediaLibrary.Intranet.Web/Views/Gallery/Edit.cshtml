@@ -17,14 +17,15 @@
         <div class="col-md-4">
             <hr class="d-block d-md-none" />
             <div class="row metadata-container"></div>
-            <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
-                <a id="addTag" class="btn btn-info btn-sm mr-2">Add a tag</a>
-                <dd class="col-lg-6"><input type="text" id="newTagInput" class="form-control form-control-sm"></dd>
-                @*<a id="editTags" href="" class="btn btn-sm mr-2">Edit all tags</a>*@
+            <div class="d-inline-flex flex-row">
+                <input type="text" id="newTagInput" class="form-control form-control-sm mr-2 ">
+                <a id="addTag" class="btn btn-info btn-sm flex-shrink-0">Add a tag</a>
             </div>
-            <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
-                <a id="saveData" class="btn btn-primary btn-sm mr-2">Save</a>
-                <a href="@Url.Action("Item", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-secondary btn-sm mr-2">Cancel</a>
+            <div class="row">
+                <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
+                    <a id="saveData" class="btn btn-primary btn-sm">Save</a>
+                    <a href="@Url.Action("Item", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-secondary btn-sm mr-2">Cancel</a>
+                </div>
             </div>
             <div class="row tags-notif"></div>
             <input id="RequestVerificationToken" type="hidden" value="@requestToken">
