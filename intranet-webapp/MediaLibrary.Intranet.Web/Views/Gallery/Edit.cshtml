@@ -1,7 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Routing;
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 
 @{
-    var showAdminActions = (bool)ViewData["showAdminActions"];
+    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
 }
 
 <div class="container-lg mt-4">
@@ -15,16 +16,19 @@
         </div>
         <div class="col-md-4">
             <hr class="d-block d-md-none" />
-            @if (showAdminActions)
-            {
+            <div class="row metadata-container"></div>
+            <div class="d-inline-flex flex-row">
+                <input type="text" id="newTagInput" class="form-control form-control-sm mr-2 ">
+                <a id="addTag" class="btn btn-info btn-sm flex-shrink-0">Add a tag</a>
+            </div>
             <div class="row">
-                <div class="d-flex flex-row ml-auto pr-3">
-                    <a href="@Url.Action("Edit", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-primary btn-sm mr-2">Edit</a>
-                    <a href="" class="btn btn-outline-danger btn-sm mr-2">Delete</a>
+                <div class="d-flex flex-row-reverse ml-auto mt-3 pr-3">
+                    <a id="saveData" class="btn btn-primary btn-sm">Save</a>
+                    <a href="@Url.Action("Item", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-secondary btn-sm mr-2">Cancel</a>
                 </div>
             </div>
-            }
-            <div class="row metadata-container"></div>
+            <div class="row tags-notif"></div>
+            <input id="RequestVerificationToken" type="hidden" value="@requestToken">
         </div>
     </div>
 </div>
@@ -72,25 +76,33 @@
     </div>
     <div class="metadata-details col-12 mt-3">
         <h6>Details</h6>
-        <dl class="row mb-0"></dl>
+        <form>
+            <dl class="row mb-0">
+                <dt class="col-lg-3">Name</dt>
+                <dd class="col-lg-9"><input type="text" name="Project" class="form-control form-control-sm" required></dd>
+                <dt class="col-lg-3">Location</dt>
+                <dd class="col-lg-9"><input type="text" name="LocationName" class="form-control form-control-sm" required></dd>
+                <dt class="col-lg-3">Copyright</dt>
+                <dd class="col-lg-9"><input type="text" name="Copyright" class="form-control form-control-sm"></dd>
+                <dt class="col-lg-3">Caption</dt>
+                <dd class="col-lg-9"><textarea name="Caption" class="form-control form-control-sm" rows="3"></textarea></dd>
+            </dl>
+        </form>
     </div>
     <div class="metadata-tags col-12 mt-3">
         <h6>Tags</h6>
-        <div></div>
+        <div id="tagarea"></div>
     </div>
 </template>
 
-<template id="details-row">
-    <dl>
-        <dt class="col-lg-3"></dt>
-        <dd class="col-lg-9"></dd>
-    </dl>
-</template>
-
 <template id="tags-btn">
-    <a class="btn btn-outline-secondary btn-xs mb-2 mr-2" href="@Url.Action("Index", "Home")"></a>
+    <a class="tagger-tag btn btn-outline-secondary btn-xs mb-2 mr-2">
+        <svg id="xbtn" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="12" height="12" class="ml-1 bi bi-x-circle-fill text-secondary">
+            <path class="deleteBtn" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"></path>
+        </svg>
+    </a>
 </template>
 
 @section Scripts {
-    <script src="~/scripts/item.js"></script>
+    <script src="~/scripts/edit.js"></script>
 }

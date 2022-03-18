@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -21,17 +24,20 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly AppSettings _appSettings;
         private readonly ILogger<WebApiController> _logger;
         private readonly MediaSearchService _mediaSearchService;
+        private readonly ItemService _itemService;
 
         private static BlobContainerClient _blobContainerClient = null;
 
         public WebApiController(
             IOptions<AppSettings> appSettings,
             ILogger<WebApiController> logger,
-            MediaSearchService mediaSearchService)
+            MediaSearchService mediaSearchService,
+            ItemService itemService)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
             _mediaSearchService = mediaSearchService;
+            _itemService = itemService;
 
             InitStorage();
         }
@@ -76,7 +82,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             _logger.LogInformation("Getting item details for id {id}", id);
 
-            var item = await _mediaSearchService.GetItemAsync(id);
+            MediaItem item = await _itemService.GetItemAsync(id);
 
             if (item != null)
             {
@@ -86,6 +92,31 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [Authorize(Roles = UserRole.Admin)]
+        [HttpPost("/api/media/{id}", Name = nameof(UpdateMediaItem))]
+        public async Task<IActionResult> UpdateMediaItem(string id, [FromBody] MediaItem mediaItem)
+        {
+            _logger.LogInformation("{UserName} called UpdateMediaItem action for id {id}", User.GetUserGraphDisplayName(), id);
+
+            // TODO: get item info and check if user is author
+            MediaItem itemToUpdate = await _itemService.GetItemAsync(id);
+            if (itemToUpdate == null)
+            {
+                return NotFound();
+            }
+
+            itemToUpdate.Tag = mediaItem.Tag;
+            itemToUpdate.Caption = mediaItem.Caption;
+            itemToUpdate.Project = mediaItem.Project;
+            itemToUpdate.LocationName = mediaItem.LocationName;
+            itemToUpdate.Copyright = mediaItem.Copyright;
+
+            await _itemService.UpdateItemAsync(id, itemToUpdate);
+            _logger.LogInformation("Updated item details for id {id}", id);
+
+            return NoContent();
         }
 
         [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
