@@ -80,7 +80,9 @@ const SearchResultsView = ({
               marginPagesDisplayed={1}
             />
           </nav>
-
+          {MediaViewComponent == MediaList && (
+            <hr />
+          )}
           <MediaViewComponent results={currentResults} />
         </>
       )}
