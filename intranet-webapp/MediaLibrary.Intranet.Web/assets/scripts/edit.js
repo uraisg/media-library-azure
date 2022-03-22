@@ -101,6 +101,14 @@ function renderMetadataSection(data) {
   document
     .querySelector('#saveData')
     .addEventListener('click', () => saveData(data['Id']))
+  //check for unsave changes
+  document
+    .querySelector("#backBtn")
+    .addEventListener('click', () => checkItemForm(data))
+  //return to item page
+  document
+    .querySelector('#confirmBackBtn')
+    .addEventListener('click', () => window.location = `/Gallery/Item/${data['Id']}`)
 }
 
 function formatLatLng(coords) {
@@ -269,4 +277,18 @@ function postUpdate(id, updatedData) {
       throw new Error(`Network response was not ok: ${response.status}`)
     }
   })
+}
+
+function checkItemForm(data) {
+  const form = document.querySelector('.metadata-details form')
+  const original_details = ['Project', 'LocationName', 'Copyright', 'Caption'].reduce((obj, attrib) => {
+    return { ...obj, [attrib]: data[attrib] }
+  }, {})
+  //Current Changes to the detail form
+  const current_detail = ['Project', 'LocationName', 'Copyright', 'Caption'].reduce((obj, attrib) => {
+    return { ...obj, [attrib]: form.elements[attrib].value.trim() || null }
+  }, {})
+
+  //Check if there is any changes
+  JSON.stringify(original_details) == JSON.stringify(current_detail) ? window.location = `/Gallery/Item/${data['Id']}` : $("#unsaveChanges").modal();
 }

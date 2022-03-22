@@ -7,7 +7,7 @@
 
 <div class="container-lg mt-4">
     <div class="p-2 mb-4 mt-4 border bg-light rounded">
-        <a href="@Url.Action("Item", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-secondary btn-sm ml-2">Back</a>
+        <button id="backBtn" class="btn btn-outline-secondary btn-sm ml-2">Back</button>
         <div class="float-right">
             <a href="@Url.Action("Edit", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-primary btn-sm mr-3">Reset</a>
             <a id="saveData" class="text-decoration-none btn btn-primary btn-sm mr-2">Save</a>
@@ -31,6 +31,25 @@
             <div class="row tags-notif"></div>
             <input id="RequestVerificationToken" type="hidden" value="@requestToken">
         </div>
+    </div>
+</div>
+
+<div class="modal fade" id="unsaveChanges" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Unsave Changes</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to discard changes?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmBackBtn" class="btn btn-primary">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
     </div>
 </div>
 
