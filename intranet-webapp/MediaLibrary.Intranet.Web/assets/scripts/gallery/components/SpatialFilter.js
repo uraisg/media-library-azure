@@ -106,17 +106,25 @@ const SpatialFilter = ({ filters, setFilters, areas }) => {
     } else if (type === SpatialFilters.Postal) {
       text += postalCode
     } else if (type === SpatialFilters.Area) {
-      text += areas.find((a) => a.Id == areaName)?.Name || areaName
+      text += areas.flatMap((r) => r.Areas).find((a) => a.Id == areaName)?.Name || areaName
     }
 
     return text
   }
 
-  const areasOptions = areas.map((area) => (
-    <option key={area.Id} value={area.Id}>
-      {area.Name}
-    </option>
-  ))
+  const areasOptions = areas.map((region) => {
+    const options = region.Areas.map((area) => (
+      <option key={area.Id} value={area.Id}>
+        {area.Name}
+      </option>
+    ))
+
+    return (
+      <optgroup label={region.Region}>
+        {options}
+      </optgroup>
+    )
+  })
 
   return (
     <StyledDropdown show={show} onToggle={handleToggle}>
