@@ -85,9 +85,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             MediaItem item = await _itemService.GetItemAsync(id);
 
             if (item != null)
-            {
-                HttpContext.Items["itemAuthor"]  = item.Author;
-                
+            {              
                 return Ok(item);
             }
             else
