@@ -191,8 +191,11 @@ function addTag(tagSet) {
           '<strong>Sorry!</strong> You cannot add in duplicate tags!' +
           '</div>'
       } else {
-        //removes text if present
+        //removes notification banner text, if present
         document.querySelector('.tags-notif').innerHTML = ''
+
+        //clears text in 'add tag' textbox
+        document.getElementById('newTagInput').value = "";
 
         //creates a clone of existing tag template
         const fragment = new DocumentFragment()
