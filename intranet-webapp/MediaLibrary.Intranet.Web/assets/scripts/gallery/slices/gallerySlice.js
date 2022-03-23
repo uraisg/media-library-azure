@@ -186,7 +186,7 @@ const processData = (data) => {
       area: doc.LocationName,
       author: doc.Author,
       project: doc.Project,
-      uploaddate: doc.UploadDate,
+      uploadDate: doc.UploadDate,
       tag: doc.Tag,
       isSelected: false,
     }

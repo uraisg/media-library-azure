@@ -18,10 +18,11 @@ const Thumbnail = styled.img`
 const MediaList = ({ results }) => {
   const renderedItems = results.map((result) => {
     //convert datetime type to date(dd/mm/yyyy)
-    var upploaddate = new Date(result.uploaddate)
-    var date = upploaddate.toLocaleDateString("en-GB")
+    let uploadDate = new Date(result.uploadDate)
+    uploadDate = uploadDate.toLocaleDateString()
     return (
       <div key={result.id}>
+        <hr />
         <div className="media p-3 my-3">
           <ThumbnailLink href={result.link}>
             <Thumbnail src={result.thumbnail} alt={result.name} />
@@ -36,11 +37,10 @@ const MediaList = ({ results }) => {
             </div>
             {/*right div*/}
             <div className="text-right w-50">
-              Uploaded {date}<br />{result.author}
+              Uploaded {uploadDate}<br />{result.author}
             </div>
           </div>
         </div>
-        <hr />
       </div>
     )
   })
