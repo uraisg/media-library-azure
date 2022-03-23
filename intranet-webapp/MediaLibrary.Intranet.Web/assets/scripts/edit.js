@@ -289,6 +289,6 @@ function checkItemForm(data) {
     return { ...obj, [attrib]: form.elements[attrib].value.trim() || null }
   }, {})
 
-  //Check if there is any changes
+  //Check if there are any changes
   JSON.stringify(original_details) == JSON.stringify(current_detail) ? window.location = `/Gallery/Item/${data['Id']}` : $("#unsaveChanges").modal();
 }
