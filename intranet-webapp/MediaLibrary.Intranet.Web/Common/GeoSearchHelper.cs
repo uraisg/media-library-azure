@@ -7,10 +7,12 @@ namespace MediaLibrary.Intranet.Web.Common
     public class GeoSearchHelper : IGeoSearchHelper
     {
         private readonly Dictionary<string, AreaPolygon> _dictionary; // key = name, value = WKT string for search boundary
+        private readonly List<PlanningRegion> _regions;
 
         public GeoSearchHelper()
         {
             _dictionary = LoadData("planning-area-boundary.json");
+            _regions = GroupRegions(_dictionary);
         }
 
         private static Dictionary<string, AreaPolygon> LoadData(string path)
@@ -32,6 +34,7 @@ namespace MediaLibrary.Intranet.Web.Common
                 {
                     Id = feature.properties.PLN_AREA_C,
                     Name = feature.properties.PLN_AREA_N,
+                    Region = feature.properties.CA_IND == "Y" ? "CENTRAL AREA" : feature.properties.REGION_N,
                     WktPolygon = wkt
                 });
             }
@@ -39,9 +42,28 @@ namespace MediaLibrary.Intranet.Web.Common
             return result;
         }
 
-        public Dictionary<string, AreaPolygon> GetDictionary()
+        private static List<PlanningRegion> GroupRegions(Dictionary<string, AreaPolygon> dictionary)
         {
-            return _dictionary;
+            var areasByRegion = dictionary.Values
+                .OrderBy(s => s.Region)
+                .ThenBy(s => s.Name)
+                .GroupBy(s => s.Region, (region, areas) => new PlanningRegion()
+                {
+                    Region = region,
+                    Areas = areas.Select(s => new PlanningArea() { Id = s.Id, Name = s.Name }).ToList().AsReadOnly()
+                });
+
+            return areasByRegion.ToList();
+        }
+
+        public bool TryGetPolygonFromId(string id, out AreaPolygon areaPolygon)
+        {
+            return _dictionary.TryGetValue(id, out areaPolygon);
+        }
+
+        public IList<PlanningRegion> GetRegions()
+        {
+            return _regions.AsReadOnly();
         }
     }
 }

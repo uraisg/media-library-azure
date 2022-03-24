@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
@@ -25,6 +23,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly ILogger<WebApiController> _logger;
         private readonly MediaSearchService _mediaSearchService;
         private readonly ItemService _itemService;
+        private readonly IGeoSearchHelper _geoSearchHelper;
 
         private static BlobContainerClient _blobContainerClient = null;
 
@@ -32,12 +31,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
             IOptions<AppSettings> appSettings,
             ILogger<WebApiController> logger,
             MediaSearchService mediaSearchService,
-            ItemService itemService)
+            ItemService itemService,
+            IGeoSearchHelper geoSearchHelper)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
             _mediaSearchService = mediaSearchService;
             _itemService = itemService;
+            _geoSearchHelper = geoSearchHelper;
 
             InitStorage();
         }
@@ -180,9 +181,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpGet("/api/areas", Name = nameof(GetAreas))]
         public IActionResult GetAreas()
         {
-            var areas = _mediaSearchService.GetSpatialAreas().Select(s => new { Id = s.Id, Name = s.Name });
-
-            return Ok(areas);
+            return Ok(_geoSearchHelper.GetRegions());
         }
     }
 }

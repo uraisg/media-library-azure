@@ -157,19 +157,12 @@ namespace MediaLibrary.Intranet.Web.Services
                 return null;
             }
 
-            _geoSearchHelper.GetDictionary().TryGetValue(spatialFilter, out var ret);
-
-            if (ret == null)
+            if (!_geoSearchHelper.TryGetPolygonFromId(spatialFilter, out var ret))
             {
                 throw new ArgumentException("Could not find coordinates for given area");
             }
 
             return "geo.intersects(Location, geography'" + ret.WktPolygon + "')";
-        }
-
-        public IList<AreaPolygon> GetSpatialAreas()
-        {
-            return _geoSearchHelper.GetDictionary().Values.ToList();
         }
     }
 }
