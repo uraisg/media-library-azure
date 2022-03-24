@@ -183,6 +183,11 @@ const processData = (data) => {
       caption: doc.Caption,
       link: new URL('/Gallery/Item/' + doc.Id, window.location).toString(),
       location: doc.Location,
+      area: doc.LocationName,
+      author: doc.Author,
+      project: doc.Project,
+      uploadDate: doc.UploadDate,
+      tag: doc.Tag,
       isSelected: false,
     }
   })

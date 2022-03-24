@@ -80,7 +80,6 @@ const SearchResultsView = ({
               marginPagesDisplayed={1}
             />
           </nav>
-
           <MediaViewComponent results={currentResults} />
         </>
       )}

@@ -17,16 +17,29 @@ const Thumbnail = styled.img`
 
 const MediaList = ({ results }) => {
   const renderedItems = results.map((result) => {
+    //convert datetime type to date(dd/mm/yyyy)
+    let uploadDate = new Date(result.uploadDate)
+    uploadDate = uploadDate.toLocaleDateString()
     return (
-      <div key={result.id} className="media p-3 my-3 border rounded bg-light">
-        <ThumbnailLink href={result.link}>
-          <Thumbnail src={result.thumbnail} alt={result.name} />
-        </ThumbnailLink>
-        <div className="media-body">
-          <h5 className="mt-0">
-            <a href={result.link}>{result.name}</a>
-          </h5>
-          <p className="mb-0">{result.caption}</p>
+      <div key={result.id}>
+        <hr />
+        <div className="media p-3 my-3">
+          <ThumbnailLink href={result.link}>
+            <Thumbnail src={result.thumbnail} alt={result.name} />
+          </ThumbnailLink>
+          <div className="d-flex w-100 media-body">
+            {/*left div*/}
+            <div className="w-50">
+              <h5 className="mt-0">
+                <a className="listview-text text-decoration-none text-dark" href={result.link}>{result.project}</a>
+              </h5>
+              <p className="mb-0">{result.caption}<br />{result.area}</p>
+            </div>
+            {/*right div*/}
+            <div className="text-right w-50">
+              Uploaded {uploadDate}<br />{result.author}
+            </div>
+          </div>
         </div>
       </div>
     )
