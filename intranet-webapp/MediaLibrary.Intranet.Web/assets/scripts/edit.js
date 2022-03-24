@@ -195,7 +195,7 @@ function addTag(tagSet) {
       if (tagSet.has(newTag)) {
         //disallows adding
         document.querySelector('.tags-notif').innerHTML =
-          '<div class="alert alert-warning w-100" style="margin:20px">' +
+          '<div class="alert alert-warning w-100">' +
           '<strong>Sorry!</strong> You cannot add in duplicate tags!' +
           '</div>'
       } else {
@@ -224,7 +224,7 @@ function addTag(tagSet) {
     } else {
       //disallows adding
       document.querySelector('.tags-notif').innerHTML =
-        '<div class="alert alert-warning w-100" style="margin:20px">' +
+        '<div class="alert alert-warning w-100">' +
         'You cannot add a <strong>blank</strong> tag!' +
         '</div>'
     }

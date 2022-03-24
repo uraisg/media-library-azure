@@ -79,9 +79,24 @@ a.navbar-brand {
 
 .metadata-tags .btn {
   font-weight: normal;
-  color: #000;
+  color: inherit;
 
   &:hover {
     color: #fff;
+  }
+}
+
+.metadata-tags .tagger-tag {
+  font-weight: normal;
+  color: inherit;
+
+  &:hover {
+    background-color: $gray-300;
+    color: inherit;
+  }
+
+  &:active {
+    background-color: $gray-500 !important;
+    color: inherit !important;
   }
 }
