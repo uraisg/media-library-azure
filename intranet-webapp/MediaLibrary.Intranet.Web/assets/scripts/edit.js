@@ -96,7 +96,15 @@ function renderMetadataSection(data) {
   //listens for mouse click on tag delete
   tagarea.addEventListener('click', (e) => removeTag(e, tagSet))
   //adds tag on btn click
-  addTag(tagSet)
+  addTag(tagSet);
+  //adds tag also allowed if enter is pressed while inside 'tag' textbox
+  document.getElementById("newTagInput").addEventListener("keyup", function (event) {
+      event.preventDefault();
+      if (event.keyCode === 13) {
+        document.getElementById("addTag").click();
+      }
+    });
+
   //saves data on btn click
   document
     .querySelector('#saveData')
