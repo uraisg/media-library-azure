@@ -99,8 +99,8 @@ function renderMetadataSection(data) {
   addTag(tagSet);
   //adds tag also allowed if enter is pressed while inside 'tag' textbox
   document.getElementById("newTagInput").addEventListener("keyup", function (event) {
-      event.preventDefault();
-      if (event.keyCode === 13) {
+    event.preventDefault();
+    if (event.key === 'Enter') {
         document.getElementById("addTag").click();
       }
     });
