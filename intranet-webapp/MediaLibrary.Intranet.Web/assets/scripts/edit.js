@@ -84,31 +84,19 @@ function renderMetadataSection(data) {
   initFormValues(detailsForm, data)
 
   //populate tags in page
-  const tags = clone.querySelector('.metadata-tags div')
-  tags.appendChild(renderTagList(data['Tag']))
-  const target = document.querySelector('.metadata-container')
-  const targetClone = target.cloneNode(false)
-  targetClone.appendChild(clone)
-  target.parentNode.replaceChild(targetClone, target)
-
-  //stores tag data into set for tag index identification & deletion later
-  const tagSet = new Set(data['Tag'])
-  //listens for mouse click on tag delete
-  tagarea.addEventListener('click', (e) => removeTag(e, tagSet))
-  //adds tag on btn click
-  addTag(tagSet);
-  //adds tag also allowed if enter is pressed while inside 'tag' textbox
-  document.getElementById("newTagInput").addEventListener("keyup", function (event) {
-    event.preventDefault();
-    if (event.key === 'Enter') {
-        document.getElementById("addTag").click();
-      }
-    });
+  const tagsContainer = clone.querySelector('.metadata-tags .tag-area')
+  tagsContainer.appendChild(renderTagList(data['Tag']))
+  initTagArea(tagsContainer, data['Tag'])
 
   //saves data on btn click
   document
     .querySelector('#saveData')
     .addEventListener('click', () => saveData(data['Id']))
+
+  const target = document.querySelector('.metadata-container')
+  const targetClone = target.cloneNode(false)
+  targetClone.appendChild(clone)
+  target.parentNode.replaceChild(targetClone, target)
 }
 
 function formatLatLng(coords) {
@@ -145,49 +133,53 @@ function renderTagList(tags) {
 
   tags.forEach(function (tag) {
     const a = template.content.firstElementChild.cloneNode(true)
-    const b = template.content.firstElementChild.firstElementChild.cloneNode(true)
-    a.textContent = tag
-    //appends delete icon (x)
-    a.appendChild(b)
+    a.firstChild.data = tag
     fragment.appendChild(a)
   })
   return fragment
 }
 
-loadFileInfo()
+function initTagArea(tagAreaElem, initialTags) {
+  //stores tag data into set for tag index identification & deletion later
+  const tagSet = new Set(initialTags)
 
-function removeTag(e, tagSet) {
-  var target = e.target
-  //validation against user clicking wrong area
-  if (target.toString() === '[object SVGPathElement]') {
-    //[identifies as object svgpathelement - correct click]
+  //listens for mouse click on tag delete
+  tagAreaElem.addEventListener('click', (e) => {
+    //validation against user clicking wrong area
+    if (!e.target.closest('.tagger-tag svg')) return
+    //get closest tag to clicked target (the x button)
+    const tagElem = e.target.closest('.tagger-tag')
+    removeTag(tagElem)
+  })
 
-    //gets text of clicked target (the x button)
-    var targetTxt = target.parentElement.parentElement.textContent.trim()
+  //adds tag on btn click
+  document.getElementById('addTag').addEventListener('click', (e) => {
+    e.preventDefault()
+    addTag()
+  })
 
-    //checks index of item in set
-    var index = Array.from(tagSet).indexOf(targetTxt)
+  //adds tag also allowed if enter is pressed while inside 'tag' textbox
+  document.getElementById('newTagInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addTag()
+    }
+  })
 
-    //gets tag's element based on index selection
-    var element = document.getElementsByClassName("ml-1 bi bi-x-circle-fill text-secondary")[index]
+  function removeTag(tagElem) {
+      //gets text from tag element
+      const targetTxt = tagElem.firstChild.data
 
-    //removes selected tag
-    element.parentNode.parentNode.removeChild(element.parentNode)
+      //removes selected tag
+      tagElem.parentNode.removeChild(tagElem)
 
-    tagSet.delete(targetTxt)
-    return tagSet
+      tagSet.delete(targetTxt)
   }
-  else {
-    //clicked wrong area - can be the "text" area beside the x btn (undefined) or the div area surrounding tags [object HTMLDivElement]
-    //ignores click
-  }
 
-}
-
-function addTag(tagSet) {
-  document.getElementById('addTag').onclick = function () {
+  function addTag() {
+    const newTagInput = document.getElementById('newTagInput')
     //gets text from field
-    var newTag = document.getElementById('newTagInput').value
+    const newTag = newTagInput.value.trim()
 
     //blank validation
     if (newTag) {
@@ -200,24 +192,16 @@ function addTag(tagSet) {
           '</div>'
       } else {
         //removes notification banner text, if present
-        document.querySelector('.tags-notif').innerHTML = ''
+        document.querySelector('.tags-notif').replaceChildren()
 
         //clears text in 'add tag' textbox
-        document.getElementById('newTagInput').value = "";
+        newTagInput.value = ''
 
         //creates a clone of existing tag template
-        const fragment = new DocumentFragment()
-        var tagtemplate = document.querySelector('#tags-btn')
-        var a = tagtemplate.content.firstElementChild.cloneNode(true)
-        var b = tagtemplate.content.firstElementChild.firstElementChild.cloneNode(true)
-        //appends new text
-        a.textContent = newTag
-        a.appendChild(b)
-        fragment.appendChild(a)
+        const fragment = renderTagList([newTag])
 
-        var tagarea = document.getElementById('tagarea')
         //adds in a new tag in page, last item order
-        tagarea.append(fragment)
+        tagAreaElem.append(fragment)
         //adds tag into set to allow for deletion later
         tagSet.add(newTag)
       }
@@ -229,7 +213,6 @@ function addTag(tagSet) {
         '</div>'
     }
   }
-  return tagSet
 }
 
 function saveData(id) {
@@ -240,8 +223,8 @@ function saveData(id) {
   }, {})
 
   // Read new tag list
-  const tagElems = document.querySelectorAll('#tagarea .tagger-tag')
-  const tagList = Array.prototype.map.call(tagElems, (el) => el.textContent.trim())
+  const tagElems = document.querySelectorAll('.metadata-container .tag-area .tagger-tag')
+  const tagList = Array.prototype.map.call(tagElems, (el) => el.firstChild.data)
 
   // Call API with updated data
   postUpdate(id, {
@@ -281,3 +264,5 @@ function postUpdate(id, updatedData) {
     }
   })
 }
+
+loadFileInfo()
