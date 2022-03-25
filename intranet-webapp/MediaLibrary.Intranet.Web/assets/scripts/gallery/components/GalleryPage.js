@@ -100,6 +100,9 @@ const GalleryPage = () => {
       }
     }
 
+    // Always reset page number after applying new filters
+    searchParams.delete('page')
+
     history.push({
       search: `?${searchParams}`,
     })
