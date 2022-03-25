@@ -24,7 +24,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return View();
         }
 
-        public IActionResult Item([BindRequired, FromRoute] string id)
+        public async Task<IActionResult> Item([BindRequired, FromRoute] string id)
         {
             if (!ModelState.IsValid)
             {
@@ -34,20 +34,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
             bool isAdmin = User.IsInRole(UserRole.Admin);
 
             // Get item info and check if user is author
-            bool isAuthor = false;
-            var okObjectResult = GetItemAuthor(id).Result as ObjectResult;
-            string itemAuthor = okObjectResult.Value.ToString();
-            if (itemAuthor == User.GetUserGraphEmail())
-            {
-                isAuthor = true;
-            }
+            bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
             ViewData["mediaId"] = id;
             ViewData["showAdminActions"] = isAdmin || isAuthor;
             return View();
         }
 
-        public IActionResult Edit([BindRequired, FromRoute] string id)
+        public async Task<IActionResult> Edit([BindRequired, FromRoute] string id)
         {
             if (!ModelState.IsValid)
             {
@@ -57,34 +51,26 @@ namespace MediaLibrary.Intranet.Web.Controllers
             bool isAdmin = User.IsInRole(UserRole.Admin);
 
             // Get item info and check if user is author
-            bool isAuthor = false;
-            var okObjectResult = GetItemAuthor(id).Result as ObjectResult;
-            string itemAuthor = okObjectResult.Value.ToString();
-            if (itemAuthor == User.GetUserGraphEmail())
-            {
-                isAuthor = true;
-            }
+            bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
             if (isAdmin || isAuthor)
             {
                 ViewData["mediaId"] = id;
                 return View();
             }
-            else {
-                return Unauthorized();
+            else
+            {
+                return Forbid();
             }
-
         }
 
-        public async Task<IActionResult> GetItemAuthor(string id)
+        private async Task<string> GetItemAuthorAsync(string id)
         {
             _logger.LogInformation("Getting item author details for id {id}", id);
 
             MediaItem item = await _itemService.GetItemAsync(id);
 
-            return Ok(item.Author);
+            return item?.Author;
         }
-
     }
 }
-

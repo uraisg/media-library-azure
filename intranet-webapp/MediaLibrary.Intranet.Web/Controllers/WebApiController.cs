@@ -85,7 +85,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             MediaItem item = await _itemService.GetItemAsync(id);
 
             if (item != null)
-            {              
+            {
                 return Ok(item);
             }
             else
@@ -108,12 +108,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             bool isAdmin = User.IsInRole(UserRole.Admin);
 
             // Get item info and check if user is author
-            bool isAuthor = false;
-            string itemAuthor = itemToUpdate.Author;
-            if (itemAuthor == User.GetUserGraphEmail())
-            {
-                isAuthor = true;
-            }
+            bool isAuthor = itemToUpdate.Author == User.GetUserGraphEmail();
 
             if (isAdmin || isAuthor)
             {
@@ -128,10 +123,10 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
                 return NoContent();
             }
-            else {
+            else
+            {
                 return Unauthorized();
             }
-
         }
 
         [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
