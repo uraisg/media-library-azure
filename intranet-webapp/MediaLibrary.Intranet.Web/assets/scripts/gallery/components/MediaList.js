@@ -2,6 +2,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
+import { formatShortDate } from '@/../format'
+
 const ThumbnailLink = styled.a`
   width: 30%;
   min-width: 5rem;
@@ -17,9 +19,6 @@ const Thumbnail = styled.img`
 
 const MediaList = ({ results }) => {
   const renderedItems = results.map((result) => {
-    //convert datetime type to date(dd/mm/yyyy)
-    let uploadDate = new Date(result.uploadDate)
-    uploadDate = uploadDate.toLocaleDateString()
     return (
       <div key={result.id}>
         <hr />
@@ -37,7 +36,7 @@ const MediaList = ({ results }) => {
             </div>
             {/*right div*/}
             <div className="text-right w-50">
-              Uploaded {uploadDate}<br />{result.author}
+              Uploaded {formatShortDate(result.uploadDate)}<br />{result.author}
             </div>
           </div>
         </div>
