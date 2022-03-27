@@ -1,3 +1,5 @@
+import { formatDate } from './format'
+
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
   const fileInfoId = img.dataset.fileinfoid
@@ -114,11 +116,6 @@ function getStaticMapUrl(coords, zoom) {
     'https://developers.onemap.sg/commonapi/staticmap/getStaticImage?layerchosen=default&' +
     `lat=${lat}&lng=${lng}&zoom=${zoom}&height=256&width=256`
   )
-}
-
-function formatDate(date) {
-  const options = { year: 'numeric', month: 'short', day: 'numeric' }
-  return new Intl.DateTimeFormat('default', options).format(new Date(date))
 }
 
 function initFormValues(form, data) {
