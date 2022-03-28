@@ -2,6 +2,7 @@ import { formatDate } from './format'
 
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
+  const downloadBtn = document.querySelector('#media-download')
   const fileInfoId = img.dataset.fileinfoid
   if (!fileInfoId) return
 
@@ -23,6 +24,7 @@ function loadFileInfo() {
       img.alt = data['Name']
       img.src = data['FileURL']
       img.parentElement.href = img.src
+      downloadBtn.href = img.src
 
       renderMetadataSection(data)
 
