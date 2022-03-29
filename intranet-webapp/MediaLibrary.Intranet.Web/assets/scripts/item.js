@@ -119,7 +119,7 @@ function renderMediaDetails(data) {
   const attribs = new Map()
   attribs.set('Project', 'Name')
   attribs.set('LocationName', 'Location')
-  attribs.set('Copyright', 'Copyright')
+  attribs.set('Copyright', 'Copyright Owner')
   attribs.set('Caption', 'Caption')
   for (const [key, label] of attribs) {
     if (data[key]?.trim()) {
