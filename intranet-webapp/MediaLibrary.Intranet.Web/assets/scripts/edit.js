@@ -213,8 +213,11 @@ function initTagArea(tagAreaElem, initialTags) {
 }
 
 function saveData(id) {
-  // Read new details from form
+  // Do form validation
   const detailsForm = document.querySelector('.metadata-details form')
+  if (!detailsForm.reportValidity()) return
+
+  // Read new details from form
   const newValues = ['Project', 'LocationName', 'Copyright', 'Caption'].reduce((obj, attrib) => {
     return { ...obj, [attrib]: detailsForm.elements[attrib].value.trim() || null }
   }, {})
