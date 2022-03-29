@@ -100,3 +100,10 @@ a.navbar-brand {
     color: inherit !important;
   }
 }
+
+.required::after {
+  content: "*";
+  font-weight: $font-weight-bold;
+  color: $red;
+  margin-left: 0.1rem;
+}
