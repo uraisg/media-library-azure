@@ -2,6 +2,7 @@ import { formatDate } from './format'
 
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
+  const downloadBtn = document.querySelector('#media-download')
   const fileInfoId = img.dataset.fileinfoid
   if (!fileInfoId) return
 
@@ -22,7 +23,7 @@ function loadFileInfo() {
     .then((data) => {
       img.alt = data['Name']
       img.src = data['FileURL']
-      img.parentElement.href = img.src
+      downloadBtn.href = img.src
 
       renderMetadataSection(data)
 
@@ -117,7 +118,7 @@ function renderMediaDetails(data) {
   const attribs = new Map()
   attribs.set('Project', 'Name')
   attribs.set('LocationName', 'Location')
-  attribs.set('Copyright', 'Copyright')
+  attribs.set('Copyright', 'Copyright Owner')
   attribs.set('Caption', 'Caption')
   for (const [key, label] of attribs) {
     if (data[key]?.trim()) {

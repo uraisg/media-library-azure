@@ -5,25 +5,51 @@
 }
 
 <div class="container-lg mt-4">
+    <div class="p-2 mb-4 mt-4 border bg-light rounded">
+        <a href="/" class="btn btn-outline-secondary btn-sm ml-2">Back</a>
+        <a href="#" class="float-right text-decoration-none btn btn-success btn-sm mr-2 px-4" download id="media-download">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+            </svg>
+            Download
+        </a>
+        @if (showAdminActions)
+        {
+        <a href="@Url.Action("Edit", "Gallery", new RouteValueDictionary() { { "id", ViewData["mediaId"] } })" class="float-right btn btn-outline-primary btn-sm mr-2">Edit</a>
+        <button type="button" class="float-right btn btn-outline-danger btn-sm mr-2" data-toggle="modal" data-target="#deleteModal">
+            Delete
+        </button>
+        @* Modal for delete *@
+        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="delete_modal_message">
+                        Are you sure you want to delete this image? This action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-primary">Confirm</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
     <div class="row">
         <div class="media-container col-md-8">
-            <a class="mx-auto" href="#" download>
-                <img id="main-media"
-                     src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23d7d8d9%22%3E%3C%2Frect%3E%3C%2Fsvg%3E"
-                     alt="" data-fileinfoid="@ViewData["mediaId"]">
-            </a>
+            <img id="main-media"
+                src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23d7d8d9%22%3E%3C%2Frect%3E%3C%2Fsvg%3E"
+                alt="" data-fileinfoid="@ViewData["mediaId"]">
         </div>
         <div class="col-md-4">
             <hr class="d-block d-md-none" />
-            @if (showAdminActions)
-            {
-            <div class="row">
-                <div class="d-flex flex-row ml-auto pr-3">
-                    <a href="@Url.Action("Edit", "Gallery", new RouteValueDictionary(){ { "id", ViewData["mediaId"] } })" class="btn btn-outline-primary btn-sm mr-2">Edit</a>
-                    <a href="" class="btn btn-outline-danger btn-sm mr-2">Delete</a>
-                </div>
-            </div>
-            }
             <div class="row metadata-container"></div>
         </div>
     </div>
@@ -31,10 +57,10 @@
 
 <template id="metadata-section">
     <div class="col-12">
-        <h6>Info</h6>
+        <h5>Info</h5>
         <div class="metadata-author">
             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person text-secondary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
             </svg>
             <span></span>
         </div>
@@ -69,13 +95,16 @@
             </svg>
             <span>Uploaded on </span>
         </div>
+
+        <hr class="mt-4" />
     </div>
-    <div class="metadata-details col-12 mt-3">
-        <h6>Details</h6>
+    <div class="metadata-details col-12 mt-2">
+        <h5>Details</h5>
         <dl class="row mb-0"></dl>
+        <hr />
     </div>
-    <div class="metadata-tags col-12 mt-3">
-        <h6>Tags</h6>
+    <div class="metadata-tags col-12 mt-2">
+        <h5>Tags</h5>
         <div></div>
     </div>
 </template>
