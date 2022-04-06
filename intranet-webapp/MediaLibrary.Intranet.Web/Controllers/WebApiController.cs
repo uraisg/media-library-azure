@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
@@ -23,6 +24,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly MediaSearchService _mediaSearchService;
         private readonly ItemService _itemService;
         private readonly IGeoSearchHelper _geoSearchHelper;
+        private readonly GraphService _graphService;
 
         private static BlobContainerClient _blobContainerClient = null;
 
@@ -31,13 +33,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
             ILogger<WebApiController> logger,
             MediaSearchService mediaSearchService,
             ItemService itemService,
-            IGeoSearchHelper geoSearchHelper)
+            IGeoSearchHelper geoSearchHelper,
+            GraphService graphService)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
             _mediaSearchService = mediaSearchService;
             _itemService = itemService;
             _geoSearchHelper = geoSearchHelper;
+            _graphService = graphService;
 
             InitStorage();
         }
@@ -191,6 +195,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
         public IActionResult GetAreas()
         {
             return Ok(_geoSearchHelper.GetRegions());
+        }
+
+        [HttpGet("/api/account/{email}", Name = nameof(GetDisplayName))]
+        public async Task<IActionResult> GetDisplayName(string email)
+        {
+            List<UserInfo> userInfo = await _graphService.GetUserInfo(email);
+
+            return Ok(userInfo);
         }
     }
 }

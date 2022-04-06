@@ -39,12 +39,13 @@ function loadFileInfo() {
     })
 }
 
-function renderMetadataSection(data) {
+async function renderMetadataSection(data) {
   const template = document.querySelector('#metadata-section')
   const clone = template.content.cloneNode(true)
 
   const author = clone.querySelector('.metadata-author span')
-  author.textContent = data['Author']
+  const displayName = await getDisplayName(data['Author'])
+  author.textContent = displayName
 
   const geo = clone.querySelector('.metadata-geo')
   if (data['Location']) {
@@ -147,3 +148,41 @@ function renderTagList(tags) {
 }
 
 loadFileInfo()
+
+async function getDisplayName(email) {
+  if (email == "") {
+    return
+  }
+
+  let name = email;
+
+  if (localStorage.getItem(email) == null) {
+    await setLocalStorageName(email)
+  }
+  name = localStorage.getItem(email)
+
+  return name
+}
+
+async function setLocalStorageName(email) {
+  await fetch(`/api/account/${email}`, {
+    mode: 'same-origin',
+    credentials: 'same-origin',
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.status}`)
+      }
+      return response.json()
+    })
+    .then((data) => {
+      for (let i in data) {
+        const mail = data[i]["Mail"]
+        const displayName = data[i]["DisplayName"]
+        localStorage.setItem(mail, displayName)
+      }
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+}

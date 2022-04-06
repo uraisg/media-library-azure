@@ -103,6 +103,7 @@ export const getSearchResults = (searchTerm, filters, page = 1) => {
     try {
       const data = await getSearchResultsApi(searchTerm, filters, page)
       results = processData(data)
+      results = await processDisplayName(results)
       totalPages = data.TotalPages
     } catch (err) {
       dispatch(getSearchResultsFailed(err.toString()))
@@ -191,4 +192,60 @@ const processData = (data) => {
       isSelected: false,
     }
   })
+}
+
+const processDisplayName = async (data) => {
+  let email = ""
+  let emailCheckList = []
+  for (let i = 0; i <= data.length; i++) {
+    if (data[i] == null || data[i] == undefined) { continue }
+    const currEmail = data[i]["author"]
+    if (currEmail != null && currEmail != undefined) {
+      if (!emailCheckList.includes(currEmail) && localStorage.getItem(currEmail) == null) {
+        email += currEmail + ","
+        emailCheckList.push(currEmail)
+      }
+    }
+  }
+  await updateLocalStorage(email, data)
+  await updateDisplayName(data)
+  return data
+}
+
+const updateLocalStorage = async (email, currArr) => {
+  if (email.length == 0) {
+    return
+  }
+  await fetch(`/api/account/${email}`, {
+    mode: 'same-origin',
+    credentials: 'same-origin',
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.status}`)
+      }
+      return response.json()
+    })
+    .then((data) => {
+      for (let i in data) {
+        const mail = data[i]["Mail"]
+        const displayName = data[i]["DisplayName"]
+        localStorage.setItem(mail, displayName)
+      }
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+}
+
+const updateDisplayName = (data) => {
+  for (let i = 0; i <= data.length; i++) {
+    if (data[i] == null || data[i] == undefined) { continue }
+    let currentDetail = data[i]["author"]
+    if (currentDetail != null && currentDetail != undefined) {
+      const displayName = localStorage.getItem(currentDetail)
+      data[i]["author"] = displayName
+    }
+  }
+  return data
 }
