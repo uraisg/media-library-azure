@@ -199,20 +199,20 @@ const processDisplayName = async (data) => {
   let emailCheckList = []
   for (let i = 0; i <= data.length; i++) {
     if (data[i] == null || data[i] == undefined) { continue }
-    const currEmail = data[i]["author"]
-    if (currEmail != null && currEmail != undefined) {
-      if (!emailCheckList.includes(currEmail) && localStorage.getItem(currEmail) == null) {
-        email += currEmail + ","
-        emailCheckList.push(currEmail)
+    const currentDetail = data[i]["author"]
+    if (currentDetail != null && currentDetail != undefined) {
+      if (!emailCheckList.includes(currentDetail) && localStorage.getItem(currentDetail) == null) {
+        email += currentDetail + ","
+        emailCheckList.push(currentDetail)
       }
     }
   }
-  await updateLocalStorage(email, data)
+  await updateLocalStorage(email)
   await updateDisplayName(data)
   return data
 }
 
-const updateLocalStorage = async (email, currArr) => {
+const updateLocalStorage = async (email) => {
   if (email.length == 0) {
     return
   }
@@ -241,7 +241,7 @@ const updateLocalStorage = async (email, currArr) => {
 const updateDisplayName = (data) => {
   for (let i = 0; i <= data.length; i++) {
     if (data[i] == null || data[i] == undefined) { continue }
-    let currentDetail = data[i]["author"]
+    const currentDetail = data[i]["author"]
     if (currentDetail != null && currentDetail != undefined) {
       const displayName = localStorage.getItem(currentDetail)
       data[i]["author"] = displayName

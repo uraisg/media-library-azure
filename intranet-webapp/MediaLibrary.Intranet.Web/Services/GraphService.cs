@@ -27,7 +27,7 @@ namespace MediaLibrary.Intranet.Web.Services
             BatchRequestContent container = new BatchRequestContent();
             //Second container for request more than current batch size
             BatchRequestContent container2 = new BatchRequestContent();
-            List<string> request_id = new List<string>();
+            List<string> requestId = new List<string>();
 
             //Retrieving individual request
             int count = 1;
@@ -44,11 +44,11 @@ namespace MediaLibrary.Intranet.Web.Services
                 //Each step returns an id that is stored in request_id
                 if (count <= max_request)
                 {
-                    request_id.Add(container.AddBatchRequestStep(request));
+                    requestId.Add(container.AddBatchRequestStep(request));
                 }
                 else
                 {
-                    request_id.Add(container2.AddBatchRequestStep(request));
+                    requestId.Add(container2.AddBatchRequestStep(request));
                 }
                 count++;
             }
@@ -65,7 +65,7 @@ namespace MediaLibrary.Intranet.Web.Services
 
             //Retrieving each request by each id 
             count = 1;
-            foreach (var itemId in request_id)
+            foreach (var itemId in requestId)
             {
                 HttpResponseMessage listResponse = null;
                 if (count <= max_request)
