@@ -9,6 +9,11 @@ using Newtonsoft.Json;
 
 namespace MediaLibrary.Intranet.Web.Services
 {
+    public class ReturnResponse
+    {
+        public BatchResponseContent response { get; set; }
+        public BatchResponseContent response2 { get; set; }
+    }
     public class GraphService
     {
         private readonly GraphServiceClient _client;
@@ -54,11 +59,11 @@ namespace MediaLibrary.Intranet.Web.Services
             }
 
             //Retrieving response
-            var returnedResponse = await _client.Batch.Request().PostAsync(container);
-            BatchResponseContent returnedResponse2 = null;
+            ReturnResponse returnResponse = new ReturnResponse();
+            returnResponse.response = await _client.Batch.Request().PostAsync(container);
             if (emailList.Count > max_request)
             {
-                returnedResponse2 = await _client.Batch.Request().PostAsync(container2);
+                returnResponse.response2 = await _client.Batch.Request().PostAsync(container2);
             }
 
             List<UserInfo> allUserInfo = new List<UserInfo>();
@@ -70,11 +75,11 @@ namespace MediaLibrary.Intranet.Web.Services
                 HttpResponseMessage listResponse = null;
                 if (count <= max_request)
                 {
-                    listResponse = await returnedResponse.GetResponseByIdAsync(itemId);
+                    listResponse = await returnResponse.response.GetResponseByIdAsync(itemId);
                 }
                 else
                 {
-                    listResponse = await returnedResponse2.GetResponseByIdAsync(itemId);
+                    listResponse = await returnResponse.response2.GetResponseByIdAsync(itemId);
                 }
                 if (listResponse.IsSuccessStatusCode)
                 {
