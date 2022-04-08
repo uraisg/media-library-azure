@@ -1,4 +1,5 @@
 import { formatDate } from './format'
+import { getDisplayName } from './DisplayName'
 
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
@@ -148,41 +149,3 @@ function renderTagList(tags) {
 }
 
 loadFileInfo()
-
-async function getDisplayName(email) {
-  if (email == "") {
-    return
-  }
-
-  let name = email;
-
-  if (localStorage.getItem(email) == null) {
-    await setLocalStorageName(email)
-  }
-  name = localStorage.getItem(email)
-
-  return name
-}
-
-async function setLocalStorageName(email) {
-  await fetch(`/api/account/${email}`, {
-    mode: 'same-origin',
-    credentials: 'same-origin',
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.status}`)
-      }
-      return response.json()
-    })
-    .then((data) => {
-      for (let i in data) {
-        const mail = data[i]["Mail"]
-        const displayName = data[i]["DisplayName"]
-        localStorage.setItem(mail, displayName)
-      }
-    })
-    .catch((error) => {
-      console.error(error)
-    })
-}

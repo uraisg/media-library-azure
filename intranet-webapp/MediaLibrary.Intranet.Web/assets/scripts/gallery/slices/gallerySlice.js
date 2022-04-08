@@ -1,6 +1,7 @@
 import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
 import { getUnixTime, parseISO } from 'date-fns'
 import { queryPostalCode } from '@/api/onemap'
+import { processDisplayName } from '../../DisplayName'
 
 export const SpatialFilters = {
   All: 'none',
@@ -192,60 +193,4 @@ const processData = (data) => {
       isSelected: false,
     }
   })
-}
-
-const processDisplayName = async (data) => {
-  let email = ""
-  let emailCheckList = []
-  for (let i = 0; i <= data.length; i++) {
-    if (data[i] == null || data[i] == undefined) { continue }
-    const currentDetail = data[i]["author"]
-    if (currentDetail != null && currentDetail != undefined) {
-      if (!emailCheckList.includes(currentDetail) && localStorage.getItem(currentDetail) == null) {
-        email += currentDetail + ","
-        emailCheckList.push(currentDetail)
-      }
-    }
-  }
-  await updateLocalStorage(email)
-  await updateDisplayName(data)
-  return data
-}
-
-const updateLocalStorage = async (email) => {
-  if (email.length == 0) {
-    return
-  }
-  await fetch(`/api/account/${email}`, {
-    mode: 'same-origin',
-    credentials: 'same-origin',
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.status}`)
-      }
-      return response.json()
-    })
-    .then((data) => {
-      for (let i in data) {
-        const mail = data[i]["Mail"]
-        const displayName = data[i]["DisplayName"]
-        localStorage.setItem(mail, displayName)
-      }
-    })
-    .catch((error) => {
-      console.error(error)
-    })
-}
-
-const updateDisplayName = (data) => {
-  for (let i = 0; i <= data.length; i++) {
-    if (data[i] == null || data[i] == undefined) { continue }
-    const currentDetail = data[i]["author"]
-    if (currentDetail != null && currentDetail != undefined) {
-      const displayName = localStorage.getItem(currentDetail)
-      data[i]["author"] = displayName
-    }
-  }
-  return data
 }
