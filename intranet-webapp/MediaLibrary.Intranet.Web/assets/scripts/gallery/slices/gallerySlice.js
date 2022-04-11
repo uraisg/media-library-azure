@@ -1,6 +1,7 @@
 import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
 import { getUnixTime, parseISO } from 'date-fns'
 import { queryPostalCode } from '@/api/onemap'
+import { processDisplayName } from '../../DisplayName'
 
 export const SpatialFilters = {
   All: 'none',
@@ -103,6 +104,7 @@ export const getSearchResults = (searchTerm, filters, page = 1) => {
     try {
       const data = await getSearchResultsApi(searchTerm, filters, page)
       results = processData(data)
+      results = await processDisplayName(results)
       totalPages = data.TotalPages
     } catch (err) {
       dispatch(getSearchResultsFailed(err.toString()))

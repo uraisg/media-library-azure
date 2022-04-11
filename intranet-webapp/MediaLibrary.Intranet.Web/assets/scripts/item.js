@@ -1,4 +1,5 @@
 import { formatDate } from './format'
+import { getDisplayName } from './DisplayName'
 
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
@@ -39,12 +40,13 @@ function loadFileInfo() {
     })
 }
 
-function renderMetadataSection(data) {
+async function renderMetadataSection(data) {
   const template = document.querySelector('#metadata-section')
   const clone = template.content.cloneNode(true)
 
   const author = clone.querySelector('.metadata-author span')
-  author.textContent = data['Author']
+  const displayName = await getDisplayName(data['Author'])
+  author.textContent = displayName
 
   const geo = clone.querySelector('.metadata-geo')
   if (data['Location']) {
