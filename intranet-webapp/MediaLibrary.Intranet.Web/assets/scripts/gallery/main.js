@@ -1,16 +1,11 @@
 import React from 'react'
 import { render } from 'react-dom'
 import { BrowserRouter as Router } from 'react-router-dom'
-import { configureStore } from '@reduxjs/toolkit'
 import { Provider } from 'react-redux'
-import rootReducer from '@/reducers'
 import App from '@/components/App'
 
+import store from '@/store'
 import { fetchAreas } from '@/slices/areasSlice'
-
-const store = configureStore({
-  reducer: rootReducer,
-})
 
 store.dispatch(fetchAreas())
 
