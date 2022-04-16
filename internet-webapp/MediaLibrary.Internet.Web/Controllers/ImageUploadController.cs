@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Azure.Storage.Blobs;
@@ -48,7 +49,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         [HttpPost("FileUpload")]
-        public async Task<IActionResult> Index(UploadFormModel model)
+        public async Task<IActionResult> Index(UploadFormModel model, CancellationToken cancellationToken)
         {
             _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
 
@@ -78,6 +79,8 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             foreach (IFormFile file in files)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 string untrustedFileName = Path.GetFileName(file.FileName);
                 string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
 
@@ -147,27 +150,26 @@ namespace MediaLibrary.Internet.Web.Controllers
                     if (fitted != null)
                     {
                         // Get tags and content-aware thumbnail from Cognitive Services
-                        using (var thumbnailStream = new MemoryStream(fitted, false))
-                        using (var imageStream = new MemoryStream(fitted, false))
-                        {
-                            thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
-                            computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
-                        }
+                        using var thumbnailStream = new MemoryStream(fitted, false);
+                        using var imageStream = new MemoryStream(fitted, false);
+
+                        thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
+                        computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
+
                     }
                     else
                     {
                         // Unable to fit within size limit
                         // Skip calling Cognitive Services and return empty analysis results
-                        using (var thumbnailStream = new MemoryStream(data, false))
-                        using (var imageStream = new MemoryStream(data, false))
+                        using var thumbnailStream = new MemoryStream(data, false);
+                        using var imageStream = new MemoryStream(data, false);
+
+                        thumbnailURL = await GenerateThumbnailMagickAsync(thumbnailFileName, thumbnailStream, _appSettings);
+                        computerVisionResult = new ImageAnalysis()
                         {
-                            thumbnailURL = await GenerateThumbnailMagickAsync(thumbnailFileName, thumbnailStream, _appSettings);
-                            computerVisionResult = new ImageAnalysis()
-                            {
-                                Tags = Array.Empty<ImageTag>(),
-                                Description = new ImageDescriptionDetails(null, Array.Empty<ImageCaption>())
-                            };
-                        }
+                            Tags = Array.Empty<ImageTag>(),
+                            Description = new ImageDescriptionDetails(null, Array.Empty<ImageCaption>())
+                        };
                     }
 
                     //create json for indexing
