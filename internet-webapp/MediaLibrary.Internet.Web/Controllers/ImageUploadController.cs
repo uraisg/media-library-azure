@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Azure.Storage.Blobs;
@@ -48,7 +49,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         [HttpPost("FileUpload")]
-        public async Task<IActionResult> Index(UploadFormModel model)
+        public async Task<IActionResult> Index(UploadFormModel model, CancellationToken cancellationToken)
         {
             _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
 
@@ -78,6 +79,8 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             foreach (IFormFile file in files)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 string untrustedFileName = Path.GetFileName(file.FileName);
                 string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
 
