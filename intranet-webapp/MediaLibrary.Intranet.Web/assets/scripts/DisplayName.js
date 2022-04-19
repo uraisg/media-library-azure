@@ -71,14 +71,14 @@ function updateDisplayName(data) {
   for (let i = 0; i <= data.length; i++) {
     if (data[i] == null || data[i] == undefined) { continue }
     const currentDetail = data[i]["author"]
+    //if email is not empty
     if (currentDetail != null && currentDetail != undefined) {
       const displayName = localStorage.getItem(currentDetail)
+      //display the name from local storage
+      //else display the email
       if (displayName) {
         data[i]["author"] = displayName
       }
-    }
-    else if (currentDetail != null || currentDetail != undefined || currentDetail != "") {
-      data[i]["author"] = "URA Staff"
     }
   }
   return data
