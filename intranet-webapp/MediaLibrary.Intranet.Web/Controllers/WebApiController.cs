@@ -197,10 +197,10 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return Ok(_geoSearchHelper.GetRegions());
         }
 
-        [HttpGet("/api/account/{email}", Name = nameof(GetDisplayName))]
-        public async Task<IActionResult> GetDisplayName(string email)
+        [HttpGet("/api/account", Name = nameof(GetDisplayName))]
+        public async Task<IActionResult> GetDisplayName([FromQuery]string emails)
         {
-            List<UserInfo> userInfo = await _graphService.GetUserInfo(email);
+            List<UserInfo> userInfo = await _graphService.GetUserInfo(emails);
 
             return Ok(userInfo);
         }
