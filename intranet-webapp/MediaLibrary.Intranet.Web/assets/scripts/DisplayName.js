@@ -35,7 +35,17 @@ async function setLocalStorageName(email) {
   if (email == "") {
     return
   }
-  await fetch(`/api/account/${email}`, {
+
+  const baseURL = location
+  let url = new URL('/api/account', baseURL)
+
+  const params = {
+    emails: email
+  }
+
+  url.search = new URLSearchParams(params)
+
+  await fetch(url, {
     mode: 'same-origin',
     credentials: 'same-origin',
   })
@@ -63,7 +73,12 @@ function updateDisplayName(data) {
     const currentDetail = data[i]["author"]
     if (currentDetail != null && currentDetail != undefined) {
       const displayName = localStorage.getItem(currentDetail)
-      data[i]["author"] = displayName
+      if (displayName) {
+        data[i]["author"] = displayName
+      }
+    }
+    else if (currentDetail != null || currentDetail != undefined || currentDetail != "") {
+      data[i]["author"] = "URA Staff"
     }
   }
   return data
