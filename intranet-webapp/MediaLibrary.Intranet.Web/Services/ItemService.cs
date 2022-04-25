@@ -19,7 +19,6 @@ namespace MediaLibrary.Intranet.Web.Services
     {
         private readonly AppSettings _appSettings;
         private readonly ILogger<ItemService> _logger;
-        //private readonly SearchIndexClient _searchIndexClient;
 
         public ItemService(IOptions<AppSettings> appSettings, ILogger<ItemService> logger)
         {
