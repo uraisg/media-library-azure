@@ -133,20 +133,21 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
         }
 
-        [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
-        public async Task<IActionResult> DeleteMediaFile(string name)
+        [HttpDelete("/api/media/{id}", Name = nameof(DeleteMediaFile))]
+        public async Task<IActionResult> DeleteMediaFile(string id, [FromBody] String itemName)
         {
-            _logger.LogInformation("Deleting blob with name {name}", name);
+            _logger.LogInformation("{UserName} called DeleteMediaItem action for id {id}", User.GetUserGraphDisplayName(), id);
 
-            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
             try
             {
-                await blobClient.DeleteIfExistsAsync();
-                return Ok();
+                await _itemService.DeleteItemAsync(id, itemName);
+                _logger.LogInformation("Deleted item for id {id}", id);
+
+                return NoContent();
             }
-            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            catch (RequestFailedException)
             {
-                return NotFound();
+                return Unauthorized();
             }
         }
 

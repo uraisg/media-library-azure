@@ -36,8 +36,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
             // Get item info and check if user is author
             bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
+            // Get item upload date info and check if within 1 day
+            System.DateTime itemUploadDateTime = (await GetItemUploadDateAsync(id)).ToLocalTime();
+            System.DateTime currentDateTime = System.DateTime.Now.ToLocalTime();
+            bool isOneDayValid = currentDateTime.Subtract(itemUploadDateTime).TotalHours <= 24;
+
             ViewData["mediaId"] = id;
-            ViewData["showAdminActions"] = isAdmin || isAuthor;
+            ViewData["showEditActions"] = isAdmin || isAuthor;
+            ViewData["showDelActions"] = isAdmin || (isAuthor && isOneDayValid);
             return View();
         }
 
@@ -71,6 +77,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
             MediaItem item = await _itemService.GetItemAsync(id);
 
             return item?.Author;
+        }
+
+        private async Task<System.DateTime> GetItemUploadDateAsync(string id)
+        {
+            _logger.LogInformation("Getting item upload details for id {id}", id);
+
+            MediaItem item = await _itemService.GetItemAsync(id);
+
+            return item.UploadDate;
         }
     }
 }
