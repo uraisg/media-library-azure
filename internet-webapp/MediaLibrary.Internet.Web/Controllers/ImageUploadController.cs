@@ -27,7 +27,6 @@ using Newtonsoft.Json;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
-    [Authorize]
     public class ImageUploadController : Controller
     {
         private static readonly string TransferPartitionKey = "transfer";
