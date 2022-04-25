@@ -138,14 +138,25 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             _logger.LogInformation("{UserName} called DeleteMediaItem action for id {id}", User.GetUserGraphDisplayName(), id);
 
-            try
+            MediaItem itemToDelete = await _itemService.GetItemAsync(id);
+            if (itemToDelete == null)
+            {
+                return NotFound();
+            }
+
+            bool isAdmin = User.IsInRole(UserRole.Admin);
+
+            // Get item info and check if user is author
+            bool isAuthor = itemToDelete.Author == User.GetUserGraphEmail();
+
+            if (isAdmin || isAuthor)
             {
                 await _itemService.DeleteItemAsync(id, itemName);
                 _logger.LogInformation("Deleted item for id {id}", id);
 
                 return NoContent();
             }
-            catch (RequestFailedException)
+            else
             {
                 return Unauthorized();
             }
