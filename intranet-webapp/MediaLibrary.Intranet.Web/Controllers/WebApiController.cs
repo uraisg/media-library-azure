@@ -133,8 +133,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
         }
 
-        [HttpDelete("/api/media/{id}", Name = nameof(DeleteMediaFile))]
-        public async Task<IActionResult> DeleteMediaFile(string id, [FromBody] String itemName)
+        [HttpDelete("/api/media/{id}", Name = nameof(DeleteMediaItem))]
+        public async Task<IActionResult> DeleteMediaItem(string id, [FromBody] String itemName)
         {
             _logger.LogInformation("{UserName} called DeleteMediaItem action for id {id}", User.GetUserGraphDisplayName(), id);
 
@@ -151,7 +151,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
             if (isAdmin || isAuthor)
             {
+                //Deletes json data, image, image thumbnail
                 await _itemService.DeleteItemAsync(id, itemName);
+                //Deletes indexed item in cognitive search service
+                await _mediaSearchService.DeleteItemIndexAsync(id);
+
                 _logger.LogInformation("Deleted item for id {id}", id);
 
                 return NoContent();
