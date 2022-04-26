@@ -21,6 +21,7 @@ namespace MediaLibrary.Intranet.Web.Services
         private readonly ILogger<MediaSearchService> _logger;
         private readonly IGeoSearchHelper _geoSearchHelper;
         private readonly SearchIndexClient _searchIndexClient;
+        private readonly SearchIndexClient _searchIndexAdminClient;
 
         public MediaSearchService(
             IOptions<AppSettings> appSettings,
@@ -38,6 +39,12 @@ namespace MediaLibrary.Intranet.Web.Services
                 searchServiceName,
                 searchIndexName,
                 new SearchCredentials(searchServiceQueryApiKey));
+
+            string searchServiceAdminApiKey = _appSettings.SearchServiceAdminApiKey;
+            _searchIndexAdminClient = new SearchIndexClient(
+                searchServiceName,
+                searchIndexName,
+                new SearchCredentials(searchServiceAdminApiKey));
         }
 
         public async Task<MediaItem> GetItemAsync(string id)
@@ -169,15 +176,9 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public async Task DeleteItemIndexAsync(string id)
         {
-            //Creates searchserviceindex to manage indexes
-            string searchServiceName = _appSettings.SearchServiceName;
-            string searchServiceAdminApiKey = _appSettings.SearchServiceAdminApiKey;
-            string searchIndexName = _appSettings.SearchIndexName;
-            SearchIndexClient _searchIndexClient = new SearchIndexClient(searchServiceName, searchIndexName, new SearchCredentials(searchServiceAdminApiKey));
-
             //Deletes document from indexer
             IEnumerable<string> itemID = new List<string>() { id };
-            await _searchIndexClient.Documents.IndexAsync(IndexBatch.Delete("Id", itemID));
+            await _searchIndexAdminClient.Documents.IndexAsync(IndexBatch.Delete("Id", itemID));
 
             _logger.LogInformation("Deleted {id} from indexer succesfully", id);
 
