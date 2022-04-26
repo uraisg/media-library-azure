@@ -148,16 +148,8 @@ namespace MediaLibrary.Intranet.Web.Services
             var imgThumbBlobClient = imageBlobContainerClient.GetBlobClient(imgThumbName);
             await imgThumbBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
 
-            _logger.LogInformation("Deleted json, image and thumbnail for {file} succesfully", fileName);
-
-            //Deletes said document from indexer
-            IEnumerable<string> itemID = new List<string>() { id };
-            await _searchIndexClient.Documents.IndexAsync(IndexBatch.Delete("Id", itemID));
-
-            _logger.LogInformation("Deleted {id} from indexer succesfully", id);
-            
+            _logger.LogInformation("Deleted json, image and thumbnail for {file} succesfully", fileName);            
 
         }
-
     }
 }
