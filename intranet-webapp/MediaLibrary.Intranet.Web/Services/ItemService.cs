@@ -107,12 +107,6 @@ namespace MediaLibrary.Intranet.Web.Services
             string indexContainerName = _appSettings.MediaStorageIndexContainer;
             string imageContainerName = _appSettings.MediaStorageImageContainer;
 
-            //Creates searchserviceindex to manage indexes
-            string searchServiceName = _appSettings.SearchServiceName;
-            string searchServiceAdminApiKey = _appSettings.SearchServiceAdminApiKey;
-            string searchIndexName = _appSettings.SearchIndexName;
-            SearchIndexClient _searchIndexClient = new SearchIndexClient(searchServiceName, searchIndexName, new SearchCredentials(searchServiceAdminApiKey));
-
             // Initialize blob container client
             BlobContainerClient indexBlobContainerClient;
             BlobContainerClient imageBlobContainerClient;
