@@ -37,8 +37,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
             bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
             // Get item upload date info and check if within 1 day
-            System.DateTime itemUploadDateTime = (await GetItemUploadDateAsync(id)).ToLocalTime();
-            System.DateTime currentDateTime = System.DateTime.Now.ToLocalTime();
+            System.DateTime itemUploadDateTime = (await GetItemUploadDateAsync(id));
+            System.DateTime currentDateTime = System.DateTime.UtcNow;
             bool isOneDayValid = currentDateTime.Subtract(itemUploadDateTime).TotalHours <= 24;
 
             ViewData["mediaId"] = id;
