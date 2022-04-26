@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using Microsoft.Azure.Search;
@@ -163,6 +165,47 @@ namespace MediaLibrary.Intranet.Web.Services
             }
 
             return "geo.intersects(Location, geography'" + ret.WktPolygon + "')";
+        }
+
+        public async Task DeleteItemIndexAsync(string id)
+        {
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
+            string storageAccountName = _appSettings.MediaStorageAccountName;
+            string indexContainerName = _appSettings.MediaStorageIndexContainer;
+            string imageContainerName = _appSettings.MediaStorageImageContainer;
+
+            //Creates searchserviceindex to manage indexes
+            string searchServiceName = _appSettings.SearchServiceName;
+            string searchServiceAdminApiKey = _appSettings.SearchServiceAdminApiKey;
+            string searchIndexName = _appSettings.SearchIndexName;
+            SearchIndexClient _searchIndexClient = new SearchIndexClient(searchServiceName, searchIndexName, new SearchCredentials(searchServiceAdminApiKey));
+
+            // Initialize blob container client
+            BlobContainerClient indexBlobContainerClient;
+            BlobContainerClient imageBlobContainerClient;
+
+            if (!string.IsNullOrEmpty(storageConnectionString))
+            {
+                indexBlobContainerClient = new BlobContainerClient(storageConnectionString, indexContainerName);
+                imageBlobContainerClient = new BlobContainerClient(storageConnectionString, imageContainerName);
+            }
+            else
+            {
+                string indexContainerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                    storageAccountName, indexContainerName);
+                indexBlobContainerClient = new BlobContainerClient(new Uri(indexContainerEndpoint), new DefaultAzureCredential());
+
+                string imageContainerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                    storageAccountName, imageContainerName);
+                imageBlobContainerClient = new BlobContainerClient(new Uri(imageContainerEndpoint), new DefaultAzureCredential());
+            }
+
+            //Deletes document from indexer
+            IEnumerable<string> itemID = new List<string>() { id };
+            await _searchIndexClient.Documents.IndexAsync(IndexBatch.Delete("Id", itemID));
+
+            _logger.LogInformation("Deleted {id} from indexer succesfully", id);
+
         }
     }
 }
