@@ -266,6 +266,17 @@ namespace MediaLibrary.Internet.Web.Controllers
         /// <returns>The smaller image. Returns <c>null</c> if image cannot be fitted within size limit.</returns>
         private byte[] FitImageForAnalysis(byte[] data)
         {
+            // Check if image should be reoriented
+            using (var image = new MagickImage(data))
+            {
+                if (image.Orientation != OrientationType.Undefined && image.Orientation != OrientationType.TopLeft)
+                {
+                    _logger.LogInformation("Adjusting image orientation");
+                    image.AutoOrient();
+                    data = image.ToByteArray();
+                }
+            }
+
             // Check if file is oversized
             if (data.Length <= ComputerVisionMaxFileSize)
             {
@@ -273,7 +284,6 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
 
             _logger.LogInformation("Image is oversized, resizing");
-
 
             byte[] data1;
             using (var image = new MagickImage(data))
