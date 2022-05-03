@@ -15,7 +15,6 @@ using MediaLibrary.Internet.Web.Common;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
@@ -99,11 +98,11 @@ namespace MediaLibrary.Internet.Web.Controllers
                 // Check the content type and file extension
                 if (!IsValidImage(file))
                 {
-                    _logger.LogWarning("File {FileName} does not have allowed file extension.", untrustedFileName);
+                    _logger.LogWarning("File {FileName} has unsupported file extension.", untrustedFileName);
 
                     ModelState.AddModelError(file.Name,
-                        $"File {encodedFileName} does not have allowed file extension. " +
-                        "Allowed file extensions are .jpg, .jpeg, .png, .gif, .bmp");
+                        $"File {encodedFileName} has unsupported file extension. " +
+                        "Support file extensions are .jpg, .jpeg, .png, .gif, .bmp, .heic");
                     TempData["Alert.Type"] = "danger";
                     TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
                     return View("~/Views/Home/Index.cshtml");
@@ -118,14 +117,25 @@ namespace MediaLibrary.Internet.Web.Controllers
                         data = ms.ToArray();
                     }
 
+                    // Convert HEIC files to JPEG since browsers are unable to display them
+                    var isHeic = false;
+                    if (Path.GetExtension(untrustedFileName).ToLowerInvariant() == ".heic")
+                    {
+                        isHeic = true;
+                        _logger.LogInformation("Converting {FileName} to JPEG", untrustedFileName);
+                        data = ConvertToJpeg(data);
+                        untrustedFileName = Path.GetFileNameWithoutExtension(untrustedFileName) + ".jpg";
+                    }
+
                     //upload to a separate container to retrieve image URL
                     //use unique id together with file name to avoid duplication
                     string id = GenerateId();
                     string blobFileName = id + "_" + untrustedFileName;
+                    string contentType = isHeic ? "image/jpeg" : file.ContentType;
                     string imageURL;
                     using (var uploadImage = new MemoryStream(data, false))
                     {
-                        imageURL = await ImageUploadToBlob(blobFileName, uploadImage, file.ContentType, _appSettings);
+                        imageURL = await ImageUploadToBlob(blobFileName, uploadImage, contentType, _appSettings);
                     }
 
                     //extract image metadata
@@ -176,7 +186,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     json.PartitionKey = TransferPartitionKey;
                     json.RowKey = id;
                     json.Id = id;
-                    json.Name = file.FileName;
+                    json.Name = untrustedFileName;
                     json.DateTaken = GetTimestamp(directories, _appSettings.UploadTimeZone);
                     json.Location = JsonConvert.SerializeObject(GetCoordinate(directories));
                     json.Tag = GenerateTags(computerVisionResult);
@@ -214,14 +224,20 @@ namespace MediaLibrary.Internet.Web.Controllers
         /// <returns><c>true</c> if the IFormFile is valid; otherwise <c>false</c>.</returns>
         private static bool IsValidImage(IFormFile file)
         {
-            if (!file.ContentType.Contains("image"))
+            // Validate extension
+            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".heic" };
+            string match = allowedExtensions.FirstOrDefault(ext => Path.GetExtension(file.FileName).ToLowerInvariant() == ext);
+            bool fileExtensionValid = match != null;
+
+            // Validate MIME type
+            bool contentTypeValid = file.ContentType.StartsWith("image/");
+            // HEIC files sometimes get uploaded as arbitrary media type
+            if (match == ".heic" && file.ContentType == "application/octet-stream")
             {
-                return false;
+                contentTypeValid = true;
             }
 
-            string[] allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
-
-            return allowedExtensions.Any(item => file.FileName.EndsWith(item, StringComparison.OrdinalIgnoreCase));
+            return fileExtensionValid && contentTypeValid;            
         }
 
         /// <summary>
@@ -257,6 +273,18 @@ namespace MediaLibrary.Internet.Web.Controllers
             //get url (without query string as it will contain SAS token if used in connection string)
             string url = blobClient.Uri.GetLeftPart(UriPartial.Path);
             return url;
+        }
+
+        /// <summary>
+        /// Convert the image to JPEG
+        /// </summary>
+        /// <returns>The convered image</returns>
+        private byte[] ConvertToJpeg(byte[] data)
+        {
+            using var image = new MagickImage(data);
+            image.Format = MagickFormat.Jpeg;
+            image.Quality = DefaultJpegQuality;
+            return image.ToByteArray();
         }
 
         /// <summary>

@@ -102,7 +102,7 @@ if (!string.IsNullOrEmpty(alertType))
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="File" class="font-weight-bold"></label>
-                <input asp-for="File" class="form-control-file" multiple accept=".jpg, .jpeg, .png, .gif, .bmp"
+                <input asp-for="File" class="form-control-file" multiple accept=".jpg, .jpeg, .png, .gif, .bmp, .heic"
                     data-val-filesize data-val-filesize-maxsize="20">
                 <span id="file-hb" class="form-text small">Up to 20 MB of images is accepted</span>
                 <span asp-validation-for="File" class="form-text text-danger"></span>
