@@ -95,6 +95,13 @@ async function renderMetadataSection(data) {
   const targetClone = target.cloneNode(false)
   targetClone.appendChild(clone)
   target.parentNode.replaceChild(targetClone, target)
+
+  let editAbility = $('#delAbility').data('request-url');
+
+  if (editAbility){
+    deleteListener(data['Id'], data['Name'])
+  }
+  
 }
 
 function formatLatLng(coords) {
@@ -146,6 +153,50 @@ function renderTagList(tags) {
     fragment.appendChild(a)
   })
   return fragment
+}
+
+function deleteListener(id, name) {
+
+  var delModal = document.getElementById('actionDel');
+  //handles null error if del permission not valid
+  if (delModal != null) {
+    //listens for mouse click on delete modal confirmation
+    delModal.addEventListener('click', (e) => {
+      e.preventDefault()
+      postContainerDelete(id, name)
+
+      //Modal actions
+      $("#deleteModal").modal('hide')
+      $("#success-alert").fadeTo(3000, 500).slideUp(500, function () {
+        $("#success-alert").slideUp(500)
+
+        //Redirect back to homepage
+        var url = $('#actionDel').data('request-url');
+        window.location.href = url
+      });
+
+    })
+  }
+
+}
+
+function postContainerDelete(id, name) {
+  return fetch(`/api/media/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-type': 'application/json',
+      RequestVerificationToken: document.getElementById(
+        'RequestVerificationToken'
+      ).value,
+    },
+    mode: 'same-origin',
+    credentials: 'same-origin',
+    body: JSON.stringify(name),
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.status}`)
+    }
+  })
 }
 
 loadFileInfo()
