@@ -149,7 +149,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
             // Get item info and check if user is author
             bool isAuthor = itemToDelete.Author == User.GetUserGraphEmail();
 
-            if (isAdmin || isAuthor)
+            // Get item upload date info and check if within 1 day
+            DateTime itemUploadDateTime = itemToDelete.UploadDate;
+            DateTime currentDateTime = DateTime.UtcNow;
+            bool isOneDayValid = currentDateTime.Subtract(itemUploadDateTime).TotalHours <= 24;
+
+            if (isAdmin || (isAuthor && isOneDayValid))
             {
                 //Deletes json data, image, image thumbnail
                 await _itemService.DeleteItemAsync(id, itemName);
