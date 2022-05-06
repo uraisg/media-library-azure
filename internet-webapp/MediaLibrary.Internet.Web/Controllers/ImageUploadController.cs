@@ -340,7 +340,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
 
             // Fit dimensions to file size
-            byte[] data2 = data1;
+            byte[] data2 = null;
             for (var i = 1; i <= 10; i++)
             {
                 var targetPercentage = new Percentage(Math.Round(Math.Pow(0.95, i) * 100));
@@ -363,10 +363,10 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
 
             // Fit quality to file size
-            byte[] data3 = data2;
+            byte[] data3;
             for (var targetQuality = DefaultJpegQuality; targetQuality >= 50; targetQuality -= 5)
             {
-                using (var image = new MagickImage(data1))
+                using (var image = new MagickImage(data2))
                 using (var ms = new MemoryStream())
                 {
                     image.Strip();
@@ -527,8 +527,6 @@ namespace MediaLibrary.Internet.Web.Controllers
             string subscriptionKey = appSettings.ComputerVisionApiKey;
             string endpoint = appSettings.ComputerVisionEndpoint;
 
-            List<string> tagList = new List<string>();
-
             ComputerVisionClient client = new ComputerVisionClient(new ApiKeyServiceClientCredentials(subscriptionKey))
             {
                 Endpoint = endpoint
@@ -585,7 +583,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             CloudTable table = tableClient.GetTableReference(tableName);
 
             TableOperation insertOperation = TableOperation.Insert(json);
-            TableResult result = await table.ExecuteAsync(insertOperation);
+            await table.ExecuteAsync(insertOperation);
         }
     }
 }
