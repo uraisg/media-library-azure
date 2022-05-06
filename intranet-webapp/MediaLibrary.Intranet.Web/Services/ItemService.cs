@@ -96,5 +96,51 @@ namespace MediaLibrary.Intranet.Web.Services
 
             _logger.LogInformation("Saved {file} to index blob container succesfully", fileName);
         }
+
+        public async Task DeleteItemAsync(string id, string imageName)
+        {
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
+            string storageAccountName = _appSettings.MediaStorageAccountName;
+            string indexContainerName = _appSettings.MediaStorageIndexContainer;
+            string imageContainerName = _appSettings.MediaStorageImageContainer;
+
+            // Initialize blob container client
+            BlobContainerClient indexBlobContainerClient;
+            BlobContainerClient imageBlobContainerClient;
+
+            if (!string.IsNullOrEmpty(storageConnectionString))
+            {
+                indexBlobContainerClient = new BlobContainerClient(storageConnectionString, indexContainerName);
+                imageBlobContainerClient = new BlobContainerClient(storageConnectionString, imageContainerName);
+            }
+            else
+            {
+                string indexContainerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                    storageAccountName, indexContainerName);
+                indexBlobContainerClient = new BlobContainerClient(new Uri(indexContainerEndpoint), new DefaultAzureCredential());
+
+                string imageContainerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                    storageAccountName, imageContainerName);
+                imageBlobContainerClient = new BlobContainerClient(new Uri(imageContainerEndpoint), new DefaultAzureCredential());
+            }
+
+            //Deletes json data from container
+            string fileName = id + ".json";
+            var blobClient = indexBlobContainerClient.GetBlobClient(fileName);
+            await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+
+            //Deletes image from container
+            string imgName = id + "_" + imageName;
+            var imgblobClient = imageBlobContainerClient.GetBlobClient(imgName);
+            await imgblobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+
+            //Deletes image thumb from container            
+            string imgThumbName = id + "_" + Path.GetFileNameWithoutExtension(imageName) + "_thumb" + Path.GetExtension(imageName);
+            var imgThumbBlobClient = imageBlobContainerClient.GetBlobClient(imgThumbName);
+            await imgThumbBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+
+            _logger.LogInformation("Deleted json, image and thumbnail for {file} succesfully", fileName);            
+
+        }
     }
 }

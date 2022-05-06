@@ -19,6 +19,7 @@ namespace MediaLibrary.Intranet.Web.Services
         private readonly ILogger<MediaSearchService> _logger;
         private readonly IGeoSearchHelper _geoSearchHelper;
         private readonly SearchIndexClient _searchIndexClient;
+        private readonly SearchIndexClient _searchIndexAdminClient;
 
         public MediaSearchService(
             IOptions<AppSettings> appSettings,
@@ -36,6 +37,12 @@ namespace MediaLibrary.Intranet.Web.Services
                 searchServiceName,
                 searchIndexName,
                 new SearchCredentials(searchServiceQueryApiKey));
+
+            string searchServiceAdminApiKey = _appSettings.SearchServiceAdminApiKey;
+            _searchIndexAdminClient = new SearchIndexClient(
+                searchServiceName,
+                searchIndexName,
+                new SearchCredentials(searchServiceAdminApiKey));
         }
 
         public async Task<MediaItem> GetItemAsync(string id)
@@ -163,6 +170,16 @@ namespace MediaLibrary.Intranet.Web.Services
             }
 
             return "geo.intersects(Location, geography'" + ret.WktPolygon + "')";
+        }
+
+        public async Task DeleteItemIndexAsync(string id)
+        {
+            //Deletes document from indexer
+            IEnumerable<string> itemID = new List<string>() { id };
+            await _searchIndexAdminClient.Documents.IndexAsync(IndexBatch.Delete("Id", itemID));
+
+            _logger.LogInformation("Deleted {id} from indexer succesfully", id);
+
         }
     }
 }

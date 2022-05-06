@@ -133,20 +133,41 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
         }
 
-        [HttpDelete("/api/media/{name}", Name = nameof(DeleteMediaFile))]
-        public async Task<IActionResult> DeleteMediaFile(string name)
+        [HttpDelete("/api/media/{id}", Name = nameof(DeleteMediaItem))]
+        public async Task<IActionResult> DeleteMediaItem(string id, [FromBody] String itemName)
         {
-            _logger.LogInformation("Deleting blob with name {name}", name);
+            _logger.LogInformation("{UserName} called DeleteMediaItem action for id {id}", User.GetUserGraphDisplayName(), id);
 
-            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
-            try
-            {
-                await blobClient.DeleteIfExistsAsync();
-                return Ok();
-            }
-            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            MediaItem itemToDelete = await _itemService.GetItemAsync(id);
+            if (itemToDelete == null)
             {
                 return NotFound();
+            }
+
+            bool isAdmin = User.IsInRole(UserRole.Admin);
+
+            // Get item info and check if user is author
+            bool isAuthor = itemToDelete.Author == User.GetUserGraphEmail();
+
+            // Get item upload date info and check if within 1 day
+            DateTime itemUploadDateTime = itemToDelete.UploadDate;
+            DateTime currentDateTime = DateTime.UtcNow;
+            bool isOneDayValid = currentDateTime.Subtract(itemUploadDateTime).TotalHours <= 24;
+
+            if (isAdmin || (isAuthor && isOneDayValid))
+            {
+                //Deletes json data, image, image thumbnail
+                await _itemService.DeleteItemAsync(id, itemName);
+                //Deletes indexed item in cognitive search service
+                await _mediaSearchService.DeleteItemIndexAsync(id);
+
+                _logger.LogInformation("Deleted item for id {id}", id);
+
+                return NoContent();
+            }
+            else
+            {
+                return Unauthorized();
             }
         }
 
