@@ -163,7 +163,7 @@ const SpatialFilter = ({ filters, setFilters, areas }) => {
                   required
                   onChange={handleInputChange('postalCode')}
                 />
-                <div className="postalSearchBufferInfo">search results within 500m of this will be displayed</div>
+                <div className="postalSearchBufferInfo">search results within radius of 500m will be displayed</div>
               </Form.Group>
             </Tab>
             <Tab
