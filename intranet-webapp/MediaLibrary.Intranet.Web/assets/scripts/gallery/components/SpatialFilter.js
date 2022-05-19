@@ -151,8 +151,8 @@ const SpatialFilter = ({ filters, setFilters, areas }) => {
               eventKey="postal"
               title="Postal Code"
             >
-              <Form.Group controlId="postal-input">
-                <Form.Label srOnly>Postal Code</Form.Label>
+              <Form.Group className="form-group2" controlId="postal-input">
+                <Form.Label srOnly>Postal Code</Form.Label>                
                 <Form.Control
                   size="sm"
                   type="tel"
@@ -163,6 +163,7 @@ const SpatialFilter = ({ filters, setFilters, areas }) => {
                   required
                   onChange={handleInputChange('postalCode')}
                 />
+                <div className="postalSearchBufferInfo">search results within radius of 500m will be displayed</div>
               </Form.Group>
             </Tab>
             <Tab
