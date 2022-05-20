@@ -33,7 +33,10 @@ namespace MediaLibrary.Intranet.Web.Configuration
                     options =>
                     {
                         config.Bind("AzureAd", options);
-                        options.Events.OnTokenValidated = context => GetGraphClaims(context);
+                        // Handling the token validated event (after sign in)
+                        options.Events.OnTokenValidated = OnTokenValidatedFunc;
+                        // Handling the sign-out event
+                        options.Events.OnRedirectToIdentityProviderForSignOut = OnRedirectToIdentityProviderForSignOutFunc;
                     },
                     // Cookie authentication options
                     options =>
@@ -74,6 +77,51 @@ namespace MediaLibrary.Intranet.Web.Configuration
             );
 
             return builder;
+        }
+
+        /// <summary>
+        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket.
+        /// See: https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.openidconnect.openidconnectevents.ontokenvalidated?view=aspnetcore-3.1
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private static async Task OnTokenValidatedFunc(TokenValidatedContext context)
+        {
+            // Record the user login
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<Startup>();
+
+            var clientIP = context.HttpContext.Connection.RemoteIpAddress;
+            var userName = context.Principal.Identity.Name;
+            var status = "Successful login";
+
+            logger.LogInformation("User login - {ClientIp} - {UserName} - {Status}", clientIP, userName, status);
+
+            // Query additional user properties from Graph API
+            await GetGraphClaims(context).ConfigureAwait(false);
+
+            await Task.CompletedTask.ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Invoked before redirecting to the identity provider to sign out.
+        /// See: https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.openidconnect.openidconnectevents.onredirecttoidentityproviderforsignout?view=aspnetcore-3.1
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private static async Task OnRedirectToIdentityProviderForSignOutFunc(RedirectContext context)
+        {
+            // Record the user logout
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<Startup>();
+
+            var clientIP = context.HttpContext.Connection.RemoteIpAddress;
+            var userName = context.HttpContext.User.Identity.Name;
+            var status = "Successful logout";
+
+            logger.LogInformation("User logout - {ClientIp} - {UserName} - {Status}", clientIP, userName, status);
+
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         private static async Task GetGraphClaims(TokenValidatedContext context)
@@ -125,7 +173,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
             }
             catch (ServiceException ex)
             {
-                if (!ex.IsMatch("ErrorItemNotFound"))
+                if (!ex.IsMatch("ImageNotFound"))
                 {
                     var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
                     var logger = loggerFactory.CreateLogger<Startup>();
