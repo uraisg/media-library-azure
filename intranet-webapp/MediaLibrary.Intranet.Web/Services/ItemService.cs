@@ -135,7 +135,7 @@ namespace MediaLibrary.Intranet.Web.Services
             await imgblobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
 
             //Deletes image thumb from container            
-            string imgThumbName = id + "_" + Path.GetFileNameWithoutExtension(imageName) + "_thumb" + Path.GetExtension(imageName);
+            string imgThumbName = id + "_" + Path.GetFileNameWithoutExtension(imageName) + "_thumb.jpg";
             var imgThumbBlobClient = imageBlobContainerClient.GetBlobClient(imgThumbName);
             await imgThumbBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
 
