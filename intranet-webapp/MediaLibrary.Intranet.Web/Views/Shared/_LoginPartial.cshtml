@@ -1,8 +1,9 @@
 ﻿@using MediaLibrary.Intranet.Web.Common
 @if (User.Identity.IsAuthenticated)
 {
-    <ul class="navbar-nav ml-md-auto">
-        <li class="nav-item dropdown">
+    <nav class="navbar-nav ml-md-auto">
+        <a class="nav-link active" href="https://gccprod.sharepoint.com/:f:/r/sites/URA-MediaLibrary-MST/Shared%20Documents/Guides?csf=1&web=1&e=Nq7lrG" target="_blank">Help</a>
+        <nav class="nav-item dropdown">
             <a class="nav-link dropdown-toggle nav-user-dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-label="Account menu">
                 <img src="@Url.Content(User.GetUserGraphPhoto())" class="nav-profile-photo rounded-circle" alt="">
             </a>
@@ -14,8 +15,8 @@
                     <button type="submit" class="dropdown-item">Sign Out</button>
                 </form>
             </div>
-        </li>
-    </ul>
+        </nav>
+    </nav>
 }
 else
 {
