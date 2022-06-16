@@ -13,11 +13,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
     {
         private readonly ILogger<GalleryController> _logger;
         private readonly ItemService _itemService;
+        private readonly DashboardActivityService _dashboardActivityService;
+        private DBActivity activitySelected = new DBActivity();
 
-        public GalleryController(ILogger<GalleryController> logger, ItemService itemService)
+        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, DashboardActivityService dashboardActivityService)
         {
             _logger = logger;
             _itemService = itemService;
+            _dashboardActivityService = dashboardActivityService;
         }
 
         public IActionResult Index()
@@ -36,6 +39,19 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
 
             bool isAdmin = User.IsInRole(UserRole.Admin);
+            // Update view activity in DashboardActivity table
+            DashboardActivity activity = new DashboardActivity()
+            {
+                Id = Guid.NewGuid(),
+                FileId = id,
+                Email = User.Identity.Name,
+                ActivityDateTime = DateTime.Now,
+                Activity = activitySelected.View
+            };
+            if(await _dashboardActivityService.AddActivityAsync(activity))
+            {
+                _logger.LogInformation("Successfully added view activity for {FileId}", id);
+            }
 
             // Get item info and check if user is author
             bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
