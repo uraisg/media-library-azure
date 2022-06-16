@@ -1,0 +1,85 @@
+﻿@using Microsoft.AspNetCore.Routing;
+
+@{
+}
+
+<div class="admin-container">
+    <div class="nav-left">
+        <partial name="_AdminLayout" />
+    </div>
+    <div class="admin-right">
+        <div class="staff-filter">
+            <div class="staff-search">
+                <input type="search" class="mr-1 form-control" id="searchBar" placeholder="Enter email here (e.g. p_y, p_y@example.com)" />
+                <button class="btn btn-sm searchBtn" id="searchBtn">Search</button>
+            </div>
+            <div class="staff-right">
+                <button class="btn btn-sm border border-primary dropdown-toggle" type="button" id="sortingDropDown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Sort By: <span id="sortDetail" class=""></span>
+                </button>
+                <div class="dropdown-menu-right dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="sortDropDown-item dropdown-item" id="uploadDSC">Most Upload First</a>
+                    <a class="sortDropDown-item dropdown-item" id="uploadASC">Least Upload First</a>
+                    <a class="sortDropDown-item dropdown-item" id="downloadDSC">Most Download First</a>
+                    <a class="sortDropDown-item dropdown-item" id="downloadASC">Least Download First</a>
+                </div>
+                <a id="refreshTableBtn" class="mr-3 mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <div class="mt-2 shadow bg-white rounded">
+
+            <div class="pt-3 pb-1 pr-4 justify-content-end d-flex">
+                <nav>
+                    <ul class="paginationUL pagination">
+                        <li class="mt-2 mr-2"><span class="paginationErr text-muted"></span></li>
+                        <li class="paginationPrev page-item"><a class="paginationPrevA page-link" data-page-num="Prev" href="#">Previous</a></li>
+                        <li class="paginationNext page-item"><a class="paginationNextA page-link" data-page-num="Next" href="#">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <hr class="hrNegativeMargin" />
+            <div class="p-2">
+                <table class="mt-2 table table-striped table-borderless table-responsive-lg table-sm" width="100%" id="staffTable">
+                    <thead>
+                        <tr align="center">
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Group</th>
+                            <th>Upload Stats</th>
+                            <th>Download Stats</th>
+                            <th>
+                                
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffTableBody" class="text-center">
+                    </tbody>
+                </table>
+            </div>
+            <hr />
+
+            <div class="pt-3 pb-1 pr-4 justify-content-end d-flex">
+                <nav>
+                    <ul class="paginationUL pagination">
+                        <li class="mt-2 mr-2"><span class="paginationErr text-muted"></span></li>
+                        <li class="paginationPrev page-item"><a class="paginationPrevA page-link" data-page-num="Prev" href="#">Previous</a></li>
+                        <li class="paginationNext page-item"><a class="paginationNextA page-link" data-page-num="Next" href="#">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/scripts/Staff.js"></script>
+}
