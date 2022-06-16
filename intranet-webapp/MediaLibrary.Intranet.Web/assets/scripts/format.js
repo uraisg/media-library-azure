@@ -2,6 +2,8 @@ import { format } from 'date-fns'
 
 const DATE_FORMAT = 'd MMM yyyy h:mm a'
 const SHORT_DATE_FORMAT = 'd/M/yyyy h:mm a'
+const SHORT_DATE = 'd/M/yyyy'
+const SHORT_TIME = 'h:mm a'
 
 /**
  * Formats a JSON date string into an abbreviated date string

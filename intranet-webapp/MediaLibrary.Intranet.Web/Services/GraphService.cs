@@ -44,7 +44,8 @@ namespace MediaLibrary.Intranet.Web.Services
                     .Select(u => new
                     {
                         u.Mail,
-                        u.DisplayName
+                        u.DisplayName,
+                        u.Department
                     });
                 //Each step returns an id that is stored in request_id
                 if (count <= max_request)
@@ -68,7 +69,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
             List<UserInfo> allUserInfo = new List<UserInfo>();
 
-            //Retrieving each request by each id 
+            //Retrieving each request by each id
+            //TODO: Remove department (UIAM Implementations)
             count = 1;
             foreach (var itemId in requestId)
             {
@@ -85,13 +87,14 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     var listsJson = await listResponse.Content.ReadAsStringAsync();
                     var lists = JsonConvert.DeserializeAnonymousType(listsJson,
-                        new { value = new[] { new { Mail = "", DisplayName = "" } } });
+                        new { value = new[] { new { Mail = "", DisplayName = "", Department = "" } } });
 
                     foreach (var l in lists.value)
                     {
                         UserInfo userInfo = new UserInfo();
                         userInfo.DisplayName = l.DisplayName;
                         userInfo.Mail = l.Mail;
+                        userInfo.Department = l.Department;
                         allUserInfo.Add(userInfo);
                     }
                 }
