@@ -20,3 +20,11 @@ export function formatDate(date) {
 export function formatShortDate(date) {
   return format(new Date(date), SHORT_DATE_FORMAT)
 }
+
+export function formatDateOnly(date) {
+  return format(new Date(date), SHORT_DATE)
+}
+
+export function formatTimeOnly(date) {
+  return format(new Date(date), SHORT_TIME)
+}
