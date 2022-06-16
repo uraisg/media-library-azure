@@ -1,9 +1,11 @@
 @using MediaLibrary.Internet.Web.Common
 @if (User.Identity.IsAuthenticated)
 {
-    <nav aria-label="navbar" class="navbar-nav ml-md-auto">
-        <a class="nav-link active" href="~/uploadguide.pdf" target="_blank">Help</a>
-        <nav aria-label="navbarprofile" class="nav-item dropdown">
+    <ul class="navbar-nav ml-md-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="~/uploadguide.pdf" target="_blank">Help</a>
+        </li>
+        <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle nav-user-dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-label="Account menu">
                 <img src="@Url.Content(User.GetUserGraphPhoto())" class="nav-profile-photo rounded-circle" alt="">
             </a>
@@ -15,8 +17,8 @@
                     <button type="submit" class="dropdown-item">Sign Out</button>
                 </form>
             </div>
-        </nav>
-    </nav>
+        </li>
+    </ul>
 }
 else
 {
