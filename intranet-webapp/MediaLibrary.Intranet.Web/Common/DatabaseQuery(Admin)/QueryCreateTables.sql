@@ -4,6 +4,12 @@
     CONSTRAINT [PK_AllActivity] PRIMARY KEY CLUSTERED ([AActivityId] ASC)
 );
 
+CREATE TABLE [Region] (
+    [RegionId]   INT          NOT NULL,
+    [RegionName] VARCHAR (50) NULL,
+    CONSTRAINT [PK_Region] PRIMARY KEY CLUSTERED ([RegionId] ASC)
+);
+
 CREATE TABLE [DashboardActivity] (
     [DActivityId]      UNIQUEIDENTIFIER NOT NULL,
     [FileId]           VARCHAR (50)     NULL,
@@ -58,12 +64,6 @@ CREATE TABLE [PlanningArea] (
 GO
 CREATE NONCLUSTERED INDEX [IX_PlanningArea_PlanningAreaName]
     ON [PlanningArea]([PlanningAreaName] ASC);
-
-CREATE TABLE [Region] (
-    [RegionId]   INT          NOT NULL,
-    [RegionName] VARCHAR (50) NULL,
-    CONSTRAINT [PK_Region] PRIMARY KEY CLUSTERED ([RegionId] ASC)
-);
 
 CREATE TABLE [DeletedFiles] (
     [DFilesId]            UNIQUEIDENTIFIER  NOT NULL,
