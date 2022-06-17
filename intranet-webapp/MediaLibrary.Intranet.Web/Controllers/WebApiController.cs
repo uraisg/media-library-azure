@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
+using NetTopologySuite.Geometries;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -25,6 +26,10 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly ItemService _itemService;
         private readonly IGeoSearchHelper _geoSearchHelper;
         private readonly GraphService _graphService;
+        private readonly DashboardActivityService _dashboardActivityService;
+        private readonly FileDetailsService _fileDetailsService;
+
+        public DBActivity selectActivity = new DBActivity();
 
         private static BlobContainerClient _blobContainerClient = null;
 
@@ -34,7 +39,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
             MediaSearchService mediaSearchService,
             ItemService itemService,
             IGeoSearchHelper geoSearchHelper,
-            GraphService graphService)
+            GraphService graphService,
+            DashboardActivityService dashboardActivityService,
+            FileDetailsService fileDetailsService)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
@@ -42,6 +49,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
             _itemService = itemService;
             _geoSearchHelper = geoSearchHelper;
             _graphService = graphService;
+            _dashboardActivityService = dashboardActivityService;
+            _fileDetailsService = fileDetailsService;
 
             InitStorage();
         }
@@ -116,6 +125,20 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
             if (isAdmin || isAuthor)
             {
+                //Add edit activity into database
+                DashboardActivity dashboardActivity = new DashboardActivity()
+                {
+                    DActivityId = Guid.NewGuid(),
+                    FileId = id,
+                    Email = User.GetUserGraphEmail(),
+                    ActivityDateTime = DateTime.Now,
+                    Activity = selectActivity.Edit
+                };
+                if (await _dashboardActivityService.AddActivityAsync(dashboardActivity))
+                {
+                    _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
+                }
+
                 itemToUpdate.Tag = mediaItem.Tag;
                 itemToUpdate.Caption = mediaItem.Caption;
                 itemToUpdate.Project = mediaItem.Project;
@@ -156,6 +179,42 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
             if (isAdmin || (isAuthor && isOneDayValid))
             {
+                //Delete data in database
+                List<DashboardActivity> activityToDelete = _dashboardActivityService.GetAllActivity(id);
+                if (await _dashboardActivityService.DeleteActivityByFileIdAsync(id, User.GetUserGraphEmail()))
+                {
+                    _logger.LogInformation("Successfully delete {FileId} from DashboardActivity", id);
+                }
+                if (await _fileDetailsService.DeleteDetailsByFileIdAsync(id))
+                {
+                    _logger.LogInformation("Successfully delete {FileId} from FileDetails", id);
+                }
+
+                Point areaPoint = null;
+                if (itemToDelete.Location != null)
+                {
+                    areaPoint = new Point(itemToDelete.Location.Longitude, itemToDelete.Location.Latitude) { SRID = 4326 };
+                }
+
+                foreach (DashboardActivity activity in activityToDelete)
+                {
+                    DeletedFiles deletedFiles = new DeletedFiles()
+                    {
+                        DFilesId = Guid.NewGuid(),
+                        FileId = id,
+                        Name = itemToDelete.Project,
+                        Location = itemToDelete.LocationName,
+                        PlanningArea = areaPoint,
+                        Email = itemToDelete.Author,
+                        ActivityDateTime = DateTime.Now,
+                        DashboardActivityId = activity.DActivityId
+                    };
+                    if(await _fileDetailsService.AddDeletedFileDetailsAsync(deletedFiles))
+                    {
+                        _logger.LogInformation("Successfully added {FileId} into DeletedFiles", id);
+                    }
+                }
+
                 //Deletes json data, image, image thumbnail
                 await _itemService.DeleteItemAsync(id, itemName);
                 //Deletes indexed item in cognitive search service
@@ -224,6 +283,26 @@ namespace MediaLibrary.Intranet.Web.Controllers
             List<UserInfo> userInfo = await _graphService.GetUserInfo(emails);
 
             return Ok(userInfo);
+        }
+
+        [HttpGet("/api/activity/update", Name = nameof(UpdateDashboardActivity))]
+        public async Task<IActionResult> UpdateDashboardActivity([FromQuery] ActivityCount activityCount)
+        {
+            DashboardActivity dashboardActivity = new DashboardActivity()
+            {
+                DActivityId = Guid.NewGuid(),
+                FileId = activityCount.FileId,
+                Email = activityCount.Email,
+                ActivityDateTime = DateTime.Now,
+                Activity = activityCount.Activity
+            };
+            
+            if (await _dashboardActivityService.AddActivityAsync(dashboardActivity))
+            {
+                _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
+            }
+
+            return Ok();
         }
     }
 }

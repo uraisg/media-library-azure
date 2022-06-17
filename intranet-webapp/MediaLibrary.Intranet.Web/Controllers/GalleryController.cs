@@ -13,15 +13,25 @@ namespace MediaLibrary.Intranet.Web.Controllers
     {
         private readonly ILogger<GalleryController> _logger;
         private readonly ItemService _itemService;
+        private readonly DashboardActivityService _dashboardActivityService;
+        private readonly MediaSearchService _mediaSearchService;
+        private DBActivity activitySelected = new DBActivity();
 
-        public GalleryController(ILogger<GalleryController> logger, ItemService itemService)
+        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, DashboardActivityService dashboardActivityService, MediaSearchService mediaSearchService)
         {
             _logger = logger;
             _itemService = itemService;
+            _dashboardActivityService = dashboardActivityService;
+            _mediaSearchService = mediaSearchService;
         }
 
         public IActionResult Index()
         {
+            //await UpdateUploadActivity();
+
+            bool isAdmin = User.IsInRole(UserRole.Admin);
+            ViewData["showDashboard"] = isAdmin;
+
             return View();
         }
 
@@ -33,6 +43,19 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
 
             bool isAdmin = User.IsInRole(UserRole.Admin);
+            // Update view activity in DashboardActivity table
+            DashboardActivity activity = new DashboardActivity()
+            {
+                DActivityId = Guid.NewGuid(),
+                FileId = id,
+                Email = User.Identity.Name,
+                ActivityDateTime = DateTime.Now,
+                Activity = activitySelected.View
+            };
+            if(await _dashboardActivityService.AddActivityAsync(activity))
+            {
+                _logger.LogInformation("Successfully added view activity for {FileId}", id);
+            }
 
             // Get item info and check if user is author
             bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
@@ -45,6 +68,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             ViewData["mediaId"] = id;
             ViewData["showEditActions"] = isAdmin || isAuthor;
             ViewData["showDelActions"] = isAdmin || (isAuthor && isOneDayValid);
+            ViewData["showDashboard"] = isAdmin;
             return View();
         }
 
@@ -63,6 +87,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             if (isAdmin || isAuthor)
             {
                 ViewData["mediaId"] = id;
+                ViewData["showDashboard"] = isAdmin;
                 return View();
             }
             else
@@ -87,6 +112,16 @@ namespace MediaLibrary.Intranet.Web.Controllers
             MediaItem item = await _itemService.GetItemAsync(id);
 
             return item?.UploadDate;
+        }
+
+        private async Task UpdateUploadActivity()
+        {
+            var results = await _mediaSearchService.GetAllMediaItemsAsync();
+
+            foreach (var result in results)
+            {
+                await _dashboardActivityService.AddActivityForUpload(result.Items);
+            }
         }
     }
 }

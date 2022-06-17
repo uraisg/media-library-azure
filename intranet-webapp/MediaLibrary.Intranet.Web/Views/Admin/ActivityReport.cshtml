@@ -1,0 +1,122 @@
+﻿@using Microsoft.AspNetCore.Routing;
+
+@{
+}
+
+<div class="admin-container">
+    <div class="nav-left">
+        <partial name="_AdminLayout" />
+    </div>
+    <div class="overflow-auto admin-right">
+        <div class="p-2 mb-4 border bg-light rounded">
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary btn-sm ml-2">Back</a>
+        </div>
+
+        <h2 class="mb-4">Activity Report Statistics</h2>
+
+        <span id="dateErrMsg" class="text-danger"></span>
+        <div class="all-filter-sort-options mt-2 mb-2">
+            <div class="filter-sort-options">
+                <div class="dropdown">
+                    <button class="btn btn-sm border border-primary dropdown-toggle" type="button" id="planningAreaDropDown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Planning Area: <span id="planningAreaSelected"></span>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id="allPlanningArea">
+                    </div>
+                </div>
+                <div class="dropdown" id="dateDropDown">
+                    <button class="btn btn-sm border border-primary dropdown-toggle" type="button" id="datePeriodDropDown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Date Period: <span id="datePeriodSelected"></span>
+                    </button>
+                    <div class="p-2 pr-4 dropdown-menu" aria-labelledby="dropdownMenu2" id="dateFilter">
+                        <div class="mt-2 form-group">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <span class="filter-date-input input-group-text">From</span>
+                                </div>
+                                <input type="date" id="startDate" class="form-control form-control-sm" value="">
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <span class="filter-date-input input-group-text">To</span>
+                                </div>
+                                <input type="date" id="endDate" class="form-control form-control-sm" value="">
+                            </div>
+                        </div>
+                        <div id="dateDropdownDivider" class="d-none dropdown-divider"></div>
+                        <a id="resetDateBtn" class="d-none mt-2 text-right text-primary">Reset</a>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="w-100 d-flex dropdown" id="sort-filter-right">
+                <div class="mr-2 mt-1">
+                    <a id="allFilterOption" class="filter-option-active filterOption">All</a>
+                    <a id="uploadFilterOption" class="filterOption">Upload</a>
+                    <a id="downloadFilterOption" class="filterOption">Download</a>
+                </div>
+                <button class="btn btn-sm border border-primary dropdown-toggle" type="button" id="sortingDropDown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Sort By: <span id="sortDetail" class=""></span>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="sortDropDown dropdown-item" id="dateDSC">Newest First</a>
+                    <a class="sortDropDown dropdown-item" id="dateASC">Oldest First</a>
+                </div>
+                <a id="refreshTableBtn" class="ml-2 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="shadow bg-white rounded">
+            <div class="pt-3 pb-1 pr-4 justify-content-end d-flex">
+                <nav>
+                    <ul class="paginationUL pagination">
+                        <li class="mt-2 mr-2"><span class="paginationErr text-muted"></span></li>
+                        <li class="paginationPrev page-item"><a class="paginationPrevA page-link" data-page-num="Prev" href="#">Previous</a></li>
+                        <li class="paginationNext page-item"><a class="paginationNextA page-link" data-page-num="Next" href="#">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <hr class="hrNegativeMargin" />
+
+            <div class="p-2">
+                <table class="table table-striped table-borderless table-responsive-lg table-sm" width="100%" id="activityTable">
+                    <thead>
+                        <tr align="center">
+                            <th></th>
+                            <th>Planning <br /> Area</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Group</th>
+                            <th>Date &amp; Time</th>
+                            <th>Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody" class="text-center">
+                    </tbody>
+                </table>
+            </div>
+
+            <hr />
+
+            <div class="p-1 pr-4 justify-content-end d-flex">
+                <nav>
+                    <ul class="paginationUL pagination">
+                        <li class="mt-2 mr-2"><span class="paginationErr text-muted"></span></li>
+                        <li class="paginationPrev page-item"><a class="paginationPrevA page-link" data-page-num="Prev" href="#">Previous</a></li>
+                        <li class="paginationNext page-item"><a class="paginationNextA page-link" data-page-num="Next" href="#">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/scripts/ActivityReport.js"></script>
+}
