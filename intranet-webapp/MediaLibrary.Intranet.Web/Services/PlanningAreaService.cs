@@ -23,7 +23,7 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public Region GetRegionById(int id)
         {
-            var region = _mediaLibraryContext.region.Where<Region>(e=> e.Id == id).FirstOrDefault();
+            var region = _mediaLibraryContext.region.Where<Region>(e=> e.RegionId == id).FirstOrDefault();
             return region;
         }  
     }

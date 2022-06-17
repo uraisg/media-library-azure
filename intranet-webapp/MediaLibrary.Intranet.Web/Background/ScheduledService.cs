@@ -216,7 +216,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         DashboardActivity dashboardActivity = new DashboardActivity();
 
                         //Add into FileDetails table
-                        fileDetails.Id = Guid.NewGuid();
+                        fileDetails.FDetailsId = Guid.NewGuid();
                         fileDetails.FileId = item.id;
                         fileDetails.FileSize = Math.Round(fileSize, 2);
                         if (itemLocation != null) //Check if there are any geotag location
@@ -231,7 +231,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         }
 
                         //Add into DashboardActivity Table
-                        dashboardActivity.Id = Guid.NewGuid();
+                        dashboardActivity.DActivityId = Guid.NewGuid();
                         dashboardActivity.FileId = item.id;
                         dashboardActivity.Email = item.author;
                         dashboardActivity.ActivityDateTime = DateTime.Now;
