@@ -98,7 +98,7 @@ namespace MediaLibrary.Intranet.Web.Services
                         areaPoint = new Point(item.Location.Longitude, item.Location.Latitude) { SRID = 4326 };
                     }
                     FileDetails fileDetails = new FileDetails();
-                    fileDetails.Id = Guid.NewGuid();
+                    fileDetails.FDetailsId = Guid.NewGuid();
                     fileDetails.FileId = item.Id;
                     fileDetails.FileSize = fileSize;
                     fileDetails.AreaPoint = areaPoint;

@@ -14,17 +14,21 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly ILogger<GalleryController> _logger;
         private readonly ItemService _itemService;
         private readonly DashboardActivityService _dashboardActivityService;
+        private readonly MediaSearchService _mediaSearchService;
         private DBActivity activitySelected = new DBActivity();
 
-        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, DashboardActivityService dashboardActivityService)
+        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, DashboardActivityService dashboardActivityService, MediaSearchService mediaSearchService)
         {
             _logger = logger;
             _itemService = itemService;
             _dashboardActivityService = dashboardActivityService;
+            _mediaSearchService = mediaSearchService;
         }
 
         public IActionResult Index()
         {
+            //await UpdateUploadActivity();
+
             bool isAdmin = User.IsInRole(UserRole.Admin);
             ViewData["showDashboard"] = isAdmin;
 
@@ -42,7 +46,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             // Update view activity in DashboardActivity table
             DashboardActivity activity = new DashboardActivity()
             {
-                Id = Guid.NewGuid(),
+                DActivityId = Guid.NewGuid(),
                 FileId = id,
                 Email = User.Identity.Name,
                 ActivityDateTime = DateTime.Now,
@@ -108,6 +112,16 @@ namespace MediaLibrary.Intranet.Web.Controllers
             MediaItem item = await _itemService.GetItemAsync(id);
 
             return item?.UploadDate;
+        }
+
+        private async Task UpdateUploadActivity()
+        {
+            var results = await _mediaSearchService.GetAllMediaItemsAsync();
+
+            foreach (var result in results)
+            {
+                await _dashboardActivityService.AddActivityForUpload(result.Items);
+            }
         }
     }
 }
