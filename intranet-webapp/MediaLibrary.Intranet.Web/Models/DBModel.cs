@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using NetTopologySuite.Geometries;
@@ -9,7 +10,8 @@ namespace MediaLibrary.Intranet.Web.Models
 {
     public class DeletedFiles
     {
-        public Guid Id { get; set; }
+        [Key]
+        public Guid DFilesId { get; set; }
         public string FileId { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
@@ -20,7 +22,8 @@ namespace MediaLibrary.Intranet.Web.Models
     }
     public class AllActivity
     {
-        public int Id { get; set; }
+        [Key]
+        public int AActivityId { get; set; }
         public string ActivityType { get; set; }
     }
 
@@ -35,7 +38,8 @@ namespace MediaLibrary.Intranet.Web.Models
 
     public class DashboardActivity
     {
-        public Guid Id { get; set; }
+        [Key]
+        public Guid DActivityId { get; set; }
         public string FileId { get; set; }
         public string Email { get; set; }
         public DateTime ActivityDateTime { get; set; }
@@ -48,7 +52,8 @@ namespace MediaLibrary.Intranet.Web.Models
 
     public class FileDetails
     {
-        public Guid Id { get; set; }
+        [Key]
+        public Guid FDetailsId { get; set; }
         public string FileId { get; set; }
         public decimal FileSize { get; set; }
         public Point AreaPoint { get; set; }
@@ -57,7 +62,8 @@ namespace MediaLibrary.Intranet.Web.Models
 
     public class PlanningArea
     {
-        public int Id { get; set; }
+        [Key]
+        public int PAreaId { get; set; }
         [JsonIgnore]
         public Geometry AreaPolygon { get; set; }
         public string PlanningAreaName { get; set; }
@@ -67,7 +73,8 @@ namespace MediaLibrary.Intranet.Web.Models
 
     public class Region
     {
-        public int Id { get; set; }
+        [Key]
+        public int RegionId { get; set; }
         public string RegionName { get; set; }
     }
 }

@@ -73,7 +73,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 if (!UploadActivityExist(item.Id))
                 {
                     DashboardActivity dashboardActivity = new DashboardActivity();
-                    dashboardActivity.Id = Guid.NewGuid();
+                    dashboardActivity.DActivityId = Guid.NewGuid();
                     dashboardActivity.FileId = item.Id;
                     dashboardActivity.Email = item.Author;
                     dashboardActivity.ActivityDateTime = item.UploadDate;
@@ -112,7 +112,7 @@ namespace MediaLibrary.Intranet.Web.Services
             //Adding deleted item into DeletedFiles Table in DB
             DashboardActivity dashboardActivity = new DashboardActivity()
             {
-                Id = Guid.NewGuid(),
+                DActivityId = Guid.NewGuid(),
                 FileId = fileId,
                 Email = userEmail,
                 ActivityDateTime = DateTime.Now,
@@ -172,10 +172,10 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 var uploadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
                           where da.Activity == selectActivity.Upload && da.FileId != "Deleted"
-                          select new { da.Id }).CountAsync();
+                          select new { da.DActivityId }).CountAsync();
                 var downloadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
                                      where da.Activity == selectActivity.Download && da.FileId != "Deleted"
-                                     select new { da.Id }).CountAsync();
+                                     select new { da.DActivityId }).CountAsync();
                 return Tuple.Create(uploadCount.ToString(), downloadCount.ToString());
             }
             else
@@ -186,11 +186,11 @@ namespace MediaLibrary.Intranet.Web.Services
                     var uploadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
                               join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
                               where areaPolygon.Contains(fd.AreaPoint) && da.Activity == selectActivity.Upload && da.FileId != "Deleted"
-                              select new { da.Id }).CountAsync();
+                              select new { da.DActivityId }).CountAsync();
                     var downloadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
                                          join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
                                          where areaPolygon.Contains(fd.AreaPoint) && da.Activity == selectActivity.Download && da.FileId != "Deleted"
-                                         select new { da.Id }).CountAsync();
+                                         select new { da.DActivityId }).CountAsync();
                     return Tuple.Create(uploadCount.ToString(), downloadCount.ToString());
                 }
             }
@@ -275,7 +275,7 @@ namespace MediaLibrary.Intranet.Web.Services
             if (planningArea == "ALL")
             {
                 result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                          join a in _mediaLibraryContext.Set<AllActivity>() on da.Activity equals a.Id
+                          join a in _mediaLibraryContext.Set<AllActivity>() on da.Activity equals a.AActivityId
                           join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
                           where option.Contains(da.Activity) && da.FileId != "Deleted"
                           select new ActivityReportResult { FileId = da.FileId, ActivityDateTime = da.ActivityDateTime, ActivityType = a.ActivityType, Location = GetPlanningAreaNameByPoint(_mediaLibraryContext, fd.AreaPoint), ThumbnailURL = fd.ThumbnailURL, Email = da.Email, StaffName = da.DisplayName, Department = da.Department }).ToList();
@@ -288,7 +288,7 @@ namespace MediaLibrary.Intranet.Web.Services
                     List<string> locationList = new List<string> { planningArea };
 
                     result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                              join a in _mediaLibraryContext.Set<AllActivity>() on da.Activity equals a.Id
+                              join a in _mediaLibraryContext.Set<AllActivity>() on da.Activity equals a.AActivityId
                               join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
                               where option.Contains(da.Activity) && areaPolygon.Contains(fd.AreaPoint) && da.FileId != "Deleted"
                               select new ActivityReportResult { FileId = da.FileId, ActivityDateTime = da.ActivityDateTime, ActivityType = a.ActivityType, Location = locationList, ThumbnailURL = fd.ThumbnailURL, Email = da.Email, StaffName = da.DisplayName, Department = da.Department }).ToList();
@@ -448,12 +448,12 @@ namespace MediaLibrary.Intranet.Web.Services
             option.Add(selectActivity.Download);
             return (from da in _mediaLibraryContext.Set<DashboardActivity>()
                     where option.Contains(da.Activity) && da.FileId == fileId
-                    select new DashboardActivity { Id = da.Id, FileId = da.FileId, Email = da.Email, Activity = da.Activity, ActivityDateTime = da.ActivityDateTime, DisplayName = da.DisplayName, Department = da.Department }).ToList();
+                    select new DashboardActivity { DActivityId = da.DActivityId, FileId = da.FileId, Email = da.Email, Activity = da.Activity, ActivityDateTime = da.ActivityDateTime, DisplayName = da.DisplayName, Department = da.Department }).ToList();
         }
 
         public string GetActivityName(int id)
         {
-            return _mediaLibraryContext.allActivity.Where(e => e.Id == id).Select(e => e.ActivityType).FirstOrDefault();
+            return _mediaLibraryContext.allActivity.Where(e => e.AActivityId == id).Select(e => e.ActivityType).FirstOrDefault();
         }
 
         public async Task<List<GenerateReportResult>> GenerateReport()
@@ -478,7 +478,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     if(fileId == "Deleted")
                     {
-                        deletedFile = _mediaLibraryContext.deletedFiles.Where(e => e.DashboardActivityId == activity.Id).FirstOrDefault();
+                        deletedFile = _mediaLibraryContext.deletedFiles.Where(e => e.DashboardActivityId == activity.DActivityId).FirstOrDefault();
                     }
                     else
                     {

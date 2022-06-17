@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
+using NetTopologySuite.Geometries;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -127,7 +128,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 //Add edit activity into database
                 DashboardActivity dashboardActivity = new DashboardActivity()
                 {
-                    Id = Guid.NewGuid(),
+                    DActivityId = Guid.NewGuid(),
                     FileId = id,
                     Email = User.GetUserGraphEmail(),
                     ActivityDateTime = DateTime.Now,
@@ -187,6 +188,31 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 if (await _fileDetailsService.DeleteDetailsByFileIdAsync(id))
                 {
                     _logger.LogInformation("Successfully delete {FileId} from FileDetails", id);
+                }
+
+                Point areaPoint = null;
+                if (itemToDelete.Location != null)
+                {
+                    areaPoint = new Point(itemToDelete.Location.Longitude, itemToDelete.Location.Latitude) { SRID = 4326 };
+                }
+
+                foreach (DashboardActivity activity in activityToDelete)
+                {
+                    DeletedFiles deletedFiles = new DeletedFiles()
+                    {
+                        DFilesId = Guid.NewGuid(),
+                        FileId = id,
+                        Name = itemToDelete.Project,
+                        Location = itemToDelete.LocationName,
+                        PlanningArea = areaPoint,
+                        Email = itemToDelete.Author,
+                        ActivityDateTime = DateTime.Now,
+                        DashboardActivityId = activity.DActivityId
+                    };
+                    if(await _fileDetailsService.AddDeletedFileDetailsAsync(deletedFiles))
+                    {
+                        _logger.LogInformation("Successfully added {FileId} into DeletedFiles", id);
+                    }
                 }
 
                 //Deletes json data, image, image thumbnail
@@ -264,7 +290,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             DashboardActivity dashboardActivity = new DashboardActivity()
             {
-                Id = Guid.NewGuid(),
+                DActivityId = Guid.NewGuid(),
                 FileId = activityCount.FileId,
                 Email = activityCount.Email,
                 ActivityDateTime = DateTime.Now,
