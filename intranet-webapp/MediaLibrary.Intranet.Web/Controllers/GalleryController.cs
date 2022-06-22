@@ -14,19 +14,22 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly ILogger<GalleryController> _logger;
         private readonly ItemService _itemService;
         private readonly DashboardActivityService _dashboardActivityService;
+        private readonly FileDetailsService _fileDetailsService;
         private readonly MediaSearchService _mediaSearchService;
         private DBActivity activitySelected = new DBActivity();
 
-        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, DashboardActivityService dashboardActivityService, MediaSearchService mediaSearchService)
+        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, DashboardActivityService dashboardActivityService, MediaSearchService mediaSearchService, FileDetailsService fileDetailsService)
         {
             _logger = logger;
             _itemService = itemService;
             _dashboardActivityService = dashboardActivityService;
+            _fileDetailsService = fileDetailsService;
             _mediaSearchService = mediaSearchService;
         }
 
         public IActionResult Index()
         {
+
             //await UpdateUploadActivity();
 
             bool isAdmin = User.IsInRole(UserRole.Admin);
@@ -114,13 +117,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return item?.UploadDate;
         }
 
+        //Bring all the images details into database
         private async Task UpdateUploadActivity()
         {
             var results = await _mediaSearchService.GetAllMediaItemsAsync();
-
             foreach (var result in results)
             {
+                System.Diagnostics.Debug.WriteLine("Test");
                 await _dashboardActivityService.AddActivityForUpload(result.Items);
+                await _fileDetailsService.AddDetailsForUpload(result.Items);
             }
         }
     }
