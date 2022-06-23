@@ -1,7 +1,7 @@
 import { setAdminNav } from './DisplayAdminNav'
 import { formatDateOnly, formatTimeOnly } from './format.js'
 import { parseISO } from 'date-fns'
-import { displayPaginationByElement, planningAreaDropDown, displaySortFilter, emptyResultCheck, parseAndFormatDate } from './GenerateDashboardItem'
+import { displayPaginationByElement, planningAreaDropDown, displaySortFilter, emptyResultCheck, displayDateField, displayPlanningAreaDD } from './GenerateDashboardItem'
 
 setAdminNav("dashboard")
 
@@ -41,14 +41,8 @@ function retrieveAPIURL(sortOption, planningArea, startDate, endDate, page) {
 
   //Display the proper filter options
   displaySortFilter(sortOption)
-  planningAreaSelected.innerHTML = planningArea
-  planningAreaSelected.dataset.planningArea = planningArea
-  if (startDate != "" && endDate != "") {
-    datePeriodSelected.innerHTML = `${parseAndFormatDate(startDate)} to ${parseAndFormatDate(endDate)}`
-  }
-  else {
-    datePeriodSelected.innerHTML = "Any Time"
-  }
+  displayPlanningAreaDD(planningArea)
+  displayDateField(startDate, endDate)
 
   //returns a fetch with search parameters
   const baseLocation = location

@@ -302,7 +302,28 @@ export function emptyResultCheck(data, paginationErr) {
   }
 }
 
-export function parseAndFormatDate(date) {
+export function setOptionActive(filterOptionActive, filterOptions) {
+  filterOptionActive.classList.add("filter-option-active")
+  filterOptions.forEach(filterOption => {
+    filterOption.classList.remove("filter-option-active")
+  })
+}
+
+export function displayPlanningAreaDD(planningArea) {
+  planningAreaSelected.innerHTML = planningArea
+  planningAreaSelected.dataset.planningArea = planningArea
+}
+
+export function displayDateField(startDate, endDate) {
+  if (startDate != "" && endDate != "") {
+    datePeriodSelected.innerHTML = `${parseAndFormatDate(startDate)} to ${parseAndFormatDate(endDate)}`
+  }
+  else {
+    datePeriodSelected.innerHTML = "Any Time"
+  }
+}
+
+function parseAndFormatDate(date) {
   const options = { year: 'numeric', month: 'short', day: 'numeric' }
   return new Intl.DateTimeFormat('default', options).format(parseISO(date))
 }

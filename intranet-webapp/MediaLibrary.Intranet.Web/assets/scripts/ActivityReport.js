@@ -1,7 +1,7 @@
 import { setAdminNav } from './DisplayAdminNav'
 import { formatDateOnly, formatTimeOnly } from './format.js'
 import { parseISO } from 'date-fns'
-import { displayPaginationByElement, planningAreaDropDown, convertActivityOption, disableActReportClick, enableActReportClicks, displaySortFilter, emptyResultCheck, parseAndFormatDate } from './GenerateDashboardItem'
+import { displayPaginationByElement, planningAreaDropDown, convertActivityOption, disableActReportClick, enableActReportClicks, displaySortFilter, emptyResultCheck, setOptionActive, displayPlanningAreaDD, displayDateField } from './GenerateDashboardItem'
 
 setAdminNav("dashboard")
 
@@ -43,14 +43,9 @@ function retrieveAPIURL(activityOption, sortOption, planningArea, startDate, end
 
   //Display the proper filter options
   displaySortFilter(sortOption)
-  planningAreaSelected.innerHTML = planningArea
-  planningAreaSelected.dataset.planningArea = planningArea
-  if (startDate != "" && endDate != "") {
-    datePeriodSelected.innerHTML = `${parseAndFormatDate(startDate)} to ${parseAndFormatDate(endDate)}`
-  }
-  else {
-    datePeriodSelected.innerHTML = "Any Time"
-  }
+  displayPlanningAreaDD(planningArea)
+  
+  displayDateField(startDate, endDate)
 
   //returns a fetch with search parameters
   const baseLocation = location
@@ -162,13 +157,6 @@ function displayPagination(totalpage, currentPage) {
 
   
 //Mini Functions --------------------------------------
-function setOptionActive(filterOptionActive, filterOptions) {
-  filterOptionActive.classList.add("filter-option-active")
-  filterOptions.forEach(filterOption => {
-    filterOption.classList.remove("filter-option-active")
-  })
-}
-
 function filterDate() {
   //Clear table body
   tableBody.innerHTML = ""
