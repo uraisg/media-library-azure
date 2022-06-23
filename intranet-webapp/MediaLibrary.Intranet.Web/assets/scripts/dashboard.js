@@ -26,7 +26,7 @@ import {
   SubTitle
 } from 'chart.js';
 import { setAdminNav } from './DisplayAdminNav'
-import { planningAreaDropDown } from './GenerateDashboardItem'
+import { planningAreaDropDown, displayPlanningAreaDD } from './GenerateDashboardItem'
 
 Chart.register(
   ArcElement,
@@ -109,8 +109,7 @@ function dashboardAPICalls(planningArea, year) {
     credentials: 'same-origin',
   })
 
-   planningAreaSelected.innerHTML = planningArea
-   planningAreaSelected.dataset.planningArea = planningArea
+  displayPlanningAreaDD(planningArea)
 
   let fileSize = chartFileSize(planningArea, year)
 
