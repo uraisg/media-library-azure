@@ -54,7 +54,7 @@ namespace MediaLibrary.Intranet.Web
             services.AddSingleton<MediaSearchService>();
             services.AddSingleton<ItemService>();
             services.AddTransient<GraphService>();
-            services.AddDbContext<MediaLibraryContext>();
+            services.AddDbContext<MediaLibraryContext>(ServiceLifetime.Transient);
             services.AddTransient<DashboardActivityService>();
             services.AddTransient<FileDetailsService>();
             services.AddTransient<PlanningAreaService>();

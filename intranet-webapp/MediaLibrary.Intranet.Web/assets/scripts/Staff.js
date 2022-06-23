@@ -1,5 +1,5 @@
 import { setAdminNav } from './DisplayAdminNav'
-import { processDisplayName } from './DisplayName.js'
+import { displayPaginationByElement, displaySortFilter, emptyResultCheck } from './GenerateDashboardItem'
 
 setAdminNav("staff")
 
@@ -79,15 +79,7 @@ function callAPIURL(data) {
 
 function displayStaffTable(data) {
   //Check if there are any data to be displayed
-  if (data.length == 0) {
-    setTimeout(() => {
-      paginationErr[0].innerHTML = "No result found"
-      paginationErr[1].innerHTML = "No result found"
-    }, 2000)
-  } else {
-    paginationErr[0].innerHTML = ""
-    paginationErr[1].innerHTML = ""
-  }
+  emptyResultCheck(data, paginationErr)
 
   //Allow inputs 
   enableClicks()
@@ -121,111 +113,6 @@ function displayPagination(totalpage, currentPage) {
   displayPaginationByElement(totalpage, currentPage, paginationUL[0], paginationPrev[0], paginationNext[0], paginationPrevA[0], paginationNextA[0])
   //bottom pagination
   displayPaginationByElement(totalpage, currentPage, paginationUL[1], paginationPrev[1], paginationNext[1], paginationPrevA[1], paginationNextA[1])
-}
-
-function displayPaginationByElement(totalpage, currentPage, paginationUL, paginationPrev, paginationNext, paginationPrevA, paginationNextA) {
-  let maxPageShow = 5
-  let i = 1;
-  let pageArr = []
-  if (currentPage == 1) {
-    for (i = 1; i <= maxPageShow && i <= totalpage; i++) {
-      pageArr.push(i)
-    }
-    if (pageArr.at(-1) != totalpage) {
-      pageArr.push("...")
-      pageArr.push(totalpage)
-    }
-  }
-  else if (currentPage == totalpage) {
-    for (i = totalpage - maxPageShow + 1; pageArr.length < maxPageShow && i <= totalpage; i++) {
-      if (i <= 0) {
-        continue
-      }
-      pageArr.push(i)
-    }
-
-    if (pageArr.at(0) != 1) {
-      if (pageArr[0] != 1) {
-        pageArr.unshift(1, "...")
-      }
-    }
-  }
-  else {
-    i = currentPage - 2
-    for (let j = Math.floor(maxPageShow / 2); j > 0; j--) {
-      if (i != 0) {
-        pageArr.push(i)
-      }
-      i++
-    }
-    i = currentPage
-    for (let j = Math.floor(maxPageShow / 2); j >= 0; j--) {
-      pageArr.push(i)
-      if (i == totalpage) {
-        break
-      }
-      i++
-    }
-    if (pageArr[0] - 1 == 1) {
-      pageArr.unshift(1)
-    }
-    else if (pageArr[0] != 1) {
-      pageArr.unshift(1, "...")
-    }
-    if (pageArr.at(-1) + 1 == totalpage) {
-      pageArr.push(totalpage)
-    }
-    else if (pageArr.at(-1) != totalpage) {
-      pageArr.push("...")
-      pageArr.push(totalpage)
-    }
-  }
-  for (i = 0; i < pageArr.length; i++) {
-    let li = document.createElement("li")
-    li.classList.add("page-item")
-    li.classList.add("page-number-li")
-    let a = document.createElement("a")
-    a.classList.add("page-link")
-    a.classList.add("page-number")
-    a.innerHTML = pageArr[i]
-    if (pageArr[i] == "...") {
-      a.style.pointerEvents = 'none'
-      a.classList.add('bg-light')
-      a.classList.add('text-muted')
-    }
-    else {
-      a.dataset.pageNum = pageArr[i]
-    }
-    a.href = "#"
-    if (pageArr[i] == currentPage) {
-      li.classList.add("active")
-      a.classList.add("active-page-no")
-      a.style.pointerEvents = "none";
-      a.dataset.activePage = true
-    }
-    else {
-      a.dataset.activePage = false
-    }
-    paginationPrev.style.pointerEvents = "auto"
-    paginationNext.style.pointerEvents = "auto"
-    paginationPrevA.classList.remove('bg-light')
-    paginationPrevA.classList.remove('text-muted')
-    paginationNextA.classList.remove('bg-light')
-    paginationNextA.classList.remove('text-muted')
-    if (currentPage == 1) {
-      paginationPrev.style.pointerEvents = "none"
-      paginationPrevA.classList.add('bg-light')
-      paginationPrevA.classList.add('text-muted')
-    }
-    if (currentPage == totalpage) {
-      paginationNext.style.pointerEvents = "none"
-      paginationNextA.classList.add('bg-light')
-      paginationNextA.classList.add('text-muted')
-    }
-
-    li.appendChild(a)
-    paginationUL.insertBefore(li, paginationNext)
-  }
 }
 
 
@@ -262,36 +149,6 @@ function enableClicks() {
   searchBar.disabled = false;
   searchBtn.disabled = false;
   refreshTableBtn.style.pointerEvents = 'auto'
-}
-
-function displaySortFilter(sortOption) {
-  switch (sortOption) {
-    case "uploadDSC":
-      renderSortFilter(uploadDSC, "uploadDSC")
-      break
-    case "uploadASC":
-      renderSortFilter(uploadASC, "uploadASC")
-      break
-    case "downloadASC":
-      renderSortFilter(downloadASC, "downloadASC")
-      break
-    case "downloadDSC":
-      renderSortFilter(downloadDSC, "downloadDSC")
-      break
-  }
-}
-
-function renderSortFilter(sort_detail, class_name) {
-  sortDetail.removeAttribute('class')
-  sortDetail.classList.add(class_name)
-  sortDetail.innerHTML = sort_detail.innerHTML
-  let sortDropDown = document.getElementsByClassName("sortDropDown")
-  for (let i = 0; i < sortDropDown.length; i++) {
-    sortDropDown[i].style.backgroundColor = "#FFFFFF"
-    if (sortDropDown[i] == sort_detail) {
-      sortDropDown[i].style.backgroundColor = "rgb(227, 230, 228)"
-    }
-  }
 }
 
 

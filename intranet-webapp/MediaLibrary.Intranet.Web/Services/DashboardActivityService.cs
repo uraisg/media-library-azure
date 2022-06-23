@@ -14,9 +14,8 @@ namespace MediaLibrary.Intranet.Web.Services
     {
         private readonly MediaLibraryContext _mediaLibraryContext;
         private readonly MediaSearchService _mediaSearchService;
-        private List<string> allSortOption = new AllSortOption().SortOptions;
-        public DBActivity selectActivity = new DBActivity();
         private readonly ILogger<DashboardActivityService> _logger;
+      
         public DashboardActivityService(MediaLibraryContext mlContext, MediaSearchService mediaSearchService, ILogger<DashboardActivityService> logger)
         {
             _mediaLibraryContext = mlContext;
@@ -26,7 +25,7 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public bool EmailExist(string email)
         {
-            return _mediaLibraryContext.dashboardActivity.Where(e => e.Activity == selectActivity.Upload || e.Activity == selectActivity.Download).Any(e => e.Email == email);
+            return _mediaLibraryContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Upload || e.Activity == (int)DBActivity.Download).Any(e => e.Email == email);
         }
 
         public bool ActivityExist(string fileId)
@@ -36,11 +35,15 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public bool UploadActivityExist(string fileId)
         {
-            return _mediaLibraryContext.dashboardActivity.Where(x => x.Activity == selectActivity.Upload).Any(e => e.FileId == fileId);
+            return _mediaLibraryContext.dashboardActivity.Where(x => x.Activity == (int)DBActivity.Upload).Any(e => e.FileId == fileId);
         }
 
         public bool PlanningAreaExist(string planningArea)
         {
+            if (planningArea == "ALL")
+            {
+                return false;
+            }
             return _mediaLibraryContext.planningArea.Any(e => e.PlanningAreaName == planningArea);
         }
 
@@ -57,7 +60,7 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 await _mediaLibraryContext.SaveChangesAsync();
             }
-            catch(DbUpdateException e)
+            catch (DbUpdateException e)
             {
                 System.Diagnostics.Debug.WriteLine("Error adding into database: " + e);
                 _logger.LogError("Error adding {FileId} into DashboardActivity", activity.FileId);
@@ -72,13 +75,15 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 if (!UploadActivityExist(item.Id))
                 {
-                    DashboardActivity dashboardActivity = new DashboardActivity();
-                    dashboardActivity.DActivityId = Guid.NewGuid();
-                    dashboardActivity.FileId = item.Id;
-                    dashboardActivity.Email = item.Author;
-                    dashboardActivity.ActivityDateTime = item.UploadDate;
-                    dashboardActivity.Activity = selectActivity.Upload;
-                    if(await AddActivityAsync(dashboardActivity))
+                    DashboardActivity dashboardActivity = new DashboardActivity
+                    {
+                        DActivityId = Guid.NewGuid(),
+                        FileId = item.Id,
+                        Email = item.Author,
+                        ActivityDateTime = item.UploadDate,
+                        Activity = (int)DBActivity.Upload
+                    };
+                    if (await AddActivityAsync(dashboardActivity))
                     {
                         _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
                     }
@@ -94,9 +99,9 @@ namespace MediaLibrary.Intranet.Web.Services
         public async Task<bool> DeleteActivityByFileIdAsync(string fileId, string userEmail)
         {
             List<DashboardActivity> activities = await GetAllActivityByFileIdAsync(fileId);
-            foreach(DashboardActivity activity in activities)
+            foreach (DashboardActivity activity in activities)
             {
-                if(activity.Activity == selectActivity.View)
+                if (activity.Activity == (int)DBActivity.View)
                 {
                     //Remove all view activity
                     _mediaLibraryContext.Remove(activity);
@@ -116,7 +121,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 FileId = fileId,
                 Email = userEmail,
                 ActivityDateTime = DateTime.Now,
-                Activity = selectActivity.Delete
+                Activity = (int)DBActivity.Delete
             };
             await _mediaLibraryContext.AddAsync(dashboardActivity);
 
@@ -124,7 +129,7 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 await _mediaLibraryContext.SaveChangesAsync();
             }
-            catch(DbUpdateException e)
+            catch (DbUpdateException e)
             {
                 System.Diagnostics.Debug.WriteLine("Error deleteing from database: " + e);
                 _logger.LogError("Error with deleting {FileId} from DashboardActivity", fileId);
@@ -136,174 +141,124 @@ namespace MediaLibrary.Intranet.Web.Services
         public async Task<int> GetFirstYearAsync(string planningArea)
         {
             int year = DateTime.Now.Year;
-            if(planningArea == "ALL")
+            var result = from da in _mediaLibraryContext.Set<DashboardActivity>()
+                         join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
+                         select new { da, fd };
+
+            if (PlanningAreaExist(planningArea))
             {
-                year = await _mediaLibraryContext.dashboardActivity.OrderBy(e => e.ActivityDateTime).Select(e => e.ActivityDateTime.Year).FirstOrDefaultAsync();
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                result = result.Where(e => areaPolygon.Contains(e.fd.AreaPoint));
             }
-            else
-            {
-                if (PlanningAreaExist(planningArea))
-                {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    year = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                                  join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
-                                  where areaPolygon.Contains(fd.AreaPoint)
-                                  orderby da.ActivityDateTime
-                                  select new { da.ActivityDateTime.Year }).Select(e => e.Year).FirstOrDefaultAsync();
-                }
-            }
+
+            year = await result.OrderBy(e => e.da.ActivityDateTime).Select(e => e.da.ActivityDateTime.Year).FirstOrDefaultAsync();
+
             return year;
         }
 
         private async Task<Geometry> GetPlanningAreaPolygonAsync(string planningArea)
         {
             //Retrieve the Polygon
-            var polygon = await (from pa in _mediaLibraryContext.Set<PlanningArea>()
-                           where pa.PlanningAreaName == planningArea
-                           select new { pa.AreaPolygon }).FirstOrDefaultAsync();
-            return polygon.AreaPolygon;
+            var polygon = await _mediaLibraryContext.planningArea.Where(e => e.PlanningAreaName == planningArea).Select(e => e.AreaPolygon).FirstOrDefaultAsync();
+            return polygon;
         }
-        public async Task<Tuple<string,string>> GetActivityCountAsync(string planningArea)
+        public async Task<(int, int)> GetActivityCountAsync(string planningArea)
         {
             //Item1 = Upload Count
             //Item2 = Download Count
-            var result = Tuple.Create("0", "0");
-            if (planningArea == "ALL")
+            var result = from da in _mediaLibraryContext.Set<DashboardActivity>()
+                         join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
+                         where da.FileId != "Deleted"
+                         select new { da, fd };
+
+            if (PlanningAreaExist(planningArea))
             {
-                var uploadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                          where da.Activity == selectActivity.Upload && da.FileId != "Deleted"
-                          select new { da.DActivityId }).CountAsync();
-                var downloadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                                     where da.Activity == selectActivity.Download && da.FileId != "Deleted"
-                                     select new { da.DActivityId }).CountAsync();
-                return Tuple.Create(uploadCount.ToString(), downloadCount.ToString());
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                result = result.Where(e => areaPolygon.Contains(e.fd.AreaPoint));
             }
-            else
-            {
-                if (PlanningAreaExist(planningArea))
-                {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    var uploadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                              join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
-                              where areaPolygon.Contains(fd.AreaPoint) && da.Activity == selectActivity.Upload && da.FileId != "Deleted"
-                              select new { da.DActivityId }).CountAsync();
-                    var downloadCount = await (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                                         join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
-                                         where areaPolygon.Contains(fd.AreaPoint) && da.Activity == selectActivity.Download && da.FileId != "Deleted"
-                                         select new { da.DActivityId }).CountAsync();
-                    return Tuple.Create(uploadCount.ToString(), downloadCount.ToString());
-                }
-            }
-            return result;
+
+            int uploadCount = await result.Where(e => e.da.Activity == (int)DBActivity.Upload).CountAsync();
+            int downloadCount = await result.Where(e => e.da.Activity == (int)DBActivity.Download).CountAsync();
+            return (uploadCount, downloadCount);
         }
 
         public async Task<IQueryable> GetActivityCountByMonthAsync(string planningArea, int year, int activitySelected)
         {
-            IQueryable result = null;
-
-            if (planningArea == "ALL")
+            var result = from da in _mediaLibraryContext.Set<DashboardActivity>()
+                                join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
+                                where da.FileId != "Deleted" && da.ActivityDateTime.Year == year && da.Activity == activitySelected
+                                select new { da, fd };
+            
+            if (PlanningAreaExist(planningArea))
             {
-                result = from d in _mediaLibraryContext.Set<DashboardActivity>()
-                         where d.Activity == activitySelected && d.ActivityDateTime.Year == year && d.FileId != "Deleted"
-                         group d by d.ActivityDateTime.Month
-                            into g
-                         select new { g.Key, Count = g.Count() };
-            }
-            else
-            {
-                if (PlanningAreaExist(planningArea))
-                {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    result = from d in _mediaLibraryContext.Set<DashboardActivity>()
-                             join fd in _mediaLibraryContext.Set<FileDetails>() on d.FileId equals fd.FileId
-                             where d.Activity == activitySelected && d.ActivityDateTime.Year == year && areaPolygon.Contains(fd.AreaPoint) && d.FileId != "Deleted"
-                             group d by d.ActivityDateTime.Month
-                                into g
-                             select new { g.Key, Count = g.Count() };
-                }
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                result = result.Where(e => areaPolygon.Contains(e.fd.AreaPoint));
             }
 
-            return result;
+            var monthlyResult = result.GroupBy(e => e.da.ActivityDateTime.Month).Select(e => new { Month = e.Key, Count = e.Count() });
+            return monthlyResult;
         }
 
         public async Task<IQueryable> GetViewCountTop5Async(string planningArea)
         {
-            IQueryable result = null;
-            if(planningArea == "ALL")
+            var result = from da in _mediaLibraryContext.Set<DashboardActivity>()
+                         join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
+                         where da.Activity == (int)DBActivity.View && da.FileId != "Deleted"
+                         select new { da, fd };
+
+            if (PlanningAreaExist(planningArea))
             {
-                result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                              where da.Activity == selectActivity.View && da.FileId != "Deleted"
-                              group da by da.FileId
-                              into g
-                              orderby g.Count() descending
-                              select new { g.Key, Count = g.Count() }).Take(5);
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                result.Where(e => areaPolygon.Contains(e.fd.AreaPoint));
             }
-            else
-            {
-                if (PlanningAreaExist(planningArea))
-                {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                              join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
-                              where da.Activity == selectActivity.View && areaPolygon.Contains(fd.AreaPoint) && da.FileId != "Deleted"
-                              group da by da.FileId
-                                into g
-                              orderby g.Count() descending
-                              select new { g.Key, Count = g.Count() }).Take(5);
-                }
-            }
-            return result;
+
+            var topView = result.GroupBy(e => e.da.FileId).OrderByDescending(e => e.Count()).Select(e => new { FileId = e.Key, ViewCount = e.Count() });
+            return topView;
         }
 
-        public async Task<Tuple<List<ActivityReportResult>, int, int>> GetActivityReport(ActivityReport report)
+        public async Task<(List<ActivityReportResult> Result, int TotalPage, int CurrentPage)> GetActivityReport(ActivityReport report)
         {
             int activityOption = report.ActivityOption;
             string planningArea = report.PlanningArea;
             List<int> option = new List<int>();
             if(activityOption == 0)
             {
-                option.Add(selectActivity.Upload);
-                option.Add(selectActivity.Download);
+                option.Add((int)DBActivity.Upload);
+                option.Add((int)DBActivity.Download);
             }
             else
             {
                 option.Add(activityOption);
             }
 
-            List<ActivityReportResult> result = new List<ActivityReportResult>();
+            var result = from da in _mediaLibraryContext.Set<DashboardActivity>()
+                         join a in _mediaLibraryContext.Set<AllActivity>() on da.Activity equals a.AActivityId
+                         join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
+                         where option.Contains(da.Activity) && da.FileId != "Deleted"
+                         select new { da, a, fd };
 
-            if (planningArea == "ALL")
+            if (PlanningAreaExist(planningArea))
             {
-                result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                          join a in _mediaLibraryContext.Set<AllActivity>() on da.Activity equals a.AActivityId
-                          join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
-                          where option.Contains(da.Activity) && da.FileId != "Deleted"
-                          select new ActivityReportResult { FileId = da.FileId, ActivityDateTime = da.ActivityDateTime, ActivityType = a.ActivityType, Location = GetPlanningAreaNameByPoint(_mediaLibraryContext, fd.AreaPoint), ThumbnailURL = fd.ThumbnailURL, Email = da.Email, StaffName = da.DisplayName, Department = da.Department }).ToList();
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                result = result.Where(e => areaPolygon.Contains(e.fd.AreaPoint));
             }
-            else
+
+            var activityReportResults = result.Select(e => new ActivityReportResult
             {
-                if (PlanningAreaExist(planningArea))
-                {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    List<string> locationList = new List<string> { planningArea };
-
-                    result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                              join a in _mediaLibraryContext.Set<AllActivity>() on da.Activity equals a.AActivityId
-                              join fd in _mediaLibraryContext.Set<FileDetails>() on da.FileId equals fd.FileId
-                              where option.Contains(da.Activity) && areaPolygon.Contains(fd.AreaPoint) && da.FileId != "Deleted"
-                              select new ActivityReportResult { FileId = da.FileId, ActivityDateTime = da.ActivityDateTime, ActivityType = a.ActivityType, Location = locationList, ThumbnailURL = fd.ThumbnailURL, Email = da.Email, StaffName = da.DisplayName, Department = da.Department }).ToList();
-
-                }
-            }
+                FileId = e.da.FileId,
+                ActivityDateTime = e.da.ActivityDateTime,
+                ActivityType = e.a.ActivityType,
+                Location = GetPlanningAreaNameByPoint(_mediaLibraryContext, e.fd.AreaPoint),
+                ThumbnailURL = e.fd.ThumbnailURL,
+                Email = e.da.Email
+            }).ToList();
             
-            return GetActivityReportResult(result, report);
+            return GetActivityReportResult(activityReportResults, report);
         }
 
         private static List<string> GetPlanningAreaNameByPoint(MediaLibraryContext mlContext,Point areaPoint)
         {
-            var result = (from pa in mlContext.Set<PlanningArea>()
-                          where pa.AreaPolygon.Contains(areaPoint)
-                         select pa.PlanningAreaName).ToList();
+            var result = mlContext.planningArea.Where(e => e.AreaPolygon.Contains(areaPoint)).Select(e => e.PlanningAreaName).ToList();
             return result;
         }
 
@@ -313,7 +268,7 @@ namespace MediaLibrary.Intranet.Web.Services
             return totalPage;
         }
 
-        public Tuple<List<ActivityReportResult>, int, int> GetActivityReportResult(List<ActivityReportResult> result, ActivityReport report)
+        public (List<ActivityReportResult> Result, int TotalPage, int CurrentPage) GetActivityReportResult(List<ActivityReportResult> result, ActivityReport report)
         {
             int activityOption = report.ActivityOption;
             string sortOption = report.SortOption;
@@ -329,9 +284,9 @@ namespace MediaLibrary.Intranet.Web.Services
             int itemPerPage = 30;
             int skipItem = pageno * itemPerPage;
 
-            if (!allSortOption.Contains(sortOption))
+            if (!Enum.IsDefined(typeof(AllSortOption), sortOption))
             {
-                return Tuple.Create(new List<ActivityReportResult>(), 1, 1);
+                return (Result: new List<ActivityReportResult>(), TotalPage: 1, CurrentPage: 1);
             }
 
             if (sortOption == "dateASC")
@@ -345,68 +300,49 @@ namespace MediaLibrary.Intranet.Web.Services
             if (report.Email != null && report.Email != "")
             {
                 result = result.Where(e => e.Email == report.Email).ToList();
-                return Tuple.Create(result.Skip(skipItem).Take(itemPerPage).ToList(), getTotalPage(itemPerPage, result.Count()), pageno + 1);
+                return (Result: result.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, result.Count()), CurrentPage: pageno + 1);
             }
-            return Tuple.Create(result.Skip(skipItem).Take(itemPerPage).ToList(), getTotalPage(itemPerPage, result.Count()), pageno + 1);
+            return (Result: result.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, result.Count()), CurrentPage: pageno + 1);
         }
 
         public Tuple<IEnumerable<StaffResult>, int, int> GetAllStaff(StaffQuery staff)
         {
             List<int> option = new List<int>();
-            option.Add(selectActivity.Upload);
-            option.Add(selectActivity.Download);
-            List<StaffResult> result = new List<StaffResult>();
+            option.Add((int)DBActivity.Upload);
+            option.Add((int)DBActivity.Download);
             string searchQuery = staff.SearchQuery;
 
-            if(searchQuery == null)
+            var result = from da in _mediaLibraryContext.Set<DashboardActivity>()
+                         where option.Contains(da.Activity) && da.FileId != "Deleted"
+                         select da;
+
+            if(searchQuery != null)
             {
-                result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                          where option.Contains(da.Activity) && da.FileId != "Deleted"
-                          group da by da.Email
-                         into g
-                          select new StaffResult { Email = g.Key, UploadCount = GetUploadCountByEmail(_mediaLibraryContext, g.Key), DownloadCount = GetDownloadCountByEmail(_mediaLibraryContext, g.Key), StaffName = GetStaffByEmail(_mediaLibraryContext, g.Key).Item1, Department = GetStaffByEmail(_mediaLibraryContext, g.Key).Item2 }).ToList();
+                result = result.Where(e => e.Email.Contains(staff.SearchQuery));
             }
-            else
+
+            var staffResult = result.GroupBy(e => e.Email).Select(e => new StaffResult
             {
-                result = (from da in _mediaLibraryContext.Set<DashboardActivity>()
-                              where option.Contains(da.Activity) && da.Email.Contains(staff.SearchQuery) && da.FileId != "Deleted"
-                              group da by da.Email
-                         into g
-                              select new StaffResult { Email = g.Key, UploadCount = GetUploadCountByEmail(_mediaLibraryContext, g.Key), DownloadCount = GetDownloadCountByEmail(_mediaLibraryContext, g.Key), StaffName = GetStaffByEmail(_mediaLibraryContext, g.Key).Item1, Department = GetStaffByEmail(_mediaLibraryContext, g.Key).Item2 }).ToList();
-            }
+                Email = e.Key,
+                UploadCount = GetUploadCountByEmail(_mediaLibraryContext, e.Key),
+                DownloadCount = GetDownloadCountByEmail(_mediaLibraryContext, e.Key)
+            }).ToList();
             
-            return GetStaffResult(result, staff);
+            return GetStaffResult(staffResult, staff);
         }
 
         private static int GetUploadCountByEmail(MediaLibraryContext mlContext, string email)
         {
-            DBActivity selectActivity = new DBActivity();
-            var result = (from da in mlContext.Set<DashboardActivity>()
-                         where da.Activity == selectActivity.Upload && da.Email == email && da.FileId != "Deleted"
-                          group da by da.Email
-                         into g
-                         select g.Count()).FirstOrDefault();
+            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Upload && e.Email == email && e.FileId != "Deleted").GroupBy(e => e.Email).Select(e => e.Count()).FirstOrDefault();
+
             return result;
         }
 
         private static int GetDownloadCountByEmail(MediaLibraryContext mlContext, string email)
         {
-            DBActivity selectActivity = new DBActivity();
-            var result = (from da in mlContext.Set<DashboardActivity>()
-                          where da.Activity == selectActivity.Download && da.Email == email && da.FileId != "Deleted"
-                          group da by da.Email
-                          into g
-                          select g.Count()).FirstOrDefault();
-            return result;
-        }
+            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Download && e.Email == email && e.FileId != "Deleted").GroupBy(e => e.Email).Select(e => e.Count()).FirstOrDefault();
 
-        private static Tuple<string, string> GetStaffByEmail(MediaLibraryContext mlContext, string email)
-        {
-            DBActivity selectActivity = new DBActivity();
-            var result = (from da in mlContext.Set<DashboardActivity>()
-                          where da.Activity == selectActivity.Upload && da.Email == email && da.FileId != "Deleted"
-                          select new { da.DisplayName, da.Department }).FirstOrDefault();
-            return Tuple.Create(result.DisplayName, result.Department);
+            return result;
         }
 
         public Tuple<IEnumerable<StaffResult>, int, int> GetStaffResult(List<StaffResult> result, StaffQuery staff)
@@ -416,7 +352,7 @@ namespace MediaLibrary.Intranet.Web.Services
             int skipResult = pageno * itemPerPage;
             string sortOption = staff.SortOption;
 
-            if (!allSortOption.Contains(sortOption))
+            if (!Enum.IsDefined(typeof(AllSortOption), sortOption))
             {
                 result = new List<StaffResult>();
             }
@@ -444,8 +380,8 @@ namespace MediaLibrary.Intranet.Web.Services
         public List<DashboardActivity> GetAllActivity(string fileId)
         {
             List<int> option = new List<int>();
-            option.Add(selectActivity.Upload);
-            option.Add(selectActivity.Download);
+            option.Add((int)DBActivity.Upload);
+            option.Add((int)DBActivity.Download);
             return (from da in _mediaLibraryContext.Set<DashboardActivity>()
                     where option.Contains(da.Activity) && da.FileId == fileId
                     select new DashboardActivity { DActivityId = da.DActivityId, FileId = da.FileId, Email = da.Email, Activity = da.Activity, ActivityDateTime = da.ActivityDateTime, DisplayName = da.DisplayName, Department = da.Department }).ToList();
@@ -461,10 +397,10 @@ namespace MediaLibrary.Intranet.Web.Services
             List<GenerateReportResult> result = new List<GenerateReportResult>();
 
             List<int> option = new List<int>();
-            option.Add(selectActivity.Upload);
-            option.Add(selectActivity.Download);
-            option.Add(selectActivity.Edit);
-            option.Add(selectActivity.Delete);
+            option.Add((int)DBActivity.Upload);
+            option.Add((int)DBActivity.Download);
+            option.Add((int)DBActivity.Edit);
+            option.Add((int)DBActivity.Delete);
 
             var dashboardActivities = _mediaLibraryContext.dashboardActivity.Where(e => option.Contains(e.Activity)).ToList();
             foreach(DashboardActivity activity in dashboardActivities)
@@ -474,7 +410,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 MediaItem item = new MediaItem();
                 DeletedFiles deletedFile = new DeletedFiles();
 
-                if(fileId == "Deleted" || activity.Activity == selectActivity.Delete)
+                if(fileId == "Deleted" || activity.Activity == (int)DBActivity.Delete)
                 {
                     if(fileId == "Deleted")
                     {

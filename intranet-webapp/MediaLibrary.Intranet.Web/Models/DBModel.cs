@@ -27,13 +27,13 @@ namespace MediaLibrary.Intranet.Web.Models
         public string ActivityType { get; set; }
     }
 
-    public class DBActivity
+    public enum DBActivity
     {
-        public int View = 1;
-        public int Upload = 2;
-        public int Download = 3;
-        public int Delete = 4;
-        public int Edit = 5;
+        View = 1,
+        Upload = 2,
+        Download = 3,
+        Delete = 4,
+        Edit = 5,
     }
 
     public class DashboardActivity

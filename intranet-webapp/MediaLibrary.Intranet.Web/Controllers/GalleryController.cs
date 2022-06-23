@@ -16,7 +16,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly DashboardActivityService _dashboardActivityService;
         private readonly FileDetailsService _fileDetailsService;
         private readonly MediaSearchService _mediaSearchService;
-        private DBActivity activitySelected = new DBActivity();
 
         public GalleryController(ILogger<GalleryController> logger, ItemService itemService, DashboardActivityService dashboardActivityService, MediaSearchService mediaSearchService, FileDetailsService fileDetailsService)
         {
@@ -53,7 +52,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 FileId = id,
                 Email = User.Identity.Name,
                 ActivityDateTime = DateTime.Now,
-                Activity = activitySelected.View
+                Activity = (int)DBActivity.View
             };
             if(await _dashboardActivityService.AddActivityAsync(activity))
             {
