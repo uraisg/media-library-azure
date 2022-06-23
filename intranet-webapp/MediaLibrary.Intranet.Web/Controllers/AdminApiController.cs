@@ -23,7 +23,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly PlanningAreaService _planningAreaService;
         private readonly DashboardActivityService _dashboardActivityService;
         private readonly FileDetailsService _fileDetailsService;
-        private DBActivity activitySelected = new DBActivity();
         public AdminApiController(PlanningAreaService planningAreaService,
             DashboardActivityService dashboardActivityService,
             FileDetailsService fileDetailsService,
@@ -78,7 +77,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 var fileSizeResult = await _fileDetailsService.GetFileSizeAverageAsync(planningArea);
                 var firstYearResult = await _dashboardActivityService.GetFirstYearAsync(planningArea);
 
-                return Ok(Tuple.Create(countResult.Item1, countResult.Item2, fileSizeResult, firstYearResult));
+                return Ok(new { uploadCount = countResult.Item1, downloadCount = countResult.Item2, fileSizeAvg = fileSizeResult, firstYear = firstYearResult });
             }
             else
             {
@@ -110,7 +109,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 _logger.LogInformation("Retrieving monthly upload count for {planningArea} planning area in year {year}", planningArea, year);
 
-                var result = await _dashboardActivityService.GetActivityCountByMonthAsync(planningArea, year, activitySelected.Upload);
+                var result = await _dashboardActivityService.GetActivityCountByMonthAsync(planningArea, year, (int)DBActivity.Upload);
                 return Ok(result);
             }
             else
@@ -126,7 +125,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 _logger.LogInformation("Retrieving monthly download count for {planningArea} planning area in year {year}", planningArea, year);
 
-                var result = await _dashboardActivityService.GetActivityCountByMonthAsync(planningArea, year, activitySelected.Download);
+                var result = await _dashboardActivityService.GetActivityCountByMonthAsync(planningArea, year, (int)DBActivity.Download);
                 return Ok(result);
             }
             else
@@ -152,15 +151,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
         }
 
         [HttpGet("/api/activityreport", Name = nameof(GetActivityReport))]
-        public IActionResult GetActivityReport([FromQuery] ActivityReport report)
+        public async Task<IActionResult> GetActivityReport([FromQuery] ActivityReport report)
         {
             if (User.IsInRole(UserRole.Admin))
             {
                 _logger.LogInformation("Getting activity report");
 
-                var result = _dashboardActivityService.GetActivityReport(report);
-                var reportResult = Tuple.Create(result.Result.Item1, result.Result.Item2, result.Result.Item3);
-                return Ok(reportResult);
+                var result = await _dashboardActivityService.GetActivityReport(report);
+                return Ok(new { Result = result.Item1, TotalPage = result.Item2, CurrentPage = result.Item3 });
             }
             else
             {
@@ -169,15 +167,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
         }
 
         [HttpGet("/api/filereport", Name = nameof(GetFileReport))]
-        public IActionResult GetFileReport([FromQuery] FileReport report)
+        public async Task<IActionResult> GetFileReport([FromQuery] FileReport report)
         {
             if (User.IsInRole(UserRole.Admin))
             {
                 _logger.LogInformation("Getting file report");
 
-                var result = _fileDetailsService.GetFileReport(report);
-                var reportResult = Tuple.Create(result.Result.Item1, result.Result.Item2, result.Result.Item3);
-                return Ok(reportResult);
+                var result = await _fileDetailsService.GetFileReport(report);
+                return Ok(new { Result = result.Item1, TotalPage = result.Item2, CurrentPage = result.Item3 });
             }
             else
             {

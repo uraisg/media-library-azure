@@ -45,6 +45,7 @@ mix
   .js('assets/scripts/FileReport.js', 'scripts')
   .js('assets/scripts/Staff.js', 'scripts')
   .js('assets/scripts/StaffActivityReport.js', 'scripts')
+  .js('assets/scripts/GenerateDashboardItem.js', 'scripts')
   .sass('assets/styles/site.scss', 'styles')
 mix
   .js('assets/scripts/gallery/main.js', 'scripts/gallery.js')

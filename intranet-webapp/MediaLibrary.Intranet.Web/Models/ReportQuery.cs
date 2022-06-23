@@ -39,22 +39,19 @@ namespace MediaLibrary.Intranet.Web.Models
         public string NameCreated { get; set; }
     }
 
-    public class AllSortOption
+    public enum AllSortOption
     {
-        public List<string> SortOptions = new List<string>()
-        {
-            "dateASC",
-            "dateDSC",
-            "uploadDSC",
-            "uploadASC",
-            "downloadASC",
-            "downloadDSC",
-            "viewStatsASC",
-            "viewStatsDSC",
-            "fileSizeASC",
-            "fileSizeDSC",
-            "downloadStatsASC",
-            "downloadStatsDSC"
-        };
+        dateASC,
+        dateDSC,
+        uploadDSC,
+        uploadASC,
+        downloadASC,
+        downloadDSC,
+        viewStatsASC,
+        viewStatsDSC,
+        fileSizeASC,
+        fileSizeDSC,
+        downloadStatsASC,
+        downloadStatsDSC
     }
 }

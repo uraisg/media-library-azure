@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 
 namespace MediaLibrary.Intranet.Web.Services
 {
@@ -19,7 +20,6 @@ namespace MediaLibrary.Intranet.Web.Services
     {
         private readonly MediaLibraryContext _mediaLibraryContext;
         private static BlobContainerClient _blobContainerClient = null;
-        private List<string> allSortOption =  new AllSortOption().SortOptions;
         private readonly AppSettings _appSettings;
         private readonly ILogger<FileDetailsService> _logger;
 
@@ -55,6 +55,10 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public bool PlanningAreaExist(string planningArea)
         {
+            if(planningArea == "ALL")
+            {
+                return false;
+            }
             return _mediaLibraryContext.planningArea.Any(e => e.PlanningAreaName == planningArea);
         }
 
@@ -136,228 +140,178 @@ namespace MediaLibrary.Intranet.Web.Services
 
         private async Task<Geometry> GetPlanningAreaPolygonAsync(string planningArea)
         {
-            var polygon = await (from pa in _mediaLibraryContext.Set<PlanningArea>()
-                           where pa.PlanningAreaName == planningArea
-                           select new { pa.AreaPolygon }).FirstOrDefaultAsync();
-            return polygon.AreaPolygon;
+            return await _mediaLibraryContext.planningArea.Where(e => e.PlanningAreaName == planningArea).Select(e => e.AreaPolygon).FirstOrDefaultAsync();
         }
 
-        public async Task<string> GetFileSizeAverageAsync(string planningArea)
+        public async Task<decimal> GetFileSizeAverageAsync(string planningArea)
         {
-            string result = "0";
-            if(planningArea == "ALL")
+            decimal result = 0.0M;
+            var allResult = _mediaLibraryContext.fileDetails.Select(e => e).AsQueryable();
+
+            if (PlanningAreaExist(planningArea))
             {
-                var allResult = await (from fd in _mediaLibraryContext.Set<FileDetails>()
-                            select new { fd.FileSize }).ToListAsync();
-                if (allResult.Count() != 0)
-                {
-                    result = Math.Round(allResult.Average(e => e.FileSize), 2).ToString();
-                }
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                allResult = allResult.Where(e => areaPolygon.Contains(e.AreaPoint));
             }
-            else
+
+            if (allResult.Count() != 0)
             {
-                if (PlanningAreaExist(planningArea))
-                {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    var allResult = await (from fd in _mediaLibraryContext.Set<FileDetails>()
-                                where areaPolygon.Contains(fd.AreaPoint)
-                                select new { fd.FileSize }).ToListAsync();
-                    if(allResult.Count() != 0)
-                    {
-                        result = Math.Round(allResult.Average(e => e.FileSize), 2).ToString();
-                    }
-                }
+                result = Math.Round(allResult.Average(e => e.FileSize), 2);
             }
             return result;
         }
 
-
-        public async Task<IQueryable> GetAllFileSizeByGroupAsync(string planningArea, int year)
+        public class FileSizeGroup
         {
-            IQueryable result = null;
-            if(planningArea == "ALL")
+            public decimal FileSize { get; set; }
+            public int Count { get; set; }
+        }
+        public async Task<List<FileSizeGroup>> GetAllFileSizeByGroupAsync(string planningArea, int year)
+        {
+            var result = (from p in _mediaLibraryContext.Set<FileDetails>()
+                        join da in _mediaLibraryContext.Set<DashboardActivity>() on p.FileId equals da.FileId
+                        where da.ActivityDateTime.Year == year
+                        select new { p, da });
+
+            if (PlanningAreaExist(planningArea))
             {
-                result = from p in _mediaLibraryContext.Set<FileDetails>()
-                             join da in _mediaLibraryContext.Set<DashboardActivity>() on p.FileId equals da.FileId
-                             where da.ActivityDateTime.Year == year
-                             group p by Math.Round(p.FileSize, 0)
-                               into g
-                             select new { g.Key, Count = g.Count() };
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                result = result.Where(e => areaPolygon.Contains(e.p.AreaPoint));
             }
-            else
+
+            var fileSize = await result.GroupBy(e => Math.Round(e.p.FileSize, 0)).Select(e => e.Key).ToListAsync();
+            var count = await result.GroupBy(e => Math.Round(e.p.FileSize, 0)).Select(e => e.Count()).ToListAsync();
+
+            List<FileSizeGroup> fileSizeGroup = new List<FileSizeGroup>();
+            for(int i = 0; i < count.Count(); i++)
             {
-                if (PlanningAreaExist(planningArea))
+                FileSizeGroup group = new FileSizeGroup()
                 {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    result = from p in _mediaLibraryContext.Set<FileDetails>()
-                             join da in _mediaLibraryContext.Set<DashboardActivity>() on p.FileId equals da.FileId
-                             where da.ActivityDateTime.Year == year && areaPolygon.Contains(p.AreaPoint)
-                             group p by Math.Round(p.FileSize, 0)
-                                into g
-                             select new { g.Key, Count = g.Count() };
-                }
+                    FileSize = fileSize[i],
+                    Count = count[i]
+                };
+                fileSizeGroup.Add(group);
             }
-            return result;
+
+            return fileSizeGroup;
         }
 
-        public async Task<Tuple<List<FileReportResult>, int, int>> GetFileReport(FileReport report)
+        public async Task<(List<FileReportResult> Result, int TotalPage, int CurrentPage)> GetFileReport(FileReport report)
         {
             string sortOption = report.SortOption;
             string planningArea = report.PlanningArea;
-            List<FileReportResult> result = new List<FileReportResult>();
+            IQueryable<FileReportResult> result = null;
 
-            if (planningArea == "ALL")
-            {
-                result = (from fd in _mediaLibraryContext.Set<FileDetails>()
-                          group fd by new { FileId = fd.FileId, FileSize = fd.FileSize, ThumbnailURL = fd.ThumbnailURL }
-                         into g
-                          select new FileReportResult
-                          {
-                              FileId = g.Key.FileId,
-                              FileSize = g.Key.FileSize,
-                              ViewCount = GetViewCountByFileId(_mediaLibraryContext, g.Key.FileId),
-                              Location = GetPlanningAreaNameByFileId(_mediaLibraryContext, g.Key.FileId),
-                              ThumbnailURL = g.Key.ThumbnailURL,
-                              Email = GetStaffDetailByFileId(_mediaLibraryContext, g.Key.FileId).Item1,
-                              UploadDateTime = GetDateTimeByFileId(_mediaLibraryContext, g.Key.FileId),
-                              DownloadCount = GetDownloadCountByFileId(_mediaLibraryContext, g.Key.FileId),
-                              StaffName = GetStaffDetailByFileId(_mediaLibraryContext, g.Key.FileId).Item2,
-                              Department = GetStaffDetailByFileId(_mediaLibraryContext, g.Key.FileId).Item3
-                          }).ToList();
-            }
-            else
-            {
-                if (PlanningAreaExist(planningArea))
-                {
-                    var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                    List<string> locationList = new List<string> { planningArea };
+            result = (from fd in _mediaLibraryContext.Set<FileDetails>()
+                      select new FileReportResult
+                      {
+                          FileId = fd.FileId,
+                          FileSize = fd.FileSize,
+                          ViewCount = GetViewCountByFileId(_mediaLibraryContext, fd.FileId),
+                          Location = GetPlanningAreaNameByFileId(_mediaLibraryContext, fd.FileId),
+                          ThumbnailURL = fd.ThumbnailURL,
+                          Email = GetEmailByFileId(_mediaLibraryContext, fd.FileId),
+                          UploadDateTime = GetDateTimeByFileId(_mediaLibraryContext, fd.FileId),
+                          DownloadCount = GetDownloadCountByFileId(_mediaLibraryContext, fd.FileId),
+                          AreaPoint = fd.AreaPoint
+                      }).AsQueryable();
 
-                    result = (from fd in _mediaLibraryContext.Set<FileDetails>()
-                              where areaPolygon.Contains(fd.AreaPoint)
-                              group fd by new { FileId = fd.FileId, FileSize = fd.FileSize, ThumbnailURL = fd.ThumbnailURL }
-                                  into g
-                              select new FileReportResult
-                              {
-                                  FileId = g.Key.FileId,
-                                  FileSize = g.Key.FileSize,
-                                  ViewCount = GetViewCountByFileId(_mediaLibraryContext, g.Key.FileId),
-                                  Location = locationList,
-                                  ThumbnailURL = g.Key.ThumbnailURL,
-                                  Email = GetStaffDetailByFileId(_mediaLibraryContext, g.Key.FileId).Item1,
-                                  UploadDateTime = GetDateTimeByFileId(_mediaLibraryContext, g.Key.FileId),
-                                  DownloadCount = GetDownloadCountByFileId(_mediaLibraryContext, g.Key.FileId),
-                                  StaffName = GetStaffDetailByFileId(_mediaLibraryContext, g.Key.FileId).Item2,
-                                  Department = GetStaffDetailByFileId(_mediaLibraryContext, g.Key.FileId).Item3
-                              }).ToList();
-                }
+            if (PlanningAreaExist(planningArea))
+            {
+                var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
+                result = result.Where(e => areaPolygon.Contains(e.AreaPoint));
             }
 
-            return GetFileReportResult(result, report);
+            return await GetFileReportResult(result, report);
         }
 
         private static int GetViewCountByFileId(MediaLibraryContext mlContext, string fileId)
         {
-            var result = (from da in mlContext.Set<DashboardActivity>()
-                          where da.Activity == 1 && da.FileId == fileId
-                          group da by da.FileId
-                          into g
-                          select new { Count = g.Count() }).Select(e => e.Count).FirstOrDefault().ToString();
-            return int.Parse(result);
+            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.View && e.FileId == fileId).GroupBy(e => e.FileId).Select(e => e.Count()).FirstOrDefault();
+            return result;
         }
 
         private static List<string> GetPlanningAreaNameByFileId(MediaLibraryContext mlContext, string fileId)
         {
-            var areaPoint = (from fd in mlContext.Set<FileDetails>()
-                            where fd.FileId == fileId
-                            select fd.AreaPoint).FirstOrDefault();
-            var result = (from pa in mlContext.Set<PlanningArea>()
-                         where pa.AreaPolygon.Contains(areaPoint)
-                         select pa.PlanningAreaName).ToList();
+            var areaPoint = mlContext.fileDetails.Where(e => e.FileId == fileId).Select(e => e.AreaPoint).FirstOrDefault();
+            var result = mlContext.planningArea.Where(e => e.AreaPolygon.Contains(areaPoint)).Select(e => e.PlanningAreaName).ToList();
             return result;
         }
 
         private static DateTime GetDateTimeByFileId(MediaLibraryContext mlContext, string fileId)
         {
-            var result = (from da in mlContext.Set<DashboardActivity>()
-                          where da.Activity == 2 && da.FileId == fileId
-                          select da.ActivityDateTime).FirstOrDefault();
+            var result = mlContext.dashboardActivity.Where(e => e.Activity == 2 && e.FileId == fileId).Select(e => e.ActivityDateTime).FirstOrDefault();
             return result;
         }
 
         private static int GetDownloadCountByFileId(MediaLibraryContext mlContext, string fileId)
         {
-            var result = (from da in mlContext.Set<DashboardActivity>()
-                          where da.Activity == 3 && da.FileId == fileId
-                          group da by da.FileId
-                          into g
-                          select new { Count = g.Count() }).Select(e => e.Count).FirstOrDefault().ToString();
-            return int.Parse(result);
+            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Download && e.FileId == fileId).GroupBy(e => e.FileId).Select(e => e.Count()).FirstOrDefault();
+            return result;
         }
 
-        private static Tuple<string, string, string> GetStaffDetailByFileId(MediaLibraryContext mlContext, string fileId)
+        private static string GetEmailByFileId(MediaLibraryContext mlContext, string fileId)
         {
-            var result = (from da in mlContext.Set<DashboardActivity>()
-                          where da.Activity == 2 && da.FileId == fileId
-                          select new { da.Email, da.DisplayName, da.Department }).FirstOrDefault();
-            return Tuple.Create(result.Email, result.DisplayName, result.Department);
+            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Upload && e.FileId == fileId).Select(e => e.Email).FirstOrDefault();
+            return result;
         }
 
-        public Tuple<List<FileReportResult>, int, int> GetFileReportResult(List<FileReportResult> result, FileReport report)
+        public async Task<(List<FileReportResult> Result, int TotalPage, int CurrentPage)> GetFileReportResult(IQueryable<FileReportResult> result, FileReport report)
         {
             string sortOption = report.SortOption;
             string planningArea = report.PlanningArea;
 
-            List<FileReportResult> originalResult = result;
+            List<FileReportResult> originalResult = await result.ToListAsync();
 
             if (report.StartDate != null && report.EndDate != null)
             {
                 DateTime startDate = Convert.ToDateTime(report.StartDate);
                 DateTime endDate = Convert.ToDateTime(report.EndDate).AddDays(1);
-                result = result.Where(e => e.UploadDateTime >= startDate && e.UploadDateTime <= endDate).ToList();
+                originalResult = await result.Where(e => e.UploadDateTime >= startDate && e.UploadDateTime <= endDate).ToListAsync();
             }
 
             int itemPerPage = 30;
             int pageno = report.Page - 1;
             int skipItem = itemPerPage * pageno;
 
-            if (!allSortOption.Contains(sortOption))
+            if (!Enum.IsDefined(typeof(AllSortOption), sortOption))
             {
-                return Tuple.Create(new List<FileReportResult>(), 1, 1);
+                return (new List<FileReportResult>(), 1, 1);
             }
 
             if (sortOption == "dateDSC")
             {
-                result = result.OrderByDescending(e => e.UploadDateTime).ToList();
+                originalResult = originalResult.OrderByDescending(e => e.UploadDateTime).ToList();
             }
             else if (sortOption == "dateASC")
             {
-                result = result.OrderBy(e => e.UploadDateTime).ToList();
+                originalResult = originalResult.OrderBy(e => e.UploadDateTime).ToList();
             }
             else if (sortOption == "fileSizeDSC")
             {
-                result = result.OrderByDescending(e => e.FileSize).ToList();
+                originalResult = originalResult.OrderByDescending(e => e.FileSize).ToList();
             }
             else if (sortOption == "fileSizeASC")
             {
-                result = result.OrderBy(e => e.FileSize).ToList();
+                originalResult = originalResult.OrderBy(e => e.FileSize).ToList();
             }
             else if (sortOption == "viewStatsDSC")
             {
-                result = result.OrderByDescending(e => e.ViewCount).ToList();
+                originalResult = originalResult.OrderByDescending(e => e.ViewCount).ToList();
             }
             else if (sortOption == "viewStatsASC")
             {
-                result = result.OrderBy(e => e.ViewCount).ToList();
+                originalResult = originalResult.OrderBy(e => e.ViewCount).ToList();
             }
             else if (sortOption == "downloadStatsDSC")
             {
-                result = result.OrderByDescending(e => e.DownloadCount).ToList();
+                originalResult = originalResult.OrderByDescending(e => e.DownloadCount).ToList();
             }
             else if (sortOption == "downloadStatsASC")
             {
-                result = result.OrderBy(e => e.DownloadCount).ToList();
+                originalResult = originalResult.OrderBy(e => e.DownloadCount).ToList();
             }
-            return Tuple.Create(result.Skip(skipItem).Take(itemPerPage).ToList(), getTotalPage(itemPerPage, result.Count()), pageno + 1);
+            return (Result: originalResult.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, originalResult.Count()), CurrentPage: pageno + 1);
         }
 
         public int getTotalPage(int itemPerPage, int? totalItem)

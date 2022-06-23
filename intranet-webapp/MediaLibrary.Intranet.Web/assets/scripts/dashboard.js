@@ -26,6 +26,7 @@ import {
   SubTitle
 } from 'chart.js';
 import { setAdminNav } from './DisplayAdminNav'
+import { planningAreaDropDown } from './GenerateDashboardItem'
 
 Chart.register(
   ArcElement,
@@ -145,98 +146,6 @@ function dashboardAPICalls(planningArea, year) {
 
 
 //Mini Functions --------------------------------
-function getRegionName(regionId) {
-  switch (parseInt(regionId)) {
-    case 1:
-      return "North Region"
-    case 2:
-      return "East Region"
-    case 3:
-      return "West Region"
-    case 4:
-      return "Central Region"
-    case 5:
-      return "North-East Region"
-    case 6:
-      return "Central Area"
-  }
-}
-
-function planningAreaDropDown() {
-  fetch('/api/planningarea', {
-    mode: 'same-origin',
-    credentials: 'same-origin',
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.status}`)
-      }
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new TypeError("Oops, we haven't got JSON!")
-      }
-      return response.json()
-    })
-    .then((data) => {
-      let p_area = []
-      let all_region_id = []
-      //Insert data into select
-      data.forEach(e => {
-        const planningAreaName = e["PlanningAreaName"].trim()
-
-        let regionId = e["RegionId"]
-        if (regionId == 4 && e["CA_IND"] == 1) {
-          regionId = 6
-        }
-
-        if (!all_region_id.includes(regionId)) {
-          all_region_id.push(regionId)
-        }
-
-        let area = {}
-        area[regionId] = planningAreaName
-        p_area.push(area)
-      })
-
-
-      let a = document.createElement("a")
-      a.classList.add("dropdown-item")
-      a.classList.add("planning-area-item")
-      a.classList.add("pl-2")
-      if ( planningAreaSelected.dataset.planningArea == "ALL") {
-        a.style.backgroundColor = "rgb(227, 230, 228)"
-      }
-      a.innerHTML = "ALL"
-      a.dataset.planningArea = "ALL"
-      allPlanningArea.appendChild(a)
-      for (let i = 0; i < all_region_id.length; i++) {
-        let h6 = document.createElement("h6")
-        h6.classList.add("dropdown-header")
-        h6.classList.add("planning-area-header")
-        h6.classList.add("pl-2")
-        h6.innerHTML = getRegionName(all_region_id[i])
-        allPlanningArea.appendChild(h6)
-
-        for (let j = 0; j < p_area.length; j++) {
-          if (Object.keys(p_area[j]) == all_region_id[i]) {
-            a = document.createElement("a")
-            a.classList.add("dropdown-item")
-            a.classList.add("planning-area-item")
-            if (Object.values(p_area[j]) ==  planningAreaSelected.dataset.planningArea) {
-              a.style.backgroundColor = "rgb(227, 230, 228)"
-            }
-            a.innerHTML = Object.values(p_area[j])
-            a.dataset.planningArea = Object.values(p_area[j])
-            allPlanningArea.appendChild(a)
-          }
-        }
-      }
-    })
-    .catch((error) => {
-      console.log("Error: " + error);
-    })
-}
-
 function filterYearDropDown(year, selectedYear) {
   let currYear = new Date().getFullYear()
   
@@ -298,13 +207,13 @@ function getMonthArray(array1, array2) {
   }
 
   array1.forEach(e => {
-    if (!allMonth.includes(e.Key)) {
-      allMonth.push(e.Key)
+    if (!allMonth.includes(e.Month)) {
+      allMonth.push(e.Month)
     }
   })
   array2.forEach(e => {
-    if (!allMonth.includes(e.Key)) {
-      allMonth.push(e.Key)
+    if (!allMonth.includes(e.Month)) {
+      allMonth.push(e.Month)
     }
   })
   allMonth = allMonth.sort(function (a, b) {
@@ -327,7 +236,7 @@ function getCountArray(array1, array2) {
   for (let i = 0; i < array1.length; i++) {
     let found = false
     for (let j = 0; j < array2.length; j++) {
-      if (array1[i] == convertMonth(array2[j].Key)) {
+      if (array1[i] == convertMonth(array2[j].Month)) {
         arr.push(array2[j].Count)
         found = true
         break
@@ -360,10 +269,10 @@ function clearYearDropDown() {
  //Render chart --------------------------------
 let generateCardActivity = (result, selectedYear) => {
   result.then(data => {
-    const uploadCount = data.Item1
-    const downloadCount = data.Item2
-    const fileSizeAvg = data.Item3
-    const year = data.Item4
+    const uploadCount = data.uploadCount
+    const downloadCount = data.downloadCount
+    const fileSizeAvg = data.fileSizeAvg
+    const year = data.firstYear
     document.getElementById("upload-card-result").innerHTML = uploadCount
     document.getElementById("download-card-result").innerHTML = downloadCount
     document.getElementById("filesize-card-result").innerHTML = fileSizeAvg
@@ -377,7 +286,7 @@ let generateFileSize = (result) => {
     let count = []
 
     data.forEach(fileSize => {
-      key.push(fileSize.Key + "mb-" + (parseInt(fileSize.Key) + 1).toString() + "mb")
+      key.push(fileSize.FileSize + "mb-" + (parseInt(fileSize.FileSize) + 1).toString() + "mb")
       count.push(fileSize.Count)
     })
 
@@ -545,7 +454,7 @@ let generateViewCount = (result) => {
   result.then(data => {
     let apiFetchURL = []
     data.forEach(e => {
-      apiFetchURL.push(fetch(`/api/media/${e.Key}`, {
+      apiFetchURL.push(fetch(`/api/media/${e.FileId}`, {
         mode: 'same-origin',
         credentials: 'same-origin',
       }))
@@ -568,7 +477,7 @@ let generateViewCountTable = async (allKey, count, counter, arrSize) => {
     b.classList.add("text-overflow")
     p.appendChild(b)
     let span = document.createElement("span")
-    span.innerHTML = count.Count
+    span.innerHTML = count.ViewCount
     span.classList.add("float-right")
     p.appendChild(span)
     viewTop.appendChild(p)

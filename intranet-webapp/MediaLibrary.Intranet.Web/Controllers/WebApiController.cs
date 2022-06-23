@@ -29,8 +29,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly DashboardActivityService _dashboardActivityService;
         private readonly FileDetailsService _fileDetailsService;
 
-        public DBActivity selectActivity = new DBActivity();
-
         private static BlobContainerClient _blobContainerClient = null;
 
         public WebApiController(
@@ -132,7 +130,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                     FileId = id,
                     Email = User.GetUserGraphEmail(),
                     ActivityDateTime = DateTime.Now,
-                    Activity = selectActivity.Edit
+                    Activity = (int)DBActivity.Edit
                 };
                 if (await _dashboardActivityService.AddActivityAsync(dashboardActivity))
                 {

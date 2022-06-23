@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 
 namespace MediaLibrary.Intranet.Web.Models
 {
@@ -26,6 +28,8 @@ namespace MediaLibrary.Intranet.Web.Models
         public int ViewCount { get; set; }
         public DateTime UploadDateTime { get; set; }
         public int DownloadCount { get; set; }
+        [JsonIgnore]
+        public Point AreaPoint { get; set; }
     }
 
     public class StaffResult
