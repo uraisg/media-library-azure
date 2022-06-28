@@ -207,12 +207,12 @@ namespace MediaLibrary.Intranet.Web.Services
                       {
                           FileId = fd.FileId,
                           FileSize = fd.FileSize,
-                          ViewCount = GetViewCountByFileId(_mediaLibraryContext, fd.FileId),
-                          Location = GetPlanningAreaNameByFileId(_mediaLibraryContext, fd.FileId),
+                          ViewCount = _mediaLibraryContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.View && e.FileId == fd.FileId).GroupBy(e => e.FileId).Select(e => e.Count()).FirstOrDefault(),
+                          Location = _mediaLibraryContext.planningArea.Where(e => e.AreaPolygon.Contains(fd.AreaPoint)).Select(e => e.PlanningAreaName).ToList(),
                           ThumbnailURL = fd.ThumbnailURL,
-                          Email = GetEmailByFileId(_mediaLibraryContext, fd.FileId),
-                          UploadDateTime = GetDateTimeByFileId(_mediaLibraryContext, fd.FileId),
-                          DownloadCount = GetDownloadCountByFileId(_mediaLibraryContext, fd.FileId),
+                          Email = _mediaLibraryContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Upload && e.FileId == fd.FileId).Select(e => e.Email).FirstOrDefault(),
+                          UploadDateTime = _mediaLibraryContext.dashboardActivity.Where(e => e.Activity == 2 && e.FileId == fd.FileId).Select(e => e.ActivityDateTime).FirstOrDefault(),
+                          DownloadCount = _mediaLibraryContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Download && e.FileId == fd.FileId).GroupBy(e => e.FileId).Select(e => e.Count()).FirstOrDefault(),
                           AreaPoint = fd.AreaPoint
                       }).AsQueryable();
 
@@ -222,96 +222,69 @@ namespace MediaLibrary.Intranet.Web.Services
                 result = result.Where(e => areaPolygon.Contains(e.AreaPoint));
             }
 
-            return await GetFileReportResult(result, report);
+            return GetFileReportResult(result, report);
         }
 
-        private static int GetViewCountByFileId(MediaLibraryContext mlContext, string fileId)
-        {
-            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.View && e.FileId == fileId).GroupBy(e => e.FileId).Select(e => e.Count()).FirstOrDefault();
-            return result;
-        }
-
-        private static List<string> GetPlanningAreaNameByFileId(MediaLibraryContext mlContext, string fileId)
-        {
-            var areaPoint = mlContext.fileDetails.Where(e => e.FileId == fileId).Select(e => e.AreaPoint).FirstOrDefault();
-            var result = mlContext.planningArea.Where(e => e.AreaPolygon.Contains(areaPoint)).Select(e => e.PlanningAreaName).ToList();
-            return result;
-        }
-
-        private static DateTime GetDateTimeByFileId(MediaLibraryContext mlContext, string fileId)
-        {
-            var result = mlContext.dashboardActivity.Where(e => e.Activity == 2 && e.FileId == fileId).Select(e => e.ActivityDateTime).FirstOrDefault();
-            return result;
-        }
-
-        private static int GetDownloadCountByFileId(MediaLibraryContext mlContext, string fileId)
-        {
-            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Download && e.FileId == fileId).GroupBy(e => e.FileId).Select(e => e.Count()).FirstOrDefault();
-            return result;
-        }
-
-        private static string GetEmailByFileId(MediaLibraryContext mlContext, string fileId)
-        {
-            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Upload && e.FileId == fileId).Select(e => e.Email).FirstOrDefault();
-            return result;
-        }
-
-        public async Task<(List<FileReportResult> Result, int TotalPage, int CurrentPage)> GetFileReportResult(IQueryable<FileReportResult> result, FileReport report)
+        public (List<FileReportResult> Result, int TotalPage, int CurrentPage) GetFileReportResult(IQueryable<FileReportResult> result, FileReport report)
         {
             string sortOption = report.SortOption;
             string planningArea = report.PlanningArea;
-
-            List<FileReportResult> originalResult = await result.ToListAsync();
 
             if (report.StartDate != null && report.EndDate != null)
             {
                 DateTime startDate = Convert.ToDateTime(report.StartDate);
                 DateTime endDate = Convert.ToDateTime(report.EndDate).AddDays(1);
-                originalResult = await result.Where(e => e.UploadDateTime >= startDate && e.UploadDateTime <= endDate).ToListAsync();
+                result = result.Where(e => e.UploadDateTime >= startDate && e.UploadDateTime <= endDate);
             }
 
             int itemPerPage = 30;
             int pageno = report.Page - 1;
             int skipItem = itemPerPage * pageno;
 
-            if (!Enum.IsDefined(typeof(AllSortOption), sortOption))
+            AllSortOption option;
+            bool checkSort = Enum.TryParse(sortOption, out option);
+            if (!checkSort)
             {
+                _logger.LogError("Error in sorting file report by {sort}", sortOption);
                 return (new List<FileReportResult>(), 1, 1);
             }
+            else
+            {
+                var currentSort = Enum.Parse(typeof(AllSortOption), sortOption);
+                IOrderedQueryable newResult = null;
+                switch (currentSort)
+                {
+                    case AllSortOption.dateASC:
+                        newResult = result.OrderBy(e => e.UploadDateTime);
+                        break;
+                    case AllSortOption.dateDSC:
+                        newResult = result.OrderByDescending(e => e.UploadDateTime);
+                        break;
+                    case AllSortOption.fileSizeDSC:
+                        newResult = result.OrderByDescending(e => e.FileSize);
+                        break;
+                    case AllSortOption.fileSizeASC:
+                        newResult = result.OrderBy(e => e.FileSize);
+                        break;
+                    case AllSortOption.viewStatsDSC:
+                        newResult = result.OrderByDescending(e => e.ViewCount);
+                        break;
+                    case AllSortOption.viewStatsASC:
+                        newResult = result.OrderBy(e => e.ViewCount);
+                        break;
+                    case AllSortOption.downloadStatsDSC:
+                        newResult = result.OrderByDescending(e => e.DownloadCount);
+                        break;
+                    case AllSortOption.downloadStatsASC:
+                        newResult = result.OrderBy(e => e.DownloadCount);
+                        break;
+                    default:
+                        break;
+                }
 
-            if (sortOption == "dateDSC")
-            {
-                originalResult = originalResult.OrderByDescending(e => e.UploadDateTime).ToList();
+                IQueryable<FileReportResult> fileReportResults = (IQueryable<FileReportResult>)newResult;
+                return (Result: fileReportResults.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, fileReportResults.Count()), CurrentPage: pageno + 1);
             }
-            else if (sortOption == "dateASC")
-            {
-                originalResult = originalResult.OrderBy(e => e.UploadDateTime).ToList();
-            }
-            else if (sortOption == "fileSizeDSC")
-            {
-                originalResult = originalResult.OrderByDescending(e => e.FileSize).ToList();
-            }
-            else if (sortOption == "fileSizeASC")
-            {
-                originalResult = originalResult.OrderBy(e => e.FileSize).ToList();
-            }
-            else if (sortOption == "viewStatsDSC")
-            {
-                originalResult = originalResult.OrderByDescending(e => e.ViewCount).ToList();
-            }
-            else if (sortOption == "viewStatsASC")
-            {
-                originalResult = originalResult.OrderBy(e => e.ViewCount).ToList();
-            }
-            else if (sortOption == "downloadStatsDSC")
-            {
-                originalResult = originalResult.OrderByDescending(e => e.DownloadCount).ToList();
-            }
-            else if (sortOption == "downloadStatsASC")
-            {
-                originalResult = originalResult.OrderBy(e => e.DownloadCount).ToList();
-            }
-            return (Result: originalResult.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, originalResult.Count()), CurrentPage: pageno + 1);
         }
 
         public int getTotalPage(int itemPerPage, int? totalItem)

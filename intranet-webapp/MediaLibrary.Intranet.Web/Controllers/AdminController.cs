@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using System.Web;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
+    [Authorize(Roles = UserRole.Admin)]
     public class AdminController : Controller
     {
         private readonly DashboardActivityService _dashboardActivityService;
@@ -21,61 +23,29 @@ namespace MediaLibrary.Intranet.Web.Controllers
         public IActionResult Index()
         {
             bool isAdmin = User.IsInRole(UserRole.Admin);
-
-            if (isAdmin)
-            {
-                ViewData["showDashboard"] = isAdmin;
-                return View();
-            }
-            else
-            {
-                return Forbid();
-            }
+            ViewData["showDashboard"] = isAdmin;
+            return View();
         }
 
         public IActionResult ActivityReport()
         {
             bool isAdmin = User.IsInRole(UserRole.Admin);
-
-            if (isAdmin)
-            {
-                ViewData["showDashboard"] = isAdmin;
-                return View();
-            }
-            else
-            {
-                return Forbid();
-            }
+            ViewData["showDashboard"] = isAdmin;
+            return View();
         }
 
         public IActionResult FileReport()
         {
             bool isAdmin = User.IsInRole(UserRole.Admin);
-
-            if (isAdmin)
-            {
-                ViewData["showDashboard"] = isAdmin;
-                return View();
-            }
-            else
-            {
-                return Forbid();
-            }
+            ViewData["showDashboard"] = isAdmin;
+            return View();
         }
 
         public IActionResult Staff()
         {
             bool isAdmin = User.IsInRole(UserRole.Admin);
-
-            if (isAdmin)
-            {
-                ViewData["showDashboard"] = isAdmin;
-                return View();
-            }
-            else
-            {
-                return Forbid();
-            }
+            ViewData["showDashboard"] = isAdmin;
+            return View();
         }
 
         public IActionResult StaffActivityReport([FromQuery] string Email)
@@ -83,20 +53,13 @@ namespace MediaLibrary.Intranet.Web.Controllers
             bool isAdmin = User.IsInRole(UserRole.Admin);
             string email = HttpUtility.UrlDecode(Email);
 
-            if (isAdmin)
+            if (!_dashboardActivityService.EmailExist(email))
             {
-                if (!_dashboardActivityService.EmailExist(email))
-                {
-                    return NotFound();
-                }
-                ViewData["Email"] = email;
-                ViewData["showDashboard"] = isAdmin;
-                return View();
+                return NotFound();
             }
-            else
-            {
-                return Forbid();
-            }
+            ViewData["Email"] = email;
+            ViewData["showDashboard"] = isAdmin;
+            return View();
         }
     }
 }

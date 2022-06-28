@@ -251,7 +251,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 Location = GetPlanningAreaNameByPoint(_mediaLibraryContext, e.fd.AreaPoint),
                 ThumbnailURL = e.fd.ThumbnailURL,
                 Email = e.da.Email
-            }).ToList();
+            }).AsQueryable();
             
             return GetActivityReportResult(activityReportResults, report);
         }
@@ -268,44 +268,56 @@ namespace MediaLibrary.Intranet.Web.Services
             return totalPage;
         }
 
-        public (List<ActivityReportResult> Result, int TotalPage, int CurrentPage) GetActivityReportResult(List<ActivityReportResult> result, ActivityReport report)
+        public (List<ActivityReportResult> Result, int TotalPage, int CurrentPage) GetActivityReportResult(IQueryable<ActivityReportResult> result, ActivityReport report)
         {
             int activityOption = report.ActivityOption;
             string sortOption = report.SortOption;
-            List<ActivityReportResult> originalResult = result;
+
             if (report.StartDate != null)
             {
                 DateTime startDate = Convert.ToDateTime(report.StartDate);
                 DateTime endDate = Convert.ToDateTime(report.EndDate).AddDays(1);
-                result = result.Where(e => e.ActivityDateTime >= startDate && e.ActivityDateTime <= endDate).ToList();
+                result = result.Where(e => e.ActivityDateTime >= startDate && e.ActivityDateTime <= endDate);
             }
 
             int pageno = report.Page - 1;
             int itemPerPage = 30;
             int skipItem = pageno * itemPerPage;
 
-            if (!Enum.IsDefined(typeof(AllSortOption), sortOption))
+            AllSortOption option;
+            bool checkSort = Enum.TryParse(sortOption, out option);
+            if (!checkSort)
             {
-                return (Result: new List<ActivityReportResult>(), TotalPage: 1, CurrentPage: 1);
+                _logger.LogError("Error in sorting activity report by {sort}", sortOption);
+                return (new List<ActivityReportResult>(), 1, 1);
             }
+            else
+            {
+                var currentSort = Enum.Parse(typeof(AllSortOption), sortOption);
+                IOrderedQueryable newResult = null;
+                switch (currentSort)
+                {
+                    case AllSortOption.dateASC:
+                        newResult = result.OrderBy(e => e.ActivityDateTime);
+                        break;
+                    case AllSortOption.dateDSC:
+                        newResult = result.OrderByDescending(e => e.ActivityDateTime);
+                        break;
+                    default:
+                        break;
+                }
 
-            if (sortOption == "dateASC")
-            {
-                result = result.OrderBy(e => e.ActivityDateTime).ToList();
+                IQueryable<ActivityReportResult> activityReportResults = (IQueryable<ActivityReportResult>)newResult;
+                if (report.Email != null && report.Email != "")
+                {
+                    activityReportResults = activityReportResults.Where(e => e.Email == report.Email);
+                }
+
+                return (Result: activityReportResults.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, activityReportResults.Count()), CurrentPage: pageno + 1);
             }
-            else if (sortOption == "dateDSC")
-            {
-                result = result.OrderByDescending(e => e.ActivityDateTime).ToList();
-            }
-            if (report.Email != null && report.Email != "")
-            {
-                result = result.Where(e => e.Email == report.Email).ToList();
-                return (Result: result.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, result.Count()), CurrentPage: pageno + 1);
-            }
-            return (Result: result.Skip(skipItem).Take(itemPerPage).ToList(), TotalPage: getTotalPage(itemPerPage, result.Count()), CurrentPage: pageno + 1);
         }
 
-        public Tuple<IEnumerable<StaffResult>, int, int> GetAllStaff(StaffQuery staff)
+        public Tuple<List<StaffResult>, int, int> GetAllStaff(StaffQuery staff)
         {
             List<int> option = new List<int>();
             option.Add((int)DBActivity.Upload);
@@ -324,57 +336,51 @@ namespace MediaLibrary.Intranet.Web.Services
             var staffResult = result.GroupBy(e => e.Email).Select(e => new StaffResult
             {
                 Email = e.Key,
-                UploadCount = GetUploadCountByEmail(_mediaLibraryContext, e.Key),
-                DownloadCount = GetDownloadCountByEmail(_mediaLibraryContext, e.Key)
-            }).ToList();
+                UploadCount = _mediaLibraryContext.dashboardActivity.Where(da => da.Activity == (int)DBActivity.Upload && da.Email == e.Key && da.FileId != "Deleted").GroupBy(da => da.Email).Select(da => da.Count()).FirstOrDefault(),
+                DownloadCount = _mediaLibraryContext.dashboardActivity.Where(da => da.Activity == (int)DBActivity.Download && da.Email == e.Key && da.FileId != "Deleted").GroupBy(da => da.Email).Select(da => da.Count()).FirstOrDefault()
+            }).AsQueryable();
             
             return GetStaffResult(staffResult, staff);
         }
-
-        private static int GetUploadCountByEmail(MediaLibraryContext mlContext, string email)
-        {
-            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Upload && e.Email == email && e.FileId != "Deleted").GroupBy(e => e.Email).Select(e => e.Count()).FirstOrDefault();
-
-            return result;
-        }
-
-        private static int GetDownloadCountByEmail(MediaLibraryContext mlContext, string email)
-        {
-            var result = mlContext.dashboardActivity.Where(e => e.Activity == (int)DBActivity.Download && e.Email == email && e.FileId != "Deleted").GroupBy(e => e.Email).Select(e => e.Count()).FirstOrDefault();
-
-            return result;
-        }
-
-        public Tuple<IEnumerable<StaffResult>, int, int> GetStaffResult(List<StaffResult> result, StaffQuery staff)
+        public Tuple<List<StaffResult>, int, int> GetStaffResult(IQueryable<StaffResult> result, StaffQuery staff)
         {
             int pageno = staff.Page - 1;
             int itemPerPage = 30;
             int skipResult = pageno * itemPerPage;
             string sortOption = staff.SortOption;
 
-            if (!Enum.IsDefined(typeof(AllSortOption), sortOption))
+            AllSortOption option;
+            bool checkSort = Enum.TryParse(sortOption, out option);
+            if (!checkSort)
             {
-                result = new List<StaffResult>();
+                _logger.LogError("Error in sorting staff by {sort}", sortOption);
+                return Tuple.Create(new List<StaffResult>(), 1, 1);
             }
+            else
+            {
+                var currentSort = Enum.Parse(typeof(AllSortOption), sortOption);
+                IOrderedQueryable newResult = null;
+                switch (currentSort)
+                {
+                    case AllSortOption.uploadDSC:
+                        newResult = result.OrderByDescending(e => e.UploadCount);
+                        break;
+                    case AllSortOption.uploadASC:
+                        newResult = result.OrderBy(e => e.UploadCount);
+                        break;
+                    case AllSortOption.downloadDSC:
+                        newResult = result.OrderByDescending(e => e.DownloadCount);
+                        break;
+                    case AllSortOption.downloadASC:
+                        newResult = result.OrderBy(e => e.DownloadCount);
+                        break;
+                    default:
+                        break;
+                }
 
-            if(sortOption == "uploadDSC")
-            {
-                result = result.OrderByDescending(e => e.UploadCount).ToList();
+                IQueryable<StaffResult> staffResult = (IQueryable<StaffResult>)newResult;
+                return Tuple.Create(staffResult.Skip(skipResult).Take(itemPerPage).ToList(), getTotalPage(itemPerPage, staffResult.Count()), pageno + 1);
             }
-            else if (sortOption == "uploadASC")
-            {
-                result = result.OrderBy(e => e.UploadCount).ToList();
-            }
-            else if(sortOption == "downloadDSC")
-            {
-                result = result.OrderByDescending(e => e.DownloadCount).ToList();
-            }
-            else if (sortOption == "downloadASC")
-            {
-                result = result.OrderBy(e => e.DownloadCount).ToList();
-            }
-
-            return Tuple.Create(result.Skip(skipResult).Take(itemPerPage), getTotalPage(itemPerPage, result.Count()), pageno + 1);
         }
 
         public List<DashboardActivity> GetAllActivity(string fileId)

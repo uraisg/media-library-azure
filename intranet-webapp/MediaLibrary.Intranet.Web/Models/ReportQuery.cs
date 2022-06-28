@@ -7,7 +7,6 @@ namespace MediaLibrary.Intranet.Web.Models
 {
     public class ActivityCount
     {
-        public string Email { get; set; }
         public string FileId { get; set; }
         public int Activity { get; set; }
     }
@@ -33,12 +32,6 @@ namespace MediaLibrary.Intranet.Web.Models
         public string SearchQuery { get; set; }
         public string SortOption { get; set; }
     }
-
-    public class GenerateReportQuery
-    {
-        public string NameCreated { get; set; }
-    }
-
     public enum AllSortOption
     {
         dateASC,
