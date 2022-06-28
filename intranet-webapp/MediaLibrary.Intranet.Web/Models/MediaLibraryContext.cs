@@ -9,17 +9,8 @@ namespace MediaLibrary.Intranet.Web.Models
 {
     public class MediaLibraryContext : DbContext
     {
-        private readonly IConfiguration _config;
-        public MediaLibraryContext(IConfiguration configuration)
+        public MediaLibraryContext(DbContextOptions<MediaLibraryContext> options) : base(options)
         {
-            _config = configuration;
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            string connectionString = _config.GetConnectionString("MyConn");
-            optionsBuilder.UseSqlServer(connectionString,
-                x => x.UseNetTopologySuite());
         }
 
         public DbSet<DashboardActivity> dashboardActivity { get; set; }

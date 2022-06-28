@@ -41,12 +41,10 @@ function loadFileInfo() {
 }
 
 async function renderMetadataSection(data, fileId) {
-  const email = document.querySelector("#loginUserEmail").innerHTML
   document.getElementById("media-download").addEventListener('click', () => {
     const baseURL = location
     let url = new URL('/api/activity/update', baseURL)
     const params = {
-      Email: email,
       FileId: fileId,
       Activity: 3
     }

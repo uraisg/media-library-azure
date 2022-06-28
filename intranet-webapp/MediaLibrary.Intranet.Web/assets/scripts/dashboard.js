@@ -526,17 +526,7 @@ fileSizeFilter.addEventListener("change", function () {
 })
 
 document.getElementById("genBtn").addEventListener('click', function () {
-  const nameCreated = document.getElementById('loginUserName').innerHTML
-  const baseLocation = location
-  let url = new URL('/api/generatereport', baseLocation)
-
-  const params = {
-    NameCreated: nameCreated
-  }
-
-  url.search = new URLSearchParams(params)
-
-  window.location = url
+  window.location = '/api/generatereport'
 })
 
 

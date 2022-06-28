@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -54,7 +55,10 @@ namespace MediaLibrary.Intranet.Web
             services.AddSingleton<MediaSearchService>();
             services.AddSingleton<ItemService>();
             services.AddTransient<GraphService>();
-            services.AddDbContext<MediaLibraryContext>(ServiceLifetime.Transient);
+            services.AddDbContext<MediaLibraryContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("MediaLibraryConnection"),
+                    x => x.UseNetTopologySuite())
+            );
             services.AddTransient<DashboardActivityService>();
             services.AddTransient<FileDetailsService>();
             services.AddTransient<PlanningAreaService>();

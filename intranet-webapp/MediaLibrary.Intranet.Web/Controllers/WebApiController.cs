@@ -290,7 +290,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 DActivityId = Guid.NewGuid(),
                 FileId = activityCount.FileId,
-                Email = activityCount.Email,
+                Email = User.GetUserGraphEmail(),
                 ActivityDateTime = DateTime.Now,
                 Activity = activityCount.Activity
             };
