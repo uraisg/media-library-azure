@@ -6,6 +6,11 @@ mix.webpackConfig({
   externals: {
     jquery: 'jQuery',
   },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'assets/scripts/UploadPortal'),
+    },
+  },
 })
 mix.sourceMaps(false) // enable source maps in dev mode, but not prod
 
@@ -21,3 +26,4 @@ mix
   )
   .js('assets/scripts/upload.js', 'scripts')
   .sass('assets/styles/site.scss', 'styles')
+mix.js('assets/scripts/UploadPortal/main.js', 'scripts/upload_portal.js').react()

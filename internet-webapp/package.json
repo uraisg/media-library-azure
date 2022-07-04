@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "antd": "^4.21.3",
+    "dropzone": "^6.0.0-beta.2",
+    "filepond": "^4.30.4",
+    "filepond-plugin-image-exif-orientation": "^1.0.11",
+    "filepond-plugin-image-preview": "^4.6.11",
+    "react-dropzone": "^14.2.1",
+    "react-filepond": "^7.1.2",
+    "styled-components": "^5.3.5"
+  },
+  "devDependencies": {
+    "process": "^0.11.10"
+  }
+}
