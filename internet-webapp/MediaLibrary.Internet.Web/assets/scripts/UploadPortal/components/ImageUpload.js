@@ -1,63 +1,50 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 
 import FileInput from '@/components/ImageInput'
-import { useBtnDisabled } from '@/components/AllContext'
+import { useForm, useBtnDisabled } from '@/components/AllContext'
 
-export default function Step1() {
-  const [files, setFiles] = useState([])
-  const [checkName, setCheckName] = useState(false)
-  const [checkLocation, setCheckLocation] = useState(false)
-
+export default function Step1(props) {
+  const formContext = useForm()
   const btnDisabled = useBtnDisabled()
 
   function checkValid(e) {
-    if (e.target.value != "") {
-      setValue(e.target.id, true)
-    }
-    else {
-      setValue(e.target.id, false)
-    }
-  }
-
-  function setValue(item, value) {
-    switch (item) {
-      case "name":
-        setCheckName(value)
-        break
-      case "location":
-        setCheckLocation(value)
-    }
+    formContext.setValidInput(item => ({ ...item, [e.target.id]: e.target.value }))
   }
 
   useEffect(() => {
-    if (files.length != 0 && checkName && checkLocation) {
+    if (formContext.files.length != 0 && formContext.validInput.Name && formContext.validInput.Location) {
       btnDisabled.setBtnDisabled(false)
     }
-    else if (files.length == 0 || !checkName || !checkLocation) {
+    else if (formContext.files.length == 0 || !formContext.validInput.Name || !formContext.validInput.Location) {
       btnDisabled.setBtnDisabled(true)
     }
   })
 
   return (
     <React.Fragment>
-      <form>
-        <p>Up to 40 MB of images is accepted</p>
-        <FileInput files={files} setFiles={setFiles} />
+      <p>Up to 40 MB of images is accepted</p>
+      <FileInput />
 
-        <p>Provide more information to make your images easier to find</p>
-        <div className="form-check">
-          <label htmlFor="Name">Name<span className="text-danger">*</span></label>
-          <input type="text" className="form-control" id="name" onKeyUp={checkValid} />
-        </div>
-        <div className="form-check">
-          <label htmlFor="Location">Location<span className="text-danger">*</span></label>
-          <input type="text" className="form-control" id="location" onKeyUp={checkValid} />
-        </div>
-        <div className="form-check">
-          <label htmlFor="Copyright">Copyright Owner</label>
-          <input type="text" className="form-control" defaultValue="URA" id="copyright" />
-        </div>
-      </form>
+      <p>Provide more information to make your images easier to find</p>
+      <div className="form-check">
+        <label htmlFor="Name">Name<span className="text-danger">*</span></label>
+        <input type="text" className="form-control" id="Name" onKeyUp={checkValid} defaultValue={formContext.validInput.Name} />
+        <small className="text-secondary">Give a brief title for the images, e.g., project or event name</small>
+      </div>
+      <div className="mt-2 form-check">
+        <label htmlFor="Location">Location<span className="text-danger">*</span></label>
+        <input type="text" className="form-control" id="Location" onKeyUp={checkValid} defaultValue={formContext.validInput.Location} />
+        <small className="text-secondary">Describe the landmark or road where the images were taken, e.g., Gardens By The Bay, Kampong Glam, Stamford Road</small>
+      </div>
+      <div className="mt-2 form-check">
+        <label htmlFor="Copyright">Copyright Owner</label>
+        <input type="text" className="form-control" defaultValue="URA" id="copyright" />
+        <small className="text-secondary">Enter the copyright owner's name (Works you create in the course of employment are automatically owned by your employer)</small>
+      </div>
+
+      {props.errMsg &&
+        <p className="text-danger">Fields cannot be empty</p>
+      }
     </React.Fragment >
    )
 }

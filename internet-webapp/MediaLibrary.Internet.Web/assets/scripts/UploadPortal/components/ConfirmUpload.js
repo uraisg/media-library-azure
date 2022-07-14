@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 import DisplayItem from '@/components/DisplayItem'
-import { useFile } from '@/components/AllContext'
+import { useForm } from '@/components/AllContext'
 
 export default function Step3() {
-  const fileContext = useFile()
+  const fileContext = useForm()
 
   return (
     <React.Fragment>

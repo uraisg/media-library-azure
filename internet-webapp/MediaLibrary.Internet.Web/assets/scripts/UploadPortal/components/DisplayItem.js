@@ -1,5 +1,4 @@
 import styled from 'styled-components'
-import { useState } from 'react'
 
 
 const Checkbox = styled.input.attrs({ type: 'checkbox' })`
@@ -8,21 +7,27 @@ const Checkbox = styled.input.attrs({ type: 'checkbox' })`
 `
 
 const Img = styled.img`
-  width: 300px;
-  height: 250px;
+  object-fit: cover;
+  max-width: 330px;
+  min-width: 250px;
+  min-height: 250px;
+  max-height: 400px;
 
   @media only screen and (max-width: 992px) {
-    width: 100%;
+    max-width: 100%;
   }
 `
 
 const Tags = styled.span`
-  background-color: green;
-  border: 2px solid black;
-  border-radius: 4px;
+  border: 1px solid #6c757d;
+  border-radius: 0.25em;
+  padding: 0.25em;
+  font-size: 13px;
+  margin-right: 0.25em;
 `
 
 export default function DisplayItem(props) {
+  const uploadTags = props.item.Tags.split(",")
   return (
     <div className='align-items-center d-flex'>
       {props.update &&
@@ -34,42 +39,91 @@ export default function DisplayItem(props) {
             <Img src={props.item.ImageURL} />
           </div>
           <div className="col-12 col-lg-7 col-xl-8">
-            <table className="table table-borderless table-sm w-75">
-              <tbody>
-                <tr>
-                  <th>Name:</th>
-                  <td>{props.item.Name}</td>
-                </tr>
-                <tr>
-                  <th>Location:</th>
-                  <td>{props.item.Location}</td>
-                </tr>
-                <tr>
-                  <th>Copyright Owner:</th>
-                  <td>{props.item.Copyright}</td>
-                </tr>
-                <tr>
-                  <th>Planning Area:</th>
-                  <td>{props.item.PlanningArea}</td>
-                </tr>
-                <tr>
-                  <th>Caption:</th>
-                  <td>{props.item.Caption}</td>
-                </tr>
-                <tr>
-                  <th>Tags:</th>
-                  <td>{props.item.Tags}</td>
-                </tr>
-                <tr>
-                  <th>Taken on:</th>
-                  <td>{props.item.TakenDate}</td>
-                </tr>
-                <tr>
-                  <th>Uploaded on:</th>
-                  <td>{props.item.UploadDate}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="container">
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Name:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.Name}
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Location:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.Location}
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Copyright Owner:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.Copyright}
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Planning Area:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.PlanningArea}
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Caption:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.Caption}
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Tags:</strong>
+                </div>
+                <div className="col-8">
+                    {props.update
+                      ?
+                    <span className="text-break">{props.item.Tags}</span>
+                    :
+                    <div className="row ml-1">
+                      {uploadTags.map((item, index) => (
+                        <Tags key={index}>{item.trim()}</Tags>
+                      ))}
+                    </div>
+                    }
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Taken on:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.TakenDate}
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Uploaded on:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.UploadDate}
+                </div>
+              </div>
+              {props.item.AdditionalField.map((item) => (
+                  <div className="py-1 row" key={item.Id}>
+                    <div className="col-4">
+                      <strong>{item.Key}:</strong>
+                    </div>
+                    <div className="col-8">
+                      {item.Value}
+                    </div>
+                  </div>
+                ))}
+          </div>
           </div>
         </div>
       </div>

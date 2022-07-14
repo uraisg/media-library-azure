@@ -2,245 +2,116 @@ import React, { useState, useContext } from 'react'
 import { Alert } from 'react-bootstrap'
 import { X } from 'react-bootstrap-icons'
 
-const FileContext = React.createContext()
-const CompleteContext = React.createContext()
+const FormContext = React.createContext()
 const StepContext = React.createContext()
-const SingleEditContext = React.createContext()
 
-export function useFile() {
-  return useContext(FileContext)
-}
-
-export function useUploadAlert() {
-  return useContext(CompleteContext)
+export function useForm() {
+  return useContext(FormContext)
 }
 
 export function useBtnDisabled() {
   return useContext(StepContext)
 }
 
-export function useSingleEdit() {
-  return useContext(SingleEditContext)
-}
-
-export function FileProvider({ children }) {
-
+export function FormProvider({ children }) {
+  const [files, setFiles] = useState([])
+  const [validInput, setValidInput] = useState({"Name": "", "Location": ""})
   const [retrievedFile, setRetrievedFile] = useState([{
-    UploadId: "asjdn",
+    UploadId: "oasnd-192asd-12398asd-123asdasd",
     Id: 1,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test",
-    Location: "Test",
-    Copyright: "",
-    PlanningArea: "Yishun",
+    ImageURL: "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/QUJB2YD4KRKB5OPGTIRL6A7M3A.jpg",
+    Name: "Construction Site",
+    Location: "Serangoon",
+    Copyright: "URA",
+    PlanningArea: "SERANGOON",
     Caption: "Example2",
-    Tags: "Example2",
+    Tags: "Example1,Example2, Example3",
     TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
+    UploadDate: "28th June 2022, 19:28 PM",
+    AdditionalField: [{ "Id": "97523eee841d5", "Key": "Details", "Value": "2 people on site" }]
   },
   {
-    UploadId: "sodifnos",
+    UploadId: "oasnd-192asd-12398asd-123asdasd",
     Id: 2,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test2",
-    Location: "Test2",
-    Copyright: "",
-    PlanningArea: "Yishun",
+    ImageURL: "https://d33wubrfki0l68.cloudfront.net/663d2c761439a867ad0547acbfb5396c4ee730ae/cc885/static/10be8217b3a21557d28597f852a3677c/2a8be/consturction-site-risk-movement.jpg",
+    Name: "Construction Site",
+    Location: "Serangoon",
+    Copyright: "URA",
+    PlanningArea: "SERANGOON",
     Caption: "Example3",
-    Tags: "Example3",
+    Tags: "Example1,Example2",
     TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
+    UploadDate: "28th June 2022, 19:28 PM",
+    AdditionalField: [{ "Id": "97523eee841d6", "Key": "Details", "Value": "2 people on site" }]
   },
   {
-    UploadId: "weofnowenf",
+    UploadId: "oasnd-192asd-12398asd-123asdasd",
     Id: 3,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test3",
-    Location: "Test3",
-    Copyright: "",
-    PlanningArea: "Yishun",
+    ImageURL: "https://envuetelematics.com/wp-content/uploads/2019/07/Construction-Asset-Management.jpg",
+    Name: "Construction Site",
+    Location: "Serangoon",
+    Copyright: "URA",
+    PlanningArea: "SERANGOON",
     Caption: "Example4",
-    Tags: "Example4",
+    Tags: "Example1,Example2,Example3",
     TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
+    UploadDate: "28th June 2022, 19:28 PM",
+    AdditionalField: []
   },
   {
-    UploadId: "oj0iajsdf",
+    UploadId: "oasnd-192asd-12398asd-123asdasd",
     Id: 4,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test4",
-    Location: "Test4",
-    Copyright: "",
-    PlanningArea: "Yishun",
+    ImageURL: "https://www.wpowerproducts.com/wp-content/uploads/2020/02/construction-site.jpg",
+    Name: "Construction Site",
+    Location: "Serangoon",
+    Copyright: "URA",
+    PlanningArea: "SERANGOON",
     Caption: "Example5",
-    Tags: "Example5",
+    Tags: "Example1,Example2,Example3,Example4",
     TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
+    UploadDate: "28th June 2022, 19:28 PM",
+    AdditionalField: []
   },
   {
-    UploadId: "aijsnc9unw",
+    UploadId: "oasnd-192asd-12398asd-123asdasd",
     Id: 5,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test5",
-    Location: "Test5",
-    Copyright: "",
-    PlanningArea: "Yishun",
+    ImageURL: "https://image.vietnamnews.vn/uploadvnnews/Article/2021/9/17/175160_mt.jpg",
+    Name: "Construction Site",
+    Location: "Serangoon",
+    Copyright: "URA",
+    PlanningArea: "SERANGOON",
     Caption: "Example6",
-    Tags: "Example6",
+    Tags: "Example1",
     TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
+    UploadDate: "28th June 2022, 19:28 PM",
+    AdditionalField: []
   },
   {
-    UploadId: "kajsnunq",
+    UploadId: "oasnd-192asd-12398asd-123asdasd",
     Id: 6,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test6",
-    Location: "Test6",
-    Copyright: "",
-    PlanningArea: "Yishun",
+    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--CBRgSCmB--/f_auto,q_auto/c_fill,g_auto,h_676,w_1200/construction-site--workers-in-singapore--1-_0.jpg?itok=G13iNssK",
+    Name: "Construction Site",
+    Location: "Serangoon",
+    Copyright: "URA",
+    PlanningArea: "SERANGOON",
     Caption: "Example7",
-    Tags: "Example7",
+    Tags: "Example1,Example2,Example3,Example4,Example5,Example6",
     TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "aoisnciuwn",
-    Id: 7,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test7",
-    Location: "Test7",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example8",
-    Tags: "Example8",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "asojdnajdn",
-    Id: 8,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test8",
-    Location: "Test8",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example9",
-    Tags: "Example9",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "oaisndoiasnd",
-    Id: 9,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test9",
-    Location: "Test9",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example10",
-    Tags: "Example10",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "aoisncioqncw",
-    Id: 10,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test10",
-    Location: "Test10",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example11",
-    Tags: "Example11",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "oianscoiunqa",
-    Id: 11,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test11",
-    Location: "Test11",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example12",
-    Tags: "Example12",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "oaisndoasod",
-    Id: 12,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test12",
-    Location: "Test12",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example13",
-    Tags: "Example13",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "ajcsnoasun",
-    Id: 13,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test13",
-    Location: "Test13",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example14",
-    Tags: "Example14",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-  },
-  {
-    UploadId: "ojansdjona",
-    Id: 14,
-    ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--bG6Js-NF--/f_auto%2Cq_auto/c_fill%2Cg_auto%2Ch_622%2Cw_830/v1/mediacorp/tdy/image/2022/03/11/20220310_bk_million_dollar_yishun_hdb_flat_1.jpg?itok=OEccwAiQ",
-    Name: "Test14",
-    Location: "Test14",
-    Copyright: "",
-    PlanningArea: "Yishun",
-    Caption: "Example15",
-    Tags: "Example15",
-    TakenDate: "28th June 2022, 19:28 PM",
-    UploadDate: "28th June 2022, 19:28 PM"
-    },
-    {
-      UploadId: "ajsdnjasnd",
-      Id: 15,
-      ImageURL: "https://upload.wikimedia.org/wikipedia/commons/b/b0/Jurong_Bird_Park%2C_Singapore.jpg",
-      Name: "Jurong Bird Park",
-      Location: "Jurong",
-      Copyright: "",
-      PlanningArea: "Jurong",
-      Caption: "Trees beside walking path",
-      Tags: "trees,people,road",
-      TakenDate: "28th June 2022, 19:28 PM",
-      UploadDate: "28th June 2022, 19:28 PM"
-    }])
-  
-  return (
-    <FileContext.Provider value={{ retrievedFile: retrievedFile, setRetrievedFile: setRetrievedFile }}>
-      { children }
-    </FileContext.Provider>
-  )
-}
-
-export function UploadCompleteProvider({ children }) {
+    UploadDate: "28th June 2022, 19:28 PM",
+    AdditionalField: []
+  }])
   const [alertActive, setAlertActive] = useState(false)
 
   return (
-    <CompleteContext.Provider value={{ alertActive: alertActive, setAlertActive: setAlertActive }}>
+    <FormContext.Provider value={{ files: files, setFiles: setFiles, validInput: validInput, setValidInput: setValidInput, retrievedFile: retrievedFile, setRetrievedFile: setRetrievedFile, alertActive: alertActive, setAlertActive: setAlertActive }}>
       {alertActive &&
         <Alert variant={'success'} style={{ width: '90%', margin: '2% auto' }}>
-        Upload is completed
-        <span style={{ float: 'right' }}><X size={25} onClick={() => setAlertActive(false)} /></span>
+        Your items have been uploaded successfully, and will be copied to intranet in 10 minutes.
+          <span className="float-right"><X size={25} className="pointer-cursor" onClick={() => setAlertActive(false)} /></span>
         </Alert>
       }
-      { children }
-    </CompleteContext.Provider>
+      {children}
+    </FormContext.Provider>
   )
 }
 
@@ -251,15 +122,5 @@ export function StepCompleteProvider({ children }) {
     <StepContext.Provider value={{ btnDisabled: btnDisabled, setBtnDisabled: setBtnDisabled }}>
       {children}
     </StepContext.Provider>
-  )
-}
-
-export function SingleEditProvider({ children }) {
-  const [newField, setNewField] = useState([])
-
-  return (
-    <SingleEditContext.Provider value={{ newField: newField, setNewField: setNewField }}>
-      {children}
-    </SingleEditContext.Provider>
   )
 }

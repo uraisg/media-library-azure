@@ -1,18 +1,16 @@
 import Heading from '@/components/Heading'
 import StepperForm from '@/components/Stepper'
-import { FileProvider, UploadCompleteProvider, StepCompleteProvider } from '@/components/AllContext'
+import { FormProvider, StepCompleteProvider } from '@/components/AllContext'
 
 const App = () => {
   return (
-    <FileProvider>
-      <UploadCompleteProvider>
+    <FormProvider>
         <Heading>
           <StepCompleteProvider>
             <StepperForm />
           </StepCompleteProvider>
         </Heading>
-      </UploadCompleteProvider>
-    </FileProvider>
+    </FormProvider>
   )
 }
 
