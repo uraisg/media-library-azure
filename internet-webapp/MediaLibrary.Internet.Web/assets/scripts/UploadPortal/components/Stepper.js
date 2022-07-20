@@ -5,9 +5,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import styled from 'styled-components'
 
-import Step1 from '@/components/ImageUpload'
-import Step2 from '@/components/PreviewUpdate'
-import Step3 from '@/components/ConfirmUpload'
+import FormSteps from '@/components/FormSteps'
 import Progressbar from '@/components/ProgressBar'
 import { useForm, useBtnDisabled } from '@/components/AllContext'
 
@@ -103,7 +101,10 @@ export default function StepperForm() {
   return (
     <Box sx={{ width: '90%', margin: '2% auto' }}>
       {progressBar &&
-        <Progressbar completed={completePercentage} setCompletePercentage={setCompletePercentage} activeStep={activeStep} />
+        <Progressbar
+        completed={completePercentage}
+        setCompletePercentage={setCompletePercentage}
+        activeStep={activeStep} />
       }
 
       <Stepper activeStep={activeStep} alternativeLabel>
@@ -119,27 +120,25 @@ export default function StepperForm() {
       </Stepper>
 
       <FormModel>
-        {activeStep === 0 &&
-          <Step1 errMsg={errMsg} setErrMsg={setErrMsg} />
-        }
-        {activeStep === 1 &&
-          <Step2 setActiveStep={setActiveStep} />
-        }
-        {activeStep === 2 &&
-          <Step3 />
-        }
+        <FormSteps
+          activeStep={activeStep}
+          errMsg={errMsg}
+          setErrMsg={setErrMsg}
+          setActiveStep={setActiveStep} />
       </FormModel>
 
       <React.Fragment>
         <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-          <button color="inherit" disabled={activeStep === 0} onClick={handleBack} className="btn btn-secondary">Back</button>
-          <Box sx={{ flex: '1 1 auto' }} />
-          {activeStep === 1 &&
-            <span style={{ marginRight: '2%', marginTop: '0.5%' }}>Uploading {formContext.retrievedFile.length} image(s)</span>
+        <button color="inherit" disabled={activeStep === 0} onClick={handleBack} className="btn btn-secondary">Back</button>
+
+        <Box sx={{ flex: '1 1 auto' }} />
+        {activeStep === 1 &&
+          <span style={{ marginRight: '2%', marginTop: '0.5%' }}>Uploading {formContext.retrievedFile.length} image(s)</span>
           }
-          <button onClick={handleNext} className="btn btn-primary" disabled={activeStep === 0 ? stepCompleteContext.btnDisabled : false}>
-            {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
-          </button>
+
+        <button onClick={handleNext} className="btn btn-primary" disabled={activeStep === 0 ? stepCompleteContext.btnDisabled : false}>
+          {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
+        </button>
         </Box>
       </React.Fragment>
     </Box>

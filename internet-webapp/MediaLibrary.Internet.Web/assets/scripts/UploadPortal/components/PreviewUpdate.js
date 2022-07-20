@@ -4,8 +4,7 @@ import { Modal, Button } from 'react-bootstrap'
 import { ArrowClockwise, PencilSquare, Trash, X } from 'react-bootstrap-icons'
 import { TailSpin } from 'react-loader-spinner'
 
-import SingleEdit from '@/components/SingleEdit'
-import BatchEdit from '@/components/BatchEdit'
+import EditItem from '@/components/EditItem'
 import DisplayItem from '@/components/DisplayItem'
 import { useForm } from '@/components/AllContext'
 
@@ -23,10 +22,10 @@ const Checkbox = styled.input.attrs({ type: 'checkbox' })`
 
 export default function Step2(props) {
   const formContext = useForm()
-  
+
   const [checkNo, setCheckNo] = useState(0)
-  const [singleEdit, setSingleEdit] = useState(false)
-  const [batchEdit, setBatchEdit] = useState(false)
+  const [editItem, setEditItem] = useState(false)
+  const [editType, setEditType] = useState("")
   const [index, setIndex] = useState([])
   const [deleteModal, setDeleteModal] = useState(false)
   const [refresh, setRefresh] = useState(false)
@@ -34,8 +33,8 @@ export default function Step2(props) {
   const renderRefresh = () => {
     setCheckNo(0)
     setIndex([])
-    setSingleEdit(false)
-    setBatchEdit(false)
+    setEditItem(false)
+    setEditType("")
     setDeleteModal(false)
     setRefresh(true)
     $('.item-chkbox').css("pointer-events", "none")
@@ -55,11 +54,11 @@ export default function Step2(props) {
         Location: "Serangoon",
         Copyright: "URA",
         PlanningArea: "SERANGOON",
-        Caption: "Example2",
-        Tags: "Example1,Example2,Example3",
+        Caption: "A large building with a lot of people",
+        Tags: "people,building",
         TakenDate: "28th June 2022, 19:28 PM",
         UploadDate: "28th June 2022, 19:28 PM",
-        AdditionalField: [{ "Id": "97523eee841d5", "Key": "Details", "Value": "2 people on site" }]
+        AdditionalField: []
       },
       {
         UploadId: "oasnd-192asd-12398asd-123asdasd",
@@ -69,68 +68,12 @@ export default function Step2(props) {
         Location: "Serangoon",
         Copyright: "URA",
         PlanningArea: "SERANGOON",
-        Caption: "Example3",
-        Tags: "Example1,Example2",
-        TakenDate: "28th June 2022, 19:28 PM",
-        UploadDate: "28th June 2022, 19:28 PM",
-        AdditionalField: [{ "Id": "97523eee841d6", "Key": "Details", "Value": "2 people on site" }]
-      },
-      {
-        UploadId: "oasnd-192asd-12398asd-123asdasd",
-        Id: 3,
-        ImageURL: "https://envuetelematics.com/wp-content/uploads/2019/07/Construction-Asset-Management.jpg",
-        Name: "Construction Site",
-        Location: "Serangoon",
-        Copyright: "URA",
-        PlanningArea: "SERANGOON",
-        Caption: "Example4",
-        Tags: "Example1,Example2,Example3",
+        Caption: "a land with cranes",
+        Tags: "sand,land,crane",
         TakenDate: "28th June 2022, 19:28 PM",
         UploadDate: "28th June 2022, 19:28 PM",
         AdditionalField: []
-      },
-      {
-        UploadId: "oasnd-192asd-12398asd-123asdasd",
-        Id: 4,
-        ImageURL: "https://www.wpowerproducts.com/wp-content/uploads/2020/02/construction-site.jpg",
-        Name: "Construction Site",
-        Location: "Serangoon",
-        Copyright: "URA",
-        PlanningArea: "SERANGOON",
-        Caption: "Example5",
-        Tags: "Example1,Example2,Example3,Example4",
-        TakenDate: "28th June 2022, 19:28 PM",
-        UploadDate: "28th June 2022, 19:28 PM",
-        AdditionalField: []
-      },
-      {
-        UploadId: "oasnd-192asd-12398asd-123asdasd",
-        Id: 5,
-        ImageURL: "https://image.vietnamnews.vn/uploadvnnews/Article/2021/9/17/175160_mt.jpg",
-        Name: "Construction Site",
-        Location: "Serangoon",
-        Copyright: "URA",
-        PlanningArea: "SERANGOON",
-        Caption: "Example6",
-        Tags: "Example1",
-        TakenDate: "28th June 2022, 19:28 PM",
-        UploadDate: "28th June 2022, 19:28 PM",
-        AdditionalField: []
-      },
-      {
-        UploadId: "oasnd-192asd-12398asd-123asdasd",
-        Id: 6,
-        ImageURL: "https://onecms-res.cloudinary.com/image/upload/s--CBRgSCmB--/f_auto,q_auto/c_fill,g_auto,h_676,w_1200/construction-site--workers-in-singapore--1-_0.jpg?itok=G13iNssK",
-        Name: "Construction Site",
-        Location: "Serangoon",
-        Copyright: "URA",
-        PlanningArea: "SERANGOON",
-        Caption: "Example7",
-        Tags: "Example1,Example2,Example3,Example4,Example5,Example6",
-        TakenDate: "28th June 2022, 19:28 PM",
-        UploadDate: "28th June 2022, 19:28 PM",
-        AdditionalField: []
-        }])
+      }])
       setRefresh(false)
     }, 2000)
   }
@@ -185,13 +128,12 @@ export default function Step2(props) {
   }
 
   const displayEdit = (e) => {
+    setEditItem(true)
     if (checkNo == 1) {
-      setSingleEdit(true)
-      setBatchEdit(false)
+      setEditType("Single")
     }
     else {
-      setSingleEdit(false)
-      setBatchEdit(true)
+      setEditType("Batch")
     }
   }
 
@@ -207,28 +149,26 @@ export default function Step2(props) {
 
   return (
     <React.Fragment>
-        {singleEdit &&
-          <SingleEdit setSingleEdit={setSingleEdit} index={index} renderRefresh={renderRefresh} />
-        }
-        {batchEdit &&
-          <BatchEdit index={index} setBatchEdit={setBatchEdit} renderRefresh={renderRefresh} />
-        }
+      {editItem &&
+        <EditItem setEditItem={setEditItem} index={index} renderRefresh={renderRefresh} editType={editType} />
+      }
 
-        <Modal show={deleteModal}>
-          <Modal.Header>
-            <Modal.Title>Confirm Delete</Modal.Title>
-            <Modal.Title className="float-right"><X size={35} onClick={closeModal} /></Modal.Title>
-          </Modal.Header>
-          <Modal.Body>Are you sure you want to deleted the image(s)? This action cannot be undone.</Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={closeModal}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={deleteItem}>
-              Confirm
-            </Button>
-          </Modal.Footer>
-        </Modal>
+
+      <Modal show={deleteModal}>
+        <Modal.Header>
+          <Modal.Title>Confirm Delete</Modal.Title>
+          <Modal.Title className="float-right"><X size={35} onClick={closeModal} /></Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to deleted the image(s)? This action cannot be undone.</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeModal}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={deleteItem}>
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <p>Confirm uploads and update information as needed</p>
       <div className="d-flex" >
