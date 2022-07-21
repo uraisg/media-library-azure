@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { Modal, Button } from 'react-bootstrap'
 import { ArrowClockwise, PencilSquare, Trash, X } from 'react-bootstrap-icons'
 import { TailSpin } from 'react-loader-spinner'
+import PropTypes from 'prop-types'
 
 import EditItem from '@/components/EditItem'
 import DisplayItem from '@/components/DisplayItem'
@@ -20,7 +21,7 @@ const Checkbox = styled.input.attrs({ type: 'checkbox' })`
   width: 20px;
 `
 
-export default function Step2(props) {
+const Step2 = (props) => {
   const formContext = useForm()
 
   const [checkNo, setCheckNo] = useState(0)
@@ -207,3 +208,9 @@ export default function Step2(props) {
     </React.Fragment>
   )
 }
+
+Step2.propTypes = {
+  setActiveStep: PropTypes.func
+}
+
+export default Step2

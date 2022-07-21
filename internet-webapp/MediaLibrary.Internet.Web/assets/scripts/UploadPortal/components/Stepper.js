@@ -15,7 +15,7 @@ const FormModel = styled.div`
 
 const steps = ['Image Upload', 'Preview & Update', 'Confirm Upload'];
 
-export default function StepperForm() {
+const StepperForm = () => {
   const formContext = useForm()
   const stepCompleteContext = useBtnDisabled()
 
@@ -25,7 +25,6 @@ export default function StepperForm() {
   const [errMsg, setErrMsg] = useState(false)
 
   const handleNext = () => {
-    window.scrollTo(0, 0)
     if (activeStep == 0) {
       if (validateInput()) {
         setCompletePercentage(100 / formContext.files.length / 2)
@@ -38,6 +37,7 @@ export default function StepperForm() {
     }
     else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1)
+      window.scrollTo(0, 0)
     }
   };
 
@@ -63,6 +63,7 @@ export default function StepperForm() {
 
     const name = formContext.validInput.Name.trim()
     const location = formContext.validInput.Location.trim()
+    const copyright = formContext.validInput.Copyright.trim()
     const files = formContext.files
     //Call api here
     //Replace the first timeout with post and get api call
@@ -72,6 +73,7 @@ export default function StepperForm() {
         //insert get api result objects with setRetrievedFile
         setProgressBar(false)
         setActiveStep((prevActiveStep) => prevActiveStep + 1)
+        window.scrollTo(0, 0)
       }, 500)
     }, 3000)
   }
@@ -85,16 +87,18 @@ export default function StepperForm() {
     setTimeout(() => {
       setCompletePercentage(100)
       setTimeout(() => {
+        //Uncomment when api are completed
+        //setRetrievedFile([])
+
         setProgressBar(false)
+        formContext.setFiles([])
+        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
+        setActiveStep(0)
+        window.scrollTo(0, 0)
       }, 500)
 
-      //Uncomment when api are completed
-      //setRetrievedFile([])
       formContext.setAlertActive(true)
       setTimeout(() => { formContext.setAlertActive(false) }, 5000)
-      formContext.setFiles([])
-      formContext.setValidInput({ "Name": "", "Location": "" })
-      setActiveStep(0)
     }, 4000)
   }
 
@@ -144,3 +148,5 @@ export default function StepperForm() {
     </Box>
   );
 }
+
+export default StepperForm

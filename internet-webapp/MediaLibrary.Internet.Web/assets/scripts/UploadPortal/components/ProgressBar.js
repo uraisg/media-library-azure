@@ -16,30 +16,42 @@ const Background = styled.div`
 `
 
 const Bar = styled.div`
-  width: 80%;
-  margin: 0 10%;
+  width: 50%;
+  margin: 0 25%;
   bottom: 15px;
   position: absolute;
 `
 
-export default function Progressbar(props) {
+const Progressbar = (props) => {
   let interval;
-  useEffect(() => {
-      interval = setInterval(() => {
-        props.setCompletePercentage(completed => completed + 10)
-      }, 1000)
 
+  useEffect(() => {
+    if (props.completed < 90) {
+      interval = setInterval(() => {
+        props.setCompletePercentage((completed) => {
+          if (completed < 90) {
+            completed = completed + 10
+          }
+
+          return completed
+        })
+      }, 1000)
+    }
     return () => clearInterval(interval)
   }, [])
+
+  
 
   return (
     <Background>
       <Bar>
-        <div className="pl-5 p-3 rounded text-white bg-dark">
+        <div className="pl-5 p-3 text-white bg-dark">
           {props.activeStep === 0 ? 'Generating image details...' : 'Uploading to intranet...'}
         </div>
-        <ProgressBar animated now={props.completed} className="border" />
+        <ProgressBar animated now={props.completed} className="border rounded-0" />
       </Bar>
     </Background>
   )
 }
+
+export default Progressbar

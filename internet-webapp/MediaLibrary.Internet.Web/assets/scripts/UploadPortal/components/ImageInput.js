@@ -21,7 +21,7 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview, FilePondPluginFileValidateType, FilePondPluginFileValidateSize)
 
 // Our app
-export default function FileInput() {
+const FileInput = () => {
   const formContext = useForm()
 
   return (
@@ -40,4 +40,6 @@ export default function FileInput() {
     </div>
   )
 }
+
+export default FileInput
 

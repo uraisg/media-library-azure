@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
 
 
 const Checkbox = styled.input.attrs({ type: 'checkbox' })`
@@ -26,14 +27,14 @@ const Tags = styled.span`
   margin-right: 0.25em;
 `
 
-export default function DisplayItem(props) {
+const DisplayItem = (props) => {
   const uploadTags = props.item.Tags.split(",")
   return (
     <div className='align-items-center d-flex'>
       {props.update &&
         <Checkbox onClick={props.setCheckValue} id={props.Key + "ChkBox"} className="item-chkbox" />
       }
-      <div className="container item-list pt-4" id={props.Key + "Div"}>
+      <div className="container item-list pt-4 pb-4" id={props.Key + "Div"}>
         <div className="row">
           <div className="col-12 col-lg-5 col-xl-4">
             <Img src={props.item.ImageURL} />
@@ -130,3 +131,11 @@ export default function DisplayItem(props) {
     </div>
   )
 }
+
+DisplayItem.propTypes = {
+  item: PropTypes.object,
+  Key: PropTypes.number,
+  update: PropTypes.bool
+}
+
+export default DisplayItem

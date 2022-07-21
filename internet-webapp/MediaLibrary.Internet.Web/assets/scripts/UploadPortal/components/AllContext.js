@@ -15,7 +15,7 @@ export function useBtnDisabled() {
 
 export function FormProvider({ children }) {
   const [files, setFiles] = useState([])
-  const [validInput, setValidInput] = useState({"Name": "", "Location": ""})
+  const [validInput, setValidInput] = useState({"Name": "", "Location": "", "Copyright": "URA"})
   const [retrievedFile, setRetrievedFile] = useState([{
     UploadId: "oasnd-192asd-12398asd-123asdasd",
     Id: 1,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components'
 import { Button } from 'react-bootstrap'
 import { X, Plus } from 'react-bootstrap-icons'
+import PropTypes from 'prop-types'
 
 import { useForm } from '@/components/AllContext'
 
@@ -63,7 +64,7 @@ const ButtonArea = styled.div`
 `
 
 
-function SingleEdit(props) {
+const SingleEdit = (props) => {
   const fileContext = useForm()
 
   const fileArr = fileContext.retrievedFile.filter(item => item.Id == props.index[0])[0]
@@ -246,19 +247,19 @@ function SingleEdit(props) {
 
               {newField.length > 0 &&
                 <div className="mt-4 row">
-                  <div className="col-3 col-lg-5 text-center"><strong className="mr-2">Key</strong></div>
+                  <div className="col-3 col-lg-5 text-center"><strong className="mr-2">Label Name</strong></div>
                   <div className="col-9 col-lg-7 text-center"><strong className="ml-2 mr-5">Value</strong></div>
                 </div>
               }
               {newField.map((item) => (
                 <div className="newField-div mt-2 row" key={item.Id} id={item.Id}>
-                  <div className="d-flex align-items-center col-3 col-lg-5"><input type="text" value={item.Key} onChange={updateKeyField} data-keyid={item.Id} className="form-control" placeholder="Enter key here" />:</div>
+                  <div className="d-flex align-items-center col-3 col-lg-5"><input type="text" value={item.Key} onChange={updateKeyField} data-keyid={item.Id} className="form-control" placeholder="Enter label name here" />:</div>
                   <div className="d-flex align-items-center col-9 col-lg-7"><input type="text" value={item.Value} data-keyid={item.Id} onChange={updateValueField} className={"newField-Value-" + item.Id + " form-control"} placeholder="Enter value here" /><X className="user-select-none pointer-cursor" size={25} color={'red'} id={item.Id} onClick={removeNewField} /></div>
                   <span id={"errMsg-addField-" + item.Id} className="ml-3 mt-1 text-danger"></span>
                 </div>
               ))}
               {newField.length > 0 &&
-                <small className="text-secondary">Key field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
+                <small className="text-secondary">Label name field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
               }
 
               <div className="mt-3">
@@ -276,7 +277,7 @@ function SingleEdit(props) {
   )
 }
 
-function BatchEdit(props) {
+const BatchEdit = (props) => {
   const formContext = useForm()
   const [newField, setNewField] = useState(checkAddField())
   const [loading, setLoading] = useState(false)
@@ -559,19 +560,19 @@ function BatchEdit(props) {
 
           {newField.length > 0 &&
             <div className="mt-4 row">
-              <div className="col-5 text-center"><strong className="mr-2">Key</strong></div>
+              <div className="col-5 text-center"><strong className="mr-2">Label Name</strong></div>
               <div className="col-7 text-center"><strong className="ml-2 mr-5">Value</strong></div>
             </div>
           }
           {newField.map((item, index) => (
             <div className="newField-div mt-2 row" key={item.Id} id={item.Id}>
-              <div className="d-flex align-items-center col-5"><input type="text" value={item.Key} data-keyid={item.Id} onChange={updateKeyField} className={"newField-Key-" + item.Id + " form-control"} placeholder="Enter key here" />:</div>
+              <div className="d-flex align-items-center col-5"><input type="text" value={item.Key} data-keyid={item.Id} onChange={updateKeyField} className={"newField-Key-" + item.Id + " form-control"} placeholder="Enter label name here" />:</div>
               <div className="d-flex align-items-center col-7"><input type="text" value={item.Value} data-keyid={item.Id} onChange={updateValueField} className={"newField-Value-" + item.Id + " form-control"} placeholder="Enter value here" /><X className="user-select-none pointer-cursor" size={25} color={'red'} id={item.Id} onClick={removeNewField} /></div>
               <span id={"errMsg-addField-" + item.Id} className="ml-3 mt-1 text-danger"></span>
             </div>
           ))}
           {newField.length > 0 &&
-            <small className="text-secondary">Key field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
+            <small className="text-secondary">Label name field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
           }
 
           <ButtonArea>
@@ -587,7 +588,7 @@ function BatchEdit(props) {
   )
 }
 
-export default function EditItem(props) {
+const EditItem = (props) => {
   if (props.editType == "Single") {
     return SingleEdit(props)
   }
@@ -596,4 +597,12 @@ export default function EditItem(props) {
   }
 }
 
+EditItem.propTypes = {
+  setEditItem: PropTypes.func,
+  index: PropTypes.arrayOf(PropTypes.number),
+  renderRefresh: PropTypes.func,
+  editType: PropTypes.string
+}
+
+export default EditItem
 

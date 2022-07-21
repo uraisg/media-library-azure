@@ -1,4 +1,4 @@
-export default function Heading({ children }) {
+const Heading = ({ children }) => {
   return (
     <div className="container mt-4">
       <h1>Upload Media</h1>
@@ -7,3 +7,5 @@ export default function Heading({ children }) {
     </div>
   )
 }
+
+export default Heading

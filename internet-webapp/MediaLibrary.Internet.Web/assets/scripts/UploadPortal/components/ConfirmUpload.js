@@ -3,7 +3,7 @@ import React from 'react'
 import DisplayItem from '@/components/DisplayItem'
 import { useForm } from '@/components/AllContext'
 
-export default function Step3() {
+const Step3 = () => {
   const fileContext = useForm()
 
   return (
@@ -20,3 +20,5 @@ export default function Step3() {
     </React.Fragment>
   )
 }
+
+export default Step3

@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
+import PropTypes from 'prop-types'
 
 import FileInput from '@/components/ImageInput'
 import { useForm, useBtnDisabled } from '@/components/AllContext'
 
-export default function Step1(props) {
+const Step1 = (props) => {
   const formContext = useForm()
   const btnDisabled = useBtnDisabled()
 
@@ -38,7 +39,7 @@ export default function Step1(props) {
       </div>
       <div className="mt-2 form-check">
         <label htmlFor="Copyright">Copyright Owner</label>
-        <input type="text" className="form-control" defaultValue="URA" id="copyright" />
+        <input type="text" className="form-control" onKeyUp={checkValid} defaultValue={formContext.validInput.Copyright} id="Copyright" />
         <small className="text-secondary">Enter the copyright owner's name (Works you create in the course of employment are automatically owned by your employer)</small>
       </div>
 
@@ -48,3 +49,10 @@ export default function Step1(props) {
     </React.Fragment >
    )
 }
+
+Step1.propTypes = {
+  errMsg: PropTypes.string,
+  setErrMsg: PropTypes.func
+}
+
+export default Step1

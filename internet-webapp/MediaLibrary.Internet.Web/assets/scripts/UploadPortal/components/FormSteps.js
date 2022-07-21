@@ -1,8 +1,10 @@
+import PropTypes from 'prop-types'
+
 import Step1 from '@/components/ImageUpload'
 import Step2 from '@/components/PreviewUpdate'
 import Step3 from '@/components/ConfirmUpload'
 
-export default function FormSteps(props) {
+const FormSteps = (props) => {
   return (
   <>
     {props.activeStep === 0 && 
@@ -20,3 +22,12 @@ export default function FormSteps(props) {
   </>
   )
 }
+
+FormSteps.propTypes = {
+  activeStep: PropTypes.number,
+  errMsg: PropTypes.string,
+  setErrMsg: PropTypes.func,
+  setActiveStep: PropTypes.func
+}
+
+export default FormSteps
