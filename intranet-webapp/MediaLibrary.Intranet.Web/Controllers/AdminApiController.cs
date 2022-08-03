@@ -26,15 +26,18 @@ namespace MediaLibrary.Intranet.Web.Controllers
         private readonly PlanningAreaService _planningAreaService;
         private readonly DashboardActivityService _dashboardActivityService;
         private readonly FileDetailsService _fileDetailsService;
+        private readonly MediaSearchService _mediaSearchService;
         public AdminApiController(PlanningAreaService planningAreaService,
             DashboardActivityService dashboardActivityService,
             FileDetailsService fileDetailsService,
-            ILogger<AdminApiController> logger)
+            ILogger<AdminApiController> logger,
+            MediaSearchService mediaSearchService)
         {
             _planningAreaService = planningAreaService;
             _dashboardActivityService = dashboardActivityService;
             _fileDetailsService = fileDetailsService;
             _logger = logger;
+            _mediaSearchService = mediaSearchService;
         }
 
         [HttpGet("/api/planningarea", Name = nameof(GetPlanningArea))]
@@ -73,9 +76,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             _logger.LogInformation("Retrieving file size for {planningArea} planning area in year {year}", planningArea, year);
 
-            var result = await _fileDetailsService.GetAllFileSizeByGroupAsync(planningArea, year);
+            var fileSizeResult = await _fileDetailsService.GetAllFileSizeByGroupAsync(planningArea, year);
 
-            return Ok(result);
+            return Ok(fileSizeResult);
         }
 
         [HttpGet("/api/activity/graph/upload/{planningArea}/{year}", Name = nameof(GetUploadCount))]
@@ -288,6 +291,22 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 result.Add(report);
             }
             return result;
+        }
+
+        [HttpGet("/api/database/add", Name = nameof(GetDatabaseData))]
+        public async Task<IActionResult> GetDatabaseData()
+        {
+            var results = await _mediaSearchService.GetAllMediaItemsAsync();
+
+            _logger.LogInformation("Adding all items into database");
+
+            foreach (var result in results)
+            {
+                await _dashboardActivityService.AddActivityForUpload(result.Items);
+                await _fileDetailsService.AddDetailsForUpload(result.Items);
+            }
+
+            return Ok("Added Successfully");
         }
     }
 }

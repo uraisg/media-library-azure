@@ -29,7 +29,6 @@ mix
   .copy('node_modules/leaflet/dist/images', 'wwwroot/styles/images')
   .js('assets/scripts/item.js', 'scripts')
   .js('assets/scripts/edit.js', 'scripts')
-  .js('assets/scripts/dashboard.js', 'scripts')
   .js('assets/scripts/ActivityReport.js', 'scripts')
   .js('assets/scripts/FileReport.js', 'scripts')
   .js('assets/scripts/Staff.js', 'scripts')
@@ -37,3 +36,4 @@ mix
   .js('assets/scripts/GenerateDashboardItem.js', 'scripts')
   .sass('assets/styles/site.scss', 'styles')
 mix.js('assets/scripts/gallery/main.js', 'scripts/gallery.js').react()
+mix.js('assets/scripts/admin/dashboard/main.js', 'scripts/dashboard.js').react()
