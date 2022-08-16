@@ -371,6 +371,8 @@ a.navbar-brand {
 }
 
 .filterOption {
+    margin-right: 0.25em;
+
     &:hover {
         text-decoration: underline;
         cursor: pointer;
@@ -421,8 +423,8 @@ a.navbar-brand {
     margin-left: 2%;
 }
 
-.filter-date-input {
-    width: 50px;
+.filter-date-text {
+    width: 60px;
 }
 
 #refreshTableBtn, .sortDropDown, .planning-area-item {
