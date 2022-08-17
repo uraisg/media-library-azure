@@ -209,7 +209,7 @@ namespace MediaLibrary.Intranet.Web.Services
             if (PlanningAreaExist(planningArea))
             {
                 var areaPolygon = await GetPlanningAreaPolygonAsync(planningArea);
-                result.Where(e => areaPolygon.Contains(e.fd.AreaPoint));
+                result = result.Where(e => areaPolygon.Contains(e.fd.AreaPoint));
             }
 
             var topView = result.GroupBy(e => e.da.FileId).OrderByDescending(e => e.Count()).Select(e => new { FileId = e.Key, ViewCount = e.Count() });
