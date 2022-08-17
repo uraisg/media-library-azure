@@ -83,7 +83,9 @@ const FileSize = (props) => {
       <hr className="mt-3" />
 
       <p className="text-right text-primary">
-        <a>
+        <a
+          href="/Admin/FileReport"
+        >
           Open File Report
           <ChevronRight
             size={16}
