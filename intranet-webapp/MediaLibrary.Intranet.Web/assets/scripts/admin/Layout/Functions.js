@@ -16,5 +16,13 @@ export const convertSort = (option) => {
       return "Least Download First"
     case "downloadStatsDSC":
       return "Most Download First"
+    case "uploadASC":
+      return "Least Upload First"
+    case "uploadDSC":
+      return "Most Upload First"
+    case "downloadASC":
+      return "Least Download First"
+    case "downloadDSC":
+      return "Most DownloadFirst"
   }
 }
