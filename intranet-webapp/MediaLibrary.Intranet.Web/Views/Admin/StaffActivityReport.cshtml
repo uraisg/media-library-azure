@@ -1,6 +1,19 @@
 ﻿@using Microsoft.AspNetCore.Routing;
 
 @{
+    ViewData["Title"] = "View staff activities";
+}
+
+<input type="hidden" value="@ViewData["Email"]" id="email" />
+<div id="root"></div>
+
+@section Scripts {
+    <script src="~/scripts/staffactivity.js"></script>
+}
+
+@*@using Microsoft.AspNetCore.Routing;
+
+@{
 }
 
 <div class="admin-container">
@@ -120,4 +133,4 @@
 
         @section Scripts {
             <script src="~/scripts/StaffActivityReport.js"></script>
-        }
+        }*@
