@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import { Upload, Image, Download } from 'react-bootstrap-icons'
+import PropTypes from 'prop-types'
 
 const UploadCard = styled.div`
   padding: 3%;
@@ -110,6 +111,10 @@ const DashboardCard = (props) => {
       </DownloadCard>
     </>
   )
+}
+
+DashboardCard.propTypes = {
+  card: PropTypes.object
 }
 
 export default DashboardCard

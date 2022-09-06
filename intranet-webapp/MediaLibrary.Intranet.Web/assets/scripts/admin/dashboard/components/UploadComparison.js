@@ -1,5 +1,6 @@
 import { Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import PropTypes from 'prop-types'
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend);
 
@@ -42,6 +43,10 @@ const UploadComparison = (props) => {
         <Line options={options} data={data} height={100} />
     </div>
   )
+}
+
+UploadComparison.propTypes = {
+  uploadComparison: PropTypes.object
 }
 
 export default UploadComparison

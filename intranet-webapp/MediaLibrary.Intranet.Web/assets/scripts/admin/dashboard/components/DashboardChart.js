@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
 
 import ActivityChart from './@/../../../dashboard/components/ActivityChart'
 import UploadComparison from './@/../../../dashboard/components/UploadComparison'
@@ -59,6 +60,18 @@ const DashboardChart = (props) => {
       </RightDiv>
     </>
   )
+}
+
+DashboardChart.propTypes = {
+  planningArea: PropTypes.string,
+  fileSize: PropTypes.object, 
+  setFileSize: PropTypes.func,
+  firstYear: PropTypes.arrayOf(PropTypes.number),
+  activity: PropTypes.object,
+  setActivity: PropTypes.func,
+  uploadComparison: PropTypes.object,
+  downloadComparison: PropTypes.object,
+  viewStats: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default DashboardChart
