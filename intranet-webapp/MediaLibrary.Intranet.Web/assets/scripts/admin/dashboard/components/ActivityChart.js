@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from 'react-bootstrap'
 import { BarChartLine, GraphUp, ChevronRight } from 'react-bootstrap-icons'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
+import PropTypes from 'prop-types'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
@@ -17,7 +18,6 @@ const BarGraph = (props) => {
 const LineGraph = (props) => {
   return (<Line options={options} data={props.data} height={150} />)
 }
-
 
 const ActivityChart = (props) => {
   //0 -- Bar Graph
@@ -212,6 +212,13 @@ const ActivityChart = (props) => {
       </p>
     </div>
   )
+}
+
+ActivityChart.propTypes = {
+  firstYear: PropTypes.arrayOf(PropTypes.number),
+  activity: PropTypes.object,
+  setActivity: PropTypes.func,
+  planningArea: PropTypes.string,
 }
 
 export default ActivityChart

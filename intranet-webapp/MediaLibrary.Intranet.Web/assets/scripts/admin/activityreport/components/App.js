@@ -2,7 +2,7 @@ import Navbar from './@/../../../Layout/Navbar'
 import ActivityReport from './@/../../../activityreport/components/ActivityReport'
 import { Container, LeftDiv, RightDiv } from './@/../../../Layout/Component'
 
-const App = (props) => {
+const App = () => {
   return (
     <Container>
 

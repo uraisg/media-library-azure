@@ -1,6 +1,7 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { ChevronRight } from 'react-bootstrap-icons'
+import PropTypes from 'prop-types'
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -95,6 +96,13 @@ const FileSize = (props) => {
       </p>
     </div >
   )
+}
+
+FileSize.propTypes = {
+  firstYear: PropTypes.arrayOf(PropTypes.number),
+  fileSize: PropTypes.object,
+  setFileSize: PropTypes.func,
+  planningArea: PropTypes.string,
 }
 
 export default FileSize

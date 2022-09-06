@@ -1,5 +1,6 @@
 import React from 'react'
 import { ChevronRight } from 'react-bootstrap-icons'
+import PropTypes from 'prop-types'
 
 const ViewCount = (props) => {
   return (
@@ -35,6 +36,10 @@ const ViewCount = (props) => {
       </p>
     </div>
   )
+}
+
+ViewCount.propTypes = {
+  viewStats: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default ViewCount
