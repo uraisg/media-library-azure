@@ -1,9 +1,42 @@
+import styled from 'styled-components'
+
 import Topbar from './@/../../../activityreport/components/Topbar'
-import { FilterProvider } from './@/../../../activityreport/components/Context'
+import { TableResult } from './@/../../../Layout/Component'
 import FilterOptions from './@/../../../activityreport/components/FilterOptions'
-import TableResult from './@/../../../activityreport/components/TableResult'
+import { useFilter } from './@/../../../activityreport/components/Context'
+
+
+const Image = styled.img`
+  height: 80px;
+  width: 90px;
+`
 
 const ActivityReport = () => {
+  const filterContext = useFilter()
+
+  const tableHeader = ["", "Planning Area", "Name", "Email", "Department", "Group", "Date & Time", "Activity"]
+  const tableBody = filterContext.result.map((item, index) => {
+    return (
+      <tr key={index}>
+        <td>
+          <a
+            href={item.Link}
+            target="_blank"
+          >
+            <Image src={item.Image} />
+          </a>
+        </td>
+        <td>{item.Location}</td>
+        <td>{item.Name}</td>
+        <td>{item.Email}</td>
+        <td>{item.Department}</td>
+        <td>{item.Group}</td>
+        <td>{item.DateTime}</td>
+        <td>{item.ActivityType}</td>
+      </tr>
+    )
+  })
+
   return (
     <>
       <Topbar />
@@ -14,10 +47,16 @@ const ActivityReport = () => {
         Activity Report Statistics
       </h2>
 
-      <FilterProvider>
-        <FilterOptions />
-        <TableResult />
-      </FilterProvider>
+      
+      <FilterOptions />
+      <TableResult
+        tableHeader={tableHeader}
+        tableBody={tableBody}
+        currentPage={filterContext.page.CurrentPage}
+        totalPage={filterContext.page.TotalPage}
+        active={filterContext.active}
+        setActive={filterContext.setActive}
+      />
     </>
   )
 }

@@ -1,6 +1,7 @@
 import Navbar from './@/../../../Layout/Navbar'
 import ActivityReport from './@/../../../staffactivity/components/ActivityReport'
 import { Container, LeftDiv, RightDiv } from './@/../../../Layout/Component'
+import { FilterProvider } from './@/../../../staffactivity/components/Context'
 
 const App = () => {
   return (
@@ -13,7 +14,9 @@ const App = () => {
       </LeftDiv>
 
       <RightDiv>
-        <ActivityReport />
+        <FilterProvider>
+          <ActivityReport />
+        </FilterProvider>
       </RightDiv>
 
     </Container>

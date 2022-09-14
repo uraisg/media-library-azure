@@ -1,6 +1,7 @@
 import Navbar from './@/../../../Layout/Navbar'
 import Staff from './@/../../../staff/components/Staff'
 import { Container, LeftDiv, RightDiv } from './@/../../../Layout/Component'
+import { FilterProvider } from './@/../../../staff/components/Context'
 
 
 const App = () => {
@@ -14,7 +15,9 @@ const App = () => {
       </LeftDiv>
 
       <RightDiv>
-        <Staff />
+        <FilterProvider>
+          <Staff />
+        </FilterProvider>
       </RightDiv>
 
     </Container>
