@@ -37,8 +37,6 @@ export const RightDiv = styled.div`
   }
 `
 
-
-
 export const Page = (props) => {
   const getPageArr = (currentPage, totalPage) => {
     let maxPageShow = 5
@@ -163,5 +161,75 @@ export const Page = (props) => {
         Next
       </Pagination.Item>
     </Pagination>
+  )
+}
+
+export const TableResult = (props) => {
+  const TopPagination = ({ children }) => {
+    return (
+      <div
+        className="pt-3 pb-1 pr-4 justify-content-end d-flex"
+      >
+        {children}
+      </div>
+    )
+  }
+
+  const BottomPagination = ({ children }) => {
+    return (
+      <div
+        className="p-1 pr-4 justify-content-end d-flex"
+      >
+        {children}
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="shadow bg-white rounded mt-2"
+    >
+      <TopPagination>
+        <Page
+          currentPage={props.currentPage}
+          totalPage={props.totalPage}
+          active={props.active}
+          setActive={props.setActive}
+        />
+      </TopPagination>
+
+      <hr className="hrNegativeMargin" />
+
+      <div className="p-2">
+        <table
+          className="table table-striped table-borderless table-responsive-lg table-sm"
+          width="100%"
+          id="activityTable"
+          aria-labelledby="activityTable"
+        >
+          <thead>
+            <tr align="center">
+              {props.tableHeader.map((item, index) => (
+                <th key={index}>{item}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody id="activityTableBody" className="text-center">
+            {props.tableBody}
+          </tbody>
+        </table>
+      </div>
+
+      <hr />
+
+      <BottomPagination>
+        <Page
+          currentPage={props.currentPage}
+          totalPage={props.totalPage}
+          active={props.active}
+          setActive={props.setActive}
+        />
+      </BottomPagination>
+    </div>
   )
 }

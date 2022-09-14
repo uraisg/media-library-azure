@@ -1,5 +1,6 @@
 import Navbar from './@/../../../Layout/Navbar'
 import FileReport from './@/../../../filereport/components/FileReport'
+import { FilterProvider } from './@/../../../filereport/components/Context'
 import { Container, LeftDiv, RightDiv } from './@/../../../Layout/Component'
 
 
@@ -14,7 +15,9 @@ const App = () => {
       </LeftDiv>
 
       <RightDiv>
-        <FileReport />
+        <FilterProvider>
+          <FileReport />
+        </FilterProvider>
       </RightDiv>
 
     </Container>
