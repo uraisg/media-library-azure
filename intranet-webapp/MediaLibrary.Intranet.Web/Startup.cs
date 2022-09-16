@@ -1,12 +1,14 @@
 ﻿using MediaLibrary.Intranet.Web.Background;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Configuration;
+using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,6 +55,13 @@ namespace MediaLibrary.Intranet.Web
             services.AddSingleton<MediaSearchService>();
             services.AddSingleton<ItemService>();
             services.AddTransient<GraphService>();
+            services.AddDbContext<MediaLibraryContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("MediaLibraryConnection"),
+                    x => x.UseNetTopologySuite())
+            );
+            services.AddTransient<DashboardActivityService>();
+            services.AddTransient<FileDetailsService>();
+            services.AddTransient<PlanningAreaService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,7 +1,22 @@
 ﻿@using MediaLibrary.Intranet.Web.Common
+
+@{
+    bool? showDashboard = (bool?)ViewData["showDashboard"];
+    if (showDashboard == null)
+    {
+        showDashboard = false;
+    }
+}
+
 @if (User.Identity.IsAuthenticated)
 {
     <ul class="navbar-nav ml-md-auto">
+        @if (showDashboard == true)
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "Admin")">Admin</a>
+            </li>
+        }
         <li class="nav-item">
             <a class="nav-link" href="https://gccprod.sharepoint.com/:f:/r/sites/URA-MediaLibrary-MST/Shared%20Documents/Guides?csf=1&web=1&e=Nq7lrG" target="_blank" rel="noopener noreferrer">Help</a>
         </li>
@@ -10,8 +25,8 @@
                 <img src="@Url.Content(User.GetUserGraphPhoto())" class="nav-profile-photo rounded-circle" alt="">
             </a>
             <div class="dropdown-menu dropdown-menu-right">
-                <h5 class="dropdown-item-text mb-0">@User.GetUserGraphDisplayName()</h5>
-                <p class="dropdown-item-text text-muted mb-0">@User.GetUserGraphEmail()</p>
+                <h5 class="dropdown-item-text mb-0" id="loginUserName">@User.GetUserGraphDisplayName()</h5>
+                <p class="dropdown-item-text text-muted mb-0" id="loginUserEmail">@User.GetUserGraphEmail()</p>
                 <div class="dropdown-divider"></div>
                 <form class="form-inline" method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">
                     <button type="submit" class="dropdown-item">Sign Out</button>

@@ -12,11 +12,14 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
+using MediaLibrary.Intranet.Web.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
 using NCrontab;
+using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 
 namespace MediaLibrary.Intranet.Web.Background
@@ -35,14 +38,16 @@ namespace MediaLibrary.Intranet.Web.Background
         private readonly AppSettings _appSettings;
         private readonly ILogger<ScheduledService> _logger;
         private readonly IHttpClientFactory _clientFactory;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public ScheduledService(IOptions<AppSettings> appSettings, ILogger<ScheduledService> logger, IHttpClientFactory clientFactory)
+        public ScheduledService(IOptions<AppSettings> appSettings, ILogger<ScheduledService> logger, IHttpClientFactory clientFactory, IServiceScopeFactory scopeFactory)
         {
             _schedule = CrontabSchedule.Parse(Schedule);
             _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
             _appSettings = appSettings.Value;
             _logger = logger;
             _clientFactory = clientFactory;
+            _serviceScopeFactory = scopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -190,6 +195,55 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 var result = await response.Content.ReadAsStringAsync();
                 var items = JsonConvert.DeserializeObject<List<InternetTableItems>>(result);
+
+                //Adding into database
+                using (var scope = _serviceScopeFactory.CreateScope())
+                {
+                    var dashboardActivityContext = scope.ServiceProvider.GetRequiredService<DashboardActivityService>();
+                    var fileDetailsContext = scope.ServiceProvider.GetRequiredService<FileDetailsService>();
+                    foreach (InternetTableItems item in new List<InternetTableItems>(items))
+                    {
+                        //Get filesize
+                        HttpContent thumbnailContent = await GetImageByURL(item.thumbnailURL);
+                        var stream = await thumbnailContent.ReadAsStreamAsync();
+                        decimal fileSize = (decimal)stream.Length / 1048576;
+                        //Get the location
+                        var itemLocation = JsonConvert.DeserializeObject<GeographyPoint>(item.location, new GeographyPointJsonConverter());
+                        //Get file name
+                        string encodedThumbnailFileName = Path.GetFileName(item.thumbnailURL);
+
+                        FileDetails fileDetails = new FileDetails();
+                        DashboardActivity dashboardActivity = new DashboardActivity();
+
+                        //Add into FileDetails table
+                        fileDetails.FDetailsId = Guid.NewGuid();
+                        fileDetails.FileId = item.id;
+                        fileDetails.FileSize = Math.Round(fileSize, 2);
+                        if (itemLocation != null) //Check if there are any geotag location
+                        {
+                            Point point = new Point(itemLocation.Longitude, itemLocation.Latitude) { SRID = 4326 };
+                            fileDetails.AreaPoint = point;
+                        }
+                        fileDetails.ThumbnailURL = "/api/assets/" + encodedThumbnailFileName;
+                        if (await fileDetailsContext.AddDetailsAsync(fileDetails))
+                        {
+                            _logger.LogInformation("Added {FileId} into FileDetails", fileDetails.FileId);
+                        }
+
+                        //Add into DashboardActivity Table
+                        dashboardActivity.DActivityId = Guid.NewGuid();
+                        dashboardActivity.FileId = item.id;
+                        dashboardActivity.Email = item.author;
+                        dashboardActivity.ActivityDateTime = DateTime.Now;
+                        dashboardActivity.Activity = 2;
+                        if (await dashboardActivityContext.AddActivityAsync(dashboardActivity))
+                        {
+                            _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
+                        }
+
+                    }
+                }
+
                 return items;
             }
             else
