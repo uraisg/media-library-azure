@@ -137,16 +137,16 @@ export const FilterProvider = ({ children }) => {
                 })
 
                 let sortedArea = []
-                all_region_id.map((regionId) => {
-                    const planningArea = p_area.filter((area) => Object.keys(area) == regionId)
-                    let areaArr = []
-                    planningArea.forEach((area) => {
-                        areaArr.push(area[regionId])
-                    })
-                    let obj = {}
-                    obj["Region"] = convertPlanningArea(regionId)
-                    obj["PlanningArea"] = areaArr
-                    sortedArea.push(obj)
+                all_region_id.forEach((regionId) => {
+                  const planningArea = p_area.filter((area) => Object.keys(area) == regionId)
+                  let areaArr = []
+                  planningArea.forEach((area) => {
+                      areaArr.push(area[regionId])
+                  })
+                  let obj = {}
+                  obj["Region"] = convertPlanningArea(regionId)
+                  obj["PlanningArea"] = areaArr
+                  sortedArea.push(obj)
                 })
 
                 setArea(sortedArea)

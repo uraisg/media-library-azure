@@ -101,7 +101,7 @@ const Dashboard = () => {
         })
 
         let sortedArea = []
-        all_region_id.map((regionId) => {
+        all_region_id.forEach((regionId) => {
           const planningArea = p_area.filter((area) => Object.keys(area) == regionId)
           let areaArr = []
           planningArea.forEach((area) => {
