@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 
-import Topbar from './@/../../../activityreport/components/Topbar'
-import { TableResult } from './@/../../../Layout/Component'
+import { TableResult, BackBar } from './@/../../../Layout/Component'
 import FilterOptions from './@/../../../activityreport/components/FilterOptions'
 import { useFilter } from './@/../../../activityreport/components/Context'
 
@@ -39,7 +38,7 @@ const ActivityReport = () => {
 
   return (
     <>
-      <Topbar />
+      <BackBar href="/Admin" />
 
       <h2
         className="mb-4"

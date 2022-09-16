@@ -1,9 +1,8 @@
 import styled from 'styled-components'
 
-import Topbar from './@/../../../staffactivity/components/Topbar'
 import { useFilter } from './@/../../../staffactivity/components/Context'
 import FilterOptions from './@/../../../staffactivity/components/FilterOptions'
-import { TableResult } from './@/../../../Layout/Component'
+import { TableResult, BackBar } from './@/../../../Layout/Component'
 
 const Image = styled.img`
   height: 80px;
@@ -33,7 +32,7 @@ const ActivityReport = () => {
 
   return (
     <>
-      <Topbar />
+      <BackBar href="/Admin/Staff" />
 
       <h2 className="mb-4">Activity Report Statistics</h2>
       <h5></h5>

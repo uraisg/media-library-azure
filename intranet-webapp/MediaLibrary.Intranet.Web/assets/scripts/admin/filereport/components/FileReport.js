@@ -1,9 +1,8 @@
 import styled from 'styled-components'
 
-import Topbar from './@/../../../filereport/components/Topbar'
 import FilterOptions from './@/../../../filereport/components/FilterOptions'
 import { useFilter } from './@/../../../filereport/components/Context'
-import { TableResult } from './@/../../../Layout/Component'
+import { TableResult, BackBar } from './@/../../../Layout/Component'
 
 const Image = styled.img`
   height: 80px;
@@ -38,7 +37,7 @@ const FileReport = () => {
 
   return (
     <>
-      <Topbar />
+      <BackBar href="/Admin" />
 
       <h2
         className="mb-4"

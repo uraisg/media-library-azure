@@ -1,26 +1,14 @@
-import Navbar from './@/../../../Layout/Navbar'
+import AdminLayout from './@/../../../Layout/AdminLayout'
 import FileReport from './@/../../../filereport/components/FileReport'
 import { FilterProvider } from './@/../../../filereport/components/Context'
-import { Container, LeftDiv, RightDiv } from './@/../../../Layout/Component'
-
 
 const App = () => {
   return (
-    <Container>
-
-      <LeftDiv>
-        <Navbar
-          active="Dashboard"
-        />
-      </LeftDiv>
-
-      <RightDiv>
-        <FilterProvider>
-          <FileReport />
-        </FilterProvider>
-      </RightDiv>
-
-    </Container>
+  <AdminLayout activeNav="Dashboard">
+    <FilterProvider>
+      <FileReport />
+    </FilterProvider>
+  </AdminLayout>
   )
 }
 
