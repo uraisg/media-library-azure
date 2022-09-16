@@ -1,5 +1,6 @@
-import styled from 'styled-components'
-import PropTypes from 'prop-types'
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
 
 const Checkbox = styled.input.attrs({ type: 'checkbox' })`
@@ -28,7 +29,16 @@ const Tags = styled.span`
 `
 
 const DisplayItem = (props) => {
-  const uploadTags = props.item.Tags.split(",")
+  const [curimageURL, setCurImageURL] = useState("");
+
+  const uploadTags = props.item.Tag.split(",");
+
+  fetch(`/api/sasUri`)
+    .then((res) => res.text())
+    .then((res) => {
+      setCurImageURL(props.item.FileURL + res);
+    })
+
   return (
     <div className='align-items-center d-flex'>
       {props.update &&
@@ -37,7 +47,7 @@ const DisplayItem = (props) => {
       <div className="container item-list pt-4 pb-4" id={props.Key + "Div"}>
         <div className="row">
           <div className="col-12 col-lg-5 col-xl-4">
-            <Img src={props.item.ImageURL} />
+            <Img src={curimageURL} />
           </div>
           <div className="col-12 col-lg-7 col-xl-8">
             <div className="container">
@@ -70,7 +80,7 @@ const DisplayItem = (props) => {
                   <strong>Planning Area:</strong>
                 </div>
                 <div className="col-8">
-                  {props.item.PlanningArea}
+                  {props.item.Project}
                 </div>
               </div>
               <div className="py-1 row">
@@ -88,7 +98,7 @@ const DisplayItem = (props) => {
                 <div className="col-8">
                     {props.update
                       ?
-                    <span className="text-break">{props.item.Tags}</span>
+                    <span className="text-break">{props.item.Tag}</span>
                     :
                     <div className="row ml-1">
                       {uploadTags.map((item, index) => (
@@ -103,7 +113,7 @@ const DisplayItem = (props) => {
                   <strong>Taken on:</strong>
                 </div>
                 <div className="col-8">
-                  {props.item.TakenDate}
+                  {props.item.DateTaken}
                 </div>
               </div>
               <div className="py-1 row">
@@ -114,16 +124,16 @@ const DisplayItem = (props) => {
                   {props.item.UploadDate}
                 </div>
               </div>
-              {props.item.AdditionalField.map((item) => (
-                  <div className="py-1 row" key={item.Id}>
-                    <div className="col-4">
-                      <strong>{item.Key}:</strong>
-                    </div>
-                    <div className="col-8">
-                      {item.Value}
-                    </div>
-                  </div>
-                ))}
+              {/*{props.item.AdditionalField.map((item) => (*/}
+              {/*    <div className="py-1 row" key={item.Id}>*/}
+              {/*      <div className="col-4">*/}
+              {/*        <strong>{item.Key}:</strong>*/}
+              {/*      </div>*/}
+              {/*      <div className="col-8">*/}
+              {/*        {item.Value}*/}
+              {/*      </div>*/}
+              {/*    </div>*/}
+              {/*  ))}*/}
           </div>
           </div>
         </div>
@@ -134,7 +144,7 @@ const DisplayItem = (props) => {
 
 DisplayItem.propTypes = {
   item: PropTypes.object,
-  Key: PropTypes.number,
+  Key: PropTypes.string,
   update: PropTypes.bool
 }
 

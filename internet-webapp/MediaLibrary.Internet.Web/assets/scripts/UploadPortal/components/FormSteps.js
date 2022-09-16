@@ -14,10 +14,14 @@ const FormSteps = (props) => {
     }
     {props.activeStep === 1 && 
       <Step2
-      setActiveStep={props.setActiveStep} />
+        setActiveStep={props.setActiveStep}
+        draftKey={props.draftKey}
+      />
     }
     {props.activeStep === 2 &&
-      <Step3 />
+        <Step3
+        draftKey={props.draftKey}
+      />
       }
   </>
   )
@@ -27,7 +31,8 @@ FormSteps.propTypes = {
   activeStep: PropTypes.number,
   errMsg: PropTypes.string,
   setErrMsg: PropTypes.func,
-  setActiveStep: PropTypes.func
+  setActiveStep: PropTypes.func,
+  draftKey: PropTypes.string
 }
 
 export default FormSteps

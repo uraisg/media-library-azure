@@ -30,6 +30,7 @@ const Step2 = (props) => {
   const [index, setIndex] = useState([])
   const [deleteModal, setDeleteModal] = useState(false)
   const [refresh, setRefresh] = useState(false)
+  const [imageData, setImageData] = useState(Array)
 
   const renderRefresh = () => {
     setCheckNo(0)
@@ -40,8 +41,11 @@ const Step2 = (props) => {
     setRefresh(true)
     $('.item-chkbox').css("pointer-events", "none")
     $('#all-chkbox').css("pointer-events", "none")
+
     //Call api here
+
     //Replace first setTimeout
+    /*
     setTimeout(() => {
       $('.item-chkbox').css("pointer-events", "auto")
       $('#all-chkbox').css("pointer-events", "auto")
@@ -77,18 +81,19 @@ const Step2 = (props) => {
       }])
       setRefresh(false)
     }, 2000)
+    */
   }
 
   const setCheckValue = (e) => {
     if (e.target.checked) {
       $(`#${e.target.id.replace("ChkBox", "Div")}`).addClass("border bg-light")
       setCheckNo(checkNo + 1)
-      setIndex([...index, parseInt(e.target.id.replace("ChkBox", ""))])
+      setIndex([...index, e.target.id.replace("ChkBox", "")])
     }
     else {
       $(`#${e.target.id.replace("ChkBox", "Div")}`).removeClass("border bg-light")
       setCheckNo(checkNo - 1)
-      const arr = index.filter((item) => item !== parseInt(e.target.id.replace("ChkBox", "")));
+      const arr = index.filter((item) => item !== e.target.id.replace("ChkBox", ""));
       setIndex(arr)
     }
   }
@@ -108,6 +113,8 @@ const Step2 = (props) => {
       formContext.setFiles([])
       props.setActiveStep(0)
     }
+
+    setImageData(formContext.retrievedFile)
   }, [formContext.retrievedFile])
 
   const setAllCheck = (e) => {
@@ -195,7 +202,7 @@ const Step2 = (props) => {
           </React.Fragment>
         }
       </div>
-      {formContext.retrievedFile.map((item, key) => (
+      {imageData.map((item, key) => (
         <div key={item.Id}>
           <hr />
           <DisplayItem
@@ -210,7 +217,8 @@ const Step2 = (props) => {
 }
 
 Step2.propTypes = {
-  setActiveStep: PropTypes.func
+  setActiveStep: PropTypes.func,
+  draftKey: PropTypes.string
 }
 
 export default Step2

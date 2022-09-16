@@ -72,7 +72,16 @@ const SingleEdit = (props) => {
   const [newField, setNewField] = useState([])
   const [loading, setLoading] = useState(false)
   const [errMsg, setErrMsg] = useState({ Name: false, Location: false })
+  const [curimageURL, setCurImageURL] = useState("");
 
+  fetch(`/api/sasUri`)
+    .then((res) => res.text())
+    .then((res) => {
+      setCurImageURL(fileArr.FileURL + res);
+    })
+
+
+  /*
   useEffect(() => {
     fileArr.AdditionalField.map((item) => {
       const id = Math.random().toString(16).slice(2)
@@ -90,6 +99,7 @@ const SingleEdit = (props) => {
     const temp = newField.filter(item => item.Id !== e.target.id)
     setNewField(temp)
   }
+  */
 
   const updateField = (e) => {
     setNewDetails(item => ({ ...item, [e.target.id]: e.target.value }))
@@ -211,7 +221,7 @@ const SingleEdit = (props) => {
         <div className="pt-2 mb-3 container">
           <div className="row">
             <div className="col-12 col-lg-6 col-xl-5">
-              <Img src={fileArr.ImageURL} />
+              <Img src={curimageURL} />
             </div>
             <div className="col-12 col-lg-6 col-xl-7">
               <div className="mt-2 row">
@@ -242,7 +252,7 @@ const SingleEdit = (props) => {
               </div>
               <div className="mt-2 row">
                 <div className="mt-2 col-12 col-md-2 col-lg-3 col-xl-2"><strong>Tags:</strong></div>
-                <div className="col-12 col-md-10 col-lg-9 col-xl-10"><input type="text" value={newDetails.Tags} onChange={updateField} id="Tags" className="form-control" /><small className="text-secondary">Tags are separated with a comma</small></div>
+                <div className="col-12 col-md-10 col-lg-9 col-xl-10"><input type="text" value={newDetails.Tag} onChange={updateField} id="Tags" className="form-control" /><small className="text-secondary">Tags are separated with a comma</small></div>
               </div>
 
               {newField.length > 0 &&
@@ -263,7 +273,7 @@ const SingleEdit = (props) => {
               }
 
               <div className="mt-3">
-                <span className="user-select-none pointer-cursor text-danger" onClick={addNewField}><Plus size={30} color={'red'} /> Add new Field</span>
+                {/*<span className="user-select-none pointer-cursor text-danger" onClick={addNewField}><Plus size={30} color={'red'} /> Add new Field</span>*/}
                 <div className="float-right">
                   <Button variant="secondary" onClick={reset} disabled={loading}>Reset</Button>{' '}
                   <Button variant="primary" onClick={save} disabled={loading}>Save</Button>{' '}
@@ -599,7 +609,7 @@ const EditItem = (props) => {
 
 EditItem.propTypes = {
   setEditItem: PropTypes.func,
-  index: PropTypes.arrayOf(PropTypes.number),
+  index: PropTypes.arrayOf(PropTypes.string),
   renderRefresh: PropTypes.func,
   editType: PropTypes.string
 }

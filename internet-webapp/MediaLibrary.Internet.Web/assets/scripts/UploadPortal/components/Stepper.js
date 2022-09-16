@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -23,6 +23,7 @@ const StepperForm = () => {
   const [progressBar, setProgressBar] = useState(false)
   const [completePercentage, setCompletePercentage] = useState(0)
   const [errMsg, setErrMsg] = useState(false)
+  const [draftKey, setDraftKey] = useState("")
 
   const handleNext = () => {
     if (activeStep == 0) {
@@ -65,17 +66,46 @@ const StepperForm = () => {
     const location = formContext.validInput.Location.trim()
     const copyright = formContext.validInput.Copyright.trim()
     const files = formContext.files
-    //Call api here
-    //Replace the first timeout with post and get api call
-    setTimeout(() => {
-      setCompletePercentage(100)
-      setTimeout(() => {
-        //insert get api result objects with setRetrievedFile
+
+    fetch("draft/create", {
+      method: 'POST'
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        const rowKey = response.rowKey;
+        setDraftKey(rowKey);
+
+        for(var file in files) {
+          var data = new FormData();
+          data.append('name', name)
+          data.append('location', location)
+          data.append('copyright', copyright)
+          data.append('file', files[file].file);
+
+          fetch(`draft/${rowKey}/addImage`, {
+            method: 'POST',
+            body: data
+          })
+        }
+
+        setTimeout(() => {
+          fetch(`draft/${rowKey}`)
+            .then((response) => response.json())
+            .then((response) => {
+              try {
+                var imageEntities = JSON.parse(response.imageEntities)
+                formContext.setRetrievedFile(imageEntities)
+              }
+              catch(e) {
+                console.log(e)
+              }
+            })
+        }, 2000)
+
         setProgressBar(false)
         setActiveStep((prevActiveStep) => prevActiveStep + 1)
         window.scrollTo(0, 0)
-      }, 500)
-    }, 3000)
+      })
   }
 
   const uploadStep3 = () => {
@@ -128,7 +158,9 @@ const StepperForm = () => {
           activeStep={activeStep}
           errMsg={errMsg}
           setErrMsg={setErrMsg}
-          setActiveStep={setActiveStep} />
+          setActiveStep={setActiveStep}
+          draftKey={draftKey}
+        />
       </FormModel>
 
       <React.Fragment>
