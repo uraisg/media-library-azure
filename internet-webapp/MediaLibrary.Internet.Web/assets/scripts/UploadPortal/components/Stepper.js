@@ -59,7 +59,7 @@ const StepperForm = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   };
 
-  const uploadStep1 = () => {
+  const uploadStep1 = async() => {
     setProgressBar(true)
 
     const name = formContext.validInput.Name.trim()
@@ -67,45 +67,44 @@ const StepperForm = () => {
     const copyright = formContext.validInput.Copyright.trim()
     const files = formContext.files
 
-    fetch("draft/create", {
+    const response = await fetch("draft/create", {
       method: 'POST'
     })
-      .then((response) => response.json())
-      .then((response) => {
-        const rowKey = response.rowKey;
-        setDraftKey(rowKey);
 
-        for(var file in files) {
-          var data = new FormData();
-          data.append('name', name)
-          data.append('location', location)
-          data.append('copyright', copyright)
-          data.append('file', files[file].file);
+    const responseData = await response.json();
+    const rowKey = responseData.rowKey;
+    setDraftKey(rowKey);
 
-          fetch(`draft/${rowKey}/addImage`, {
-            method: 'POST',
-            body: data
-          })
-        }
+    for await (var file of files) {
+      var data = new FormData();
+      data.append('name', name)
+      data.append('location', location)
+      data.append('copyright', copyright)
+      data.append('file', file.file);
 
-        setTimeout(() => {
-          fetch(`draft/${rowKey}`)
-            .then((response) => response.json())
-            .then((response) => {
-              try {
-                var imageEntities = JSON.parse(response.imageEntities)
-                formContext.setRetrievedFile(imageEntities)
-              }
-              catch(e) {
-                console.log(e)
-              }
-            })
-        }, 2000)
-
-        setProgressBar(false)
-        setActiveStep((prevActiveStep) => prevActiveStep + 1)
-        window.scrollTo(0, 0)
+      await fetch(`draft/${rowKey}/addImage`, {
+        method: 'POST',
+        body: data
       })
+    }
+
+    setTimeout(() => {
+      fetch(`draft/${rowKey}`)
+        .then((response) => response.json())
+        .then((response) => {
+          try {
+            var imageEntities = JSON.parse(response.imageEntities)
+            formContext.setRetrievedFile(imageEntities)
+
+            setProgressBar(false)
+            setActiveStep((prevActiveStep) => prevActiveStep + 1)
+            window.scrollTo(0, 0)
+          }
+          catch (e) {
+            console.log(e)
+          }
+        })
+    }, 2000)
   }
 
   const uploadStep3 = () => {
@@ -113,6 +112,10 @@ const StepperForm = () => {
     setCompletePercentage(20)
 
     //Call api here
+    fetch(`FileUpload/${draftKey}`, {
+      method: 'POST'
+    })
+
     //Replace the first timeout with post api call
     setTimeout(() => {
       setCompletePercentage(100)

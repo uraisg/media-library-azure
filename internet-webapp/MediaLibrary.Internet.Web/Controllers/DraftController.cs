@@ -49,6 +49,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             return View();
         }
 
+        // Create a new draft (without images)
         [HttpPost("draft/create")]
         [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task<JsonResult> CreateDraft()
@@ -77,8 +78,8 @@ namespace MediaLibrary.Internet.Web.Controllers
             return Json(new { rowKey = insertOperation.Entity.RowKey.ToString() });
         }
 
+        // Adding images to a draft
         // AntiForgeryToken should be used
-        // Currently not implemented because I am not sure where to get AntiForgeryToken
         [HttpPost("draft/{rowkey}/addImage")]
         [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task AddImage([FromForm]addImageModel req, string rowKey, CancellationToken cancellationToken)
@@ -222,6 +223,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.Project = req.name;
                 json.LocationName = req.location;
                 json.Copyright = req.copyright;
+                json.AdditionalField = new List<object>();
 
                 await ImageUploadToDraft(json, rowKey, _appSettings);
             }
@@ -237,10 +239,10 @@ namespace MediaLibrary.Internet.Web.Controllers
             return;
         }
 
-        // Incomplete
-        [HttpPost]
-        [Route("Draft/updateDraft")]
-        public void UpdateDatatable()
+        // Edit images in a draft
+        [HttpPut("draft/{rowkey}/{image}")]
+        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
+        public async Task UpdateImage([FromBody] ImageEntity updateImageEntity, string rowkey, string image)
         {
             string tableConnectionString = _appSettings.TableConnectionString;
             string tableName = _appSettings.TableName;
@@ -251,10 +253,9 @@ namespace MediaLibrary.Internet.Web.Controllers
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             CloudTable table = tableClient.GetTableReference(tableName);
 
-            /*
             TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
-                partitionKey: "Draft",
-                rowkey: "6cff9ca9-25b9-410d-b70d-fc7557854cdd-12_09_2022-08_41_43"
+                partitionKey: DraftPartitionKey,
+                rowkey: rowkey
             );
 
             var result = await table.ExecuteAsync(retrieveOperation);
@@ -263,16 +264,29 @@ namespace MediaLibrary.Internet.Web.Controllers
             JObject json = JObject.Parse(resultJSON);
             JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
 
-            foreach (var item in jsonArray)
+            // Update value of image
+            for (int i = 0; i < jsonArray.Count; i++)
             {
-                item["LocationName"] = "Orchard";
+                if (jsonArray[i]["Id"].ToString() == image)
+                {
+                    JArray additionalField = new JArray();
+                    foreach (var item in updateImageEntity.AdditionalField)
+                    {
+                        string jsonString = System.Text.Json.JsonSerializer.Serialize(item);
+                        additionalField.Add(JToken.Parse(jsonString));
+                    }
+                    updateImageEntity.AdditionalField = additionalField.ToObject<List<object>>();
+                    jsonArray.RemoveAt(i);
+                    jsonArray.Add(JToken.FromObject(updateImageEntity));
+
+                    break;
+                }
             }
 
             Draft updateDraft = new Draft()
             {
-                PartitionKey = json["PartitionKey"].ToString(),
-                RowKey = json["RowKey"].ToString(),
-                Id = json["Id"].ToString(),
+                PartitionKey = DraftPartitionKey,
+                RowKey = rowkey,
                 UploadDate = DateTime.Parse(json["UploadDate"].ToString()),
                 Author = json["Author"].ToString(),
                 ImageEntities = jsonArray.ToString()
@@ -280,11 +294,105 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             TableOperation updateOperation = TableOperation.InsertOrReplace(updateDraft);
             await table.ExecuteAsync(updateOperation);
-            */
         }
 
-        [HttpGet]
-        [Route("draft/{rowkey}")]
+        // Remove images from a draft
+        [HttpDelete("draft/{rowkey}/{image}")]
+        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
+        public async Task DeleteImage(string rowkey, string image)
+        {
+            string tableConnectionString = _appSettings.TableConnectionString;
+            string tableName = _appSettings.TableName;
+            var containerName = _appSettings.MediaStorageContainer;
+            var storageConnectionString = _appSettings.MediaStorageConnectionString;
+
+            //initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            //create a blob container client
+            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
+
+            TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                partitionKey: DraftPartitionKey,
+                rowkey: rowkey
+            );
+
+            var result = await table.ExecuteAsync(retrieveOperation);
+
+            string resultJSON = JsonConvert.SerializeObject(result.Result);
+            JObject json = JObject.Parse(resultJSON);
+            JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
+
+            // Update value of image
+            for (int i = 0; i < jsonArray.Count; i++)
+            {
+                if (jsonArray[i]["Id"].ToString() == image)
+                {
+                    var fileArray = jsonArray[i]["FileURL"].ToString().Split("/");
+                    var thumbArray = jsonArray[i]["ThumbnailURL"].ToString().Split("/");
+
+                    var fileName = "";
+                    var thumbName = "";
+                    foreach (var p in fileArray.Skip(4).ToArray())
+                    {
+                        fileName += p.ToString();
+                    }
+                    foreach (var p in thumbArray.Skip(4).ToArray())
+                    {
+                        thumbName += p.ToString();
+                    }
+
+                    var fileBlob = blobContainerClient.GetBlobClient(fileName);
+                    var thumnBlob = blobContainerClient.GetBlobClient(thumbName);
+                    await fileBlob.DeleteIfExistsAsync();
+                    await thumnBlob.DeleteIfExistsAsync();
+                    jsonArray.RemoveAt(i);
+                }
+            }
+
+            Draft updateDraft = new Draft()
+            {
+                PartitionKey = DraftPartitionKey,
+                RowKey = rowkey,
+                UploadDate = DateTime.Parse(json["UploadDate"].ToString()),
+                Author = json["Author"].ToString(),
+                ImageEntities = jsonArray.ToString()
+            };
+
+            TableOperation updateOperation = TableOperation.InsertOrReplace(updateDraft);
+            await table.ExecuteAsync(updateOperation);
+        }
+
+        // Delete a draft
+        [HttpDelete("draft/{rowkey}")]
+        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
+        public async Task DeleteDraft(string rowkey)
+        {
+            string tableConnectionString = _appSettings.TableConnectionString;
+            string tableName = _appSettings.TableName;
+
+            //initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            var tableEntity = new Draft
+            {
+                PartitionKey = DraftPartitionKey,
+                RowKey = rowkey,
+                ETag = "*"
+            };
+
+            TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+            await table.ExecuteAsync(deleteOperation);
+        }
+
+        // Get data inside a draft
+        [HttpGet("draft/{rowkey}")]
         public async Task<object> GetDraft(string rowkey)
         {
             string tableConnectionString = _appSettings.TableConnectionString;
@@ -306,7 +414,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             return result.Result;
         }
 
-        // Incomplete
+        // Get SASToken for loading images
         [HttpGet("/api/sasUri")]
         public String GetMediaFile()
         {
@@ -329,12 +437,6 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             return url;
         }
-
-        private static readonly JsonSerializer Serializer = new JsonSerializer()
-        {
-            ContractResolver = new DefaultContractResolver(),
-            Formatting = Formatting.Indented
-        };
 
         /// <summary>
         /// Check whether an image upload has image MIME type and contains an allowed file extension.

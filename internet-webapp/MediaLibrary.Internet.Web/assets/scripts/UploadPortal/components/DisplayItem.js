@@ -124,16 +124,16 @@ const DisplayItem = (props) => {
                   {props.item.UploadDate}
                 </div>
               </div>
-              {/*{props.item.AdditionalField.map((item) => (*/}
-              {/*    <div className="py-1 row" key={item.Id}>*/}
-              {/*      <div className="col-4">*/}
-              {/*        <strong>{item.Key}:</strong>*/}
-              {/*      </div>*/}
-              {/*      <div className="col-8">*/}
-              {/*        {item.Value}*/}
-              {/*      </div>*/}
-              {/*    </div>*/}
-              {/*  ))}*/}
+              {props.item.AdditionalField.map((item) => (
+                  <div className="py-1 row" key={item.Id}>
+                    <div className="col-4">
+                      <strong>{item.Key}:</strong>
+                    </div>
+                    <div className="col-8">
+                      {item.Value}
+                    </div>
+                  </div>
+                ))}
           </div>
           </div>
         </div>

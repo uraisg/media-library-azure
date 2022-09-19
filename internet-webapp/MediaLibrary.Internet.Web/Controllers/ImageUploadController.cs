@@ -23,12 +23,14 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
     public class ImageUploadController : Controller
     {
         private static readonly string TransferPartitionKey = "transfer";
+        private static readonly string DraftPartitionKey = "draft";
         private static readonly int ComputerVisionMaxFileSize = 4 * 1024 * 1024; // 4MB
         private static readonly int DefaultJpegQuality = 80;
 
@@ -46,171 +48,68 @@ namespace MediaLibrary.Internet.Web.Controllers
             return View();
         }
 
-        [HttpPost("FileUpload")]
-        public async Task<IActionResult> Index(UploadFormModel model, CancellationToken cancellationToken)
+        [HttpPost("FileUpload/{rowkey}")]
+        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
+        public async Task<IActionResult> Index(string rowkey)
         {
-            _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
+            _logger.LogInformation("{UserName} uploading to intranet", User.Identity.Name);
 
-            if (!ModelState.IsValid)
+            string tableConnectionString = _appSettings.TableConnectionString;
+            string tableName = _appSettings.TableName;
+
+            //initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                partitionKey: DraftPartitionKey,
+                rowkey: rowkey
+            );
+
+            TableResult result = await table.ExecuteAsync(retrieveOperation);
+            string resultJSON = JsonConvert.SerializeObject(result.Result);
+            JObject resultObject = JObject.Parse(resultJSON);
+            JArray jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+
+            // Upload To Be Transfered Files
+            foreach (var image in jsonArray)
             {
-                TempData["Alert.Type"] = "danger";
-                TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
-                return View("~/Views/Home/Index.cshtml");
+                string id = GenerateId();
+
+                //create json for indexing
+                ImageEntity json = new ImageEntity();
+                json.PartitionKey = TransferPartitionKey;
+                json.RowKey = id;
+                json.Id = id;
+                json.Name = image["Name"].ToString();
+                json.DateTaken = DateTime.Parse(image["DateTaken"].ToString());
+                json.Location = JsonConvert.SerializeObject(image["Location"].ToString());
+                json.Tag = image["Tag"].ToString();
+                json.Caption = image["Caption"].ToString();
+                json.Author = image["Author"].ToString();
+                json.UploadDate = DateTime.Parse(image["UploadDate"].ToString());
+                json.FileURL = image["FileURL"].ToString();
+                json.ThumbnailURL = image["ThumbnailURL"].ToString();
+                json.Project = image["Project"].ToString();
+                json.LocationName = image["LocationName"].ToString();
+                json.Copyright = image["Copyright"].ToString();
+
+                await IndexUploadToTable(json, _appSettings);
             }
 
-            var traceId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
-            using var scope = _logger.BeginScope("{UserName} {TraceID}", User.Identity.Name, traceId);
-
-            string email = User.GetUserGraphEmail();
-
-            if (string.IsNullOrEmpty(email))
+            // Remove draft
+            var tableEntity = new Draft
             {
-                _logger.LogError("Could not get associated email address for user {UserName}", User.Identity.Name);
+                PartitionKey = DraftPartitionKey,
+                RowKey = rowkey,
+                ETag = "*"
+            };
 
-                TempData["Alert.Type"] = "danger";
-                TempData["Alert.Message"] = "Could not find your email address.";
-                return View("~/Views/Home/Index.cshtml");
-            }
+            TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+            await table.ExecuteAsync(deleteOperation);
 
-            // Uploaded files
-            List<IFormFile> files = model.File;
-
-            foreach (IFormFile file in files)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                string untrustedFileName = Path.GetFileName(file.FileName);
-                string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
-
-                _logger.LogInformation("Upload file name: {FileName}, size: {FileSize}", untrustedFileName, file.Length);
-
-                // Check the file length
-                if (file.Length == 0)
-                {
-                    _logger.LogWarning("File {FileName} is empty.", untrustedFileName);
-
-                    ModelState.AddModelError(file.Name, $"File {encodedFileName} is empty.");
-                    TempData["Alert.Type"] = "danger";
-                    TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
-                    return View("~/Views/Home/Index.cshtml");
-                }
-
-                // Check the content type and file extension
-                if (!IsValidImage(file))
-                {
-                    _logger.LogWarning("File {FileName} has unsupported file extension.", untrustedFileName);
-
-                    ModelState.AddModelError(file.Name,
-                        $"File {encodedFileName} has unsupported file extension. " +
-                        "Support file extensions are .jpg, .jpeg, .png, .gif, .bmp, .heic");
-                    TempData["Alert.Type"] = "danger";
-                    TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
-                    return View("~/Views/Home/Index.cshtml");
-                }
-
-                try
-                {
-                    byte[] data;
-                    using (var ms = new MemoryStream())
-                    {
-                        await file.CopyToAsync(ms);
-                        data = ms.ToArray();
-                    }
-
-                    // Convert HEIC files to JPEG since browsers are unable to display them
-                    var isHeic = false;
-                    if (Path.GetExtension(untrustedFileName).ToLowerInvariant() == ".heic")
-                    {
-                        isHeic = true;
-                        _logger.LogInformation("Converting {FileName} to JPEG", untrustedFileName);
-                        data = ConvertToJpeg(data);
-                        untrustedFileName = Path.GetFileNameWithoutExtension(untrustedFileName) + ".jpg";
-                    }
-
-                    //upload to a separate container to retrieve image URL
-                    //use unique id together with file name to avoid duplication
-                    string id = GenerateId();
-                    string blobFileName = id + "_" + untrustedFileName;
-                    string contentType = isHeic ? "image/jpeg" : file.ContentType;
-                    string imageURL;
-                    using (var uploadImage = new MemoryStream(data, false))
-                    {
-                        imageURL = await ImageUploadToBlob(blobFileName, uploadImage, contentType, _appSettings);
-                    }
-
-                    //extract image metadata
-                    IReadOnlyList<MetadataExtractor.Directory> directories;
-                    using (var extractMetadataImage = new MemoryStream(data, false))
-                    {
-                        directories = ImageMetadataReader.ReadMetadata(extractMetadataImage);
-                    }
-
-                    // Check image size as Cognitive Services can only accept images less than 4MB in size
-
-                    _logger.LogInformation("Starting FitImageForAnalysis");
-                    var watch = Stopwatch.StartNew();
-                    byte[] fitted = FitImageForAnalysis(data);
-                    watch.Stop();
-                    _logger.LogInformation("Finished FitImageForAnalysis after {Elapsed} ms", watch.ElapsedMilliseconds);
-
-                    ImageAnalysis computerVisionResult;
-                    string thumbnailFileName = Path.GetFileNameWithoutExtension(blobFileName) + "_thumb.jpg";
-                    string thumbnailURL;
-                    if (fitted != null)
-                    {
-                        // Get tags and content-aware thumbnail from Cognitive Services
-                        using var thumbnailStream = new MemoryStream(fitted, false);
-                        using var imageStream = new MemoryStream(fitted, false);
-
-                        thumbnailURL = await GenerateThumbnailAsync(thumbnailFileName, thumbnailStream, _appSettings);
-                        computerVisionResult = await CallCSComputerVisionAsync(imageStream, _appSettings);
-
-                    }
-                    else
-                    {
-                        // Unable to fit within size limit
-                        // Skip calling Cognitive Services and return empty analysis results
-                        using var thumbnailStream = new MemoryStream(data, false);
-                        using var imageStream = new MemoryStream(data, false);
-
-                        thumbnailURL = await GenerateThumbnailMagickAsync(thumbnailFileName, thumbnailStream, _appSettings);
-                        computerVisionResult = new ImageAnalysis()
-                        {
-                            Tags = Array.Empty<ImageTag>(),
-                            Description = new ImageDescriptionDetails(null, Array.Empty<ImageCaption>())
-                        };
-                    }
-
-                    //create json for indexing
-                    ImageEntity json = new ImageEntity();
-                    json.PartitionKey = TransferPartitionKey;
-                    json.RowKey = id;
-                    json.Id = id;
-                    json.Name = untrustedFileName;
-                    json.DateTaken = GetTimestamp(directories, _appSettings.UploadTimeZone);
-                    json.Location = JsonConvert.SerializeObject(GetCoordinate(directories));
-                    json.Tag = GenerateTags(computerVisionResult);
-                    json.Caption = GenerateCaption(computerVisionResult);
-                    json.Author = email;
-                    json.UploadDate = TruncateMilliseconds(DateTime.UtcNow);
-                    json.FileURL = imageURL;
-                    json.ThumbnailURL = thumbnailURL;
-                    json.Project = model.Project;
-                    json.LocationName = model.LocationText;
-                    json.Copyright = model.Copyright;
-
-                    await IndexUploadToTable(json, _appSettings);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "File {FileName} failed to upload.", untrustedFileName);
-
-                    ModelState.AddModelError(file.Name, $"File {encodedFileName} could not be uploaded.");
-                    TempData["Alert.Type"] = "danger";
-                    TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
-                    return View("~/Views/Home/Index.cshtml");
-                }
-            }
             ModelState.Clear();
             TempData["Alert.Type"] = "success";
             TempData["Alert.Message"] = "Your items have been uploaded successfully, and will be copied to intranet in 10 minutes.";

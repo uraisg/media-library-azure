@@ -43,45 +43,22 @@ const Step2 = (props) => {
     $('#all-chkbox').css("pointer-events", "none")
 
     //Call api here
+    fetch(`draft/${props.draftKey}`)
+      .then((res) => res.json())
+      .then((res) => {
+        var imageEntities = JSON.parse(res.imageEntities)
+        formContext.setRetrievedFile(imageEntities)
+        setImageData(imageEntities)
+      })
 
     //Replace first setTimeout
-    /*
     setTimeout(() => {
       $('.item-chkbox').css("pointer-events", "auto")
       $('#all-chkbox').css("pointer-events", "auto")
       $('.item-chkbox').prop("checked", false)
       $('.item-list').removeClass("border bg-light")
-      formContext.setRetrievedFile([{
-        UploadId: "oasnd-192asd-12398asd-123asdasd",
-        Id: 1,
-        ImageURL: "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/QUJB2YD4KRKB5OPGTIRL6A7M3A.jpg",
-        Name: "Construction Site",
-        Location: "Serangoon",
-        Copyright: "URA",
-        PlanningArea: "SERANGOON",
-        Caption: "A large building with a lot of people",
-        Tags: "people,building",
-        TakenDate: "28th June 2022, 19:28 PM",
-        UploadDate: "28th June 2022, 19:28 PM",
-        AdditionalField: []
-      },
-      {
-        UploadId: "oasnd-192asd-12398asd-123asdasd",
-        Id: 2,
-        ImageURL: "https://d33wubrfki0l68.cloudfront.net/663d2c761439a867ad0547acbfb5396c4ee730ae/cc885/static/10be8217b3a21557d28597f852a3677c/2a8be/consturction-site-risk-movement.jpg",
-        Name: "Construction Site",
-        Location: "Serangoon",
-        Copyright: "URA",
-        PlanningArea: "SERANGOON",
-        Caption: "a land with cranes",
-        Tags: "sand,land,crane",
-        TakenDate: "28th June 2022, 19:28 PM",
-        UploadDate: "28th June 2022, 19:28 PM",
-        AdditionalField: []
-      }])
       setRefresh(false)
-    }, 2000)
-    */
+    }, 1000)
   }
 
   const setCheckValue = (e) => {
@@ -109,13 +86,22 @@ const Step2 = (props) => {
 
   useEffect(() => {
     if (formContext.retrievedFile.length === 0) {
-      formContext.setValidInput({ "Name": "", "Location": "" })
+      formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
       formContext.setFiles([])
       props.setActiveStep(0)
-    }
 
-    setImageData(formContext.retrievedFile)
+      // Delete draft as the draft is empty
+      fetch(`draft/${props.draftKey}`, {
+        method: 'DELETE'
+      })
+    }
   }, [formContext.retrievedFile])
+
+  useEffect(() => {
+    if (props.activeStep === 1) {
+      renderRefresh();
+    }
+  }, [props.activeStep])
 
   const setAllCheck = (e) => {
     if (e.target.checked) {
@@ -124,7 +110,7 @@ const Step2 = (props) => {
       setCheckNo(formContext.retrievedFile.length)
       setIndex([])
       formContext.retrievedFile.map((item) => {
-        setIndex(indexItem => [...indexItem, parseInt(item.Id)])
+        setIndex(indexItem => [...indexItem, item.Id])
       })
     }
     else {
@@ -148,17 +134,24 @@ const Step2 = (props) => {
   const closeModal = () => setDeleteModal(false);
   const openModal = () => setDeleteModal(true);
 
-  const deleteItem = () => {
+  const deleteItem = async() => {
+    // Delete image
+    for await (var file of index) {
+      await fetch(`draft/${props.draftKey}/${file}`, {
+        method: 'DELETE'
+      })
+    }
+
     closeModal()
     setTimeout(() => {
-      renderRefresh()
+      renderRefresh();
     }, 1000)
   }
 
   return (
     <React.Fragment>
       {editItem &&
-        <EditItem setEditItem={setEditItem} index={index} renderRefresh={renderRefresh} editType={editType} />
+        <EditItem setEditItem={setEditItem} index={index} renderRefresh={renderRefresh} editType={editType} draftKey={props.draftKey}/>
       }
 
 
@@ -217,6 +210,7 @@ const Step2 = (props) => {
 }
 
 Step2.propTypes = {
+  activeStep: PropTypes.number,
   setActiveStep: PropTypes.func,
   draftKey: PropTypes.string
 }

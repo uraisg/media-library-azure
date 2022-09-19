@@ -13,7 +13,8 @@ const FormSteps = (props) => {
       setErrMsg={props.setErrMsg} />
     }
     {props.activeStep === 1 && 
-      <Step2
+        <Step2
+        activeStep={props.activeStep}
         setActiveStep={props.setActiveStep}
         draftKey={props.draftKey}
       />

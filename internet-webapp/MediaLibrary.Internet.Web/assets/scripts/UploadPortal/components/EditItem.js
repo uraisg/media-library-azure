@@ -81,7 +81,6 @@ const SingleEdit = (props) => {
     })
 
 
-  /*
   useEffect(() => {
     fileArr.AdditionalField.map((item) => {
       const id = Math.random().toString(16).slice(2)
@@ -99,7 +98,7 @@ const SingleEdit = (props) => {
     const temp = newField.filter(item => item.Id !== e.target.id)
     setNewField(temp)
   }
-  */
+  
 
   const updateField = (e) => {
     setNewDetails(item => ({ ...item, [e.target.id]: e.target.value }))
@@ -189,6 +188,21 @@ const SingleEdit = (props) => {
     }
 
     setLoading(true)
+
+    newDetails.AdditionalField = []
+    for (var field in newField) {
+      newDetails.AdditionalField.push(newField[field])
+    }
+    setNewDetails(newDetails)
+    fetch(`draft/${props.draftKey}/${fileArr.Id}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newDetails)
+    })
+
     setTimeout(() => {
       setLoading(false)
       props.renderRefresh()
@@ -199,6 +213,7 @@ const SingleEdit = (props) => {
   const reset = () => {
     setNewDetails(fileArr)
     setNewField([])
+
     fileArr.AdditionalField.map((item) => {
       const id = Math.random().toString(16).slice(2)
       setNewField(field => [...field, { "Id": id, "Key": item.Key, "Value": item.Value }])
@@ -252,7 +267,7 @@ const SingleEdit = (props) => {
               </div>
               <div className="mt-2 row">
                 <div className="mt-2 col-12 col-md-2 col-lg-3 col-xl-2"><strong>Tags:</strong></div>
-                <div className="col-12 col-md-10 col-lg-9 col-xl-10"><input type="text" value={newDetails.Tag} onChange={updateField} id="Tags" className="form-control" /><small className="text-secondary">Tags are separated with a comma</small></div>
+                <div className="col-12 col-md-10 col-lg-9 col-xl-10"><input type="text" value={newDetails.Tag} onChange={updateField} id="Tag" className="form-control" /><small className="text-secondary">Tags are separated with a comma</small></div>
               </div>
 
               {newField.length > 0 &&
@@ -273,7 +288,7 @@ const SingleEdit = (props) => {
               }
 
               <div className="mt-3">
-                {/*<span className="user-select-none pointer-cursor text-danger" onClick={addNewField}><Plus size={30} color={'red'} /> Add new Field</span>*/}
+                <span className="user-select-none pointer-cursor text-danger" onClick={addNewField}><Plus size={30} color={'red'} /> Add new Field</span>
                 <div className="float-right">
                   <Button variant="secondary" onClick={reset} disabled={loading}>Reset</Button>{' '}
                   <Button variant="primary" onClick={save} disabled={loading}>Save</Button>{' '}
@@ -445,12 +460,102 @@ const BatchEdit = (props) => {
     }
   }
 
-  const save = () => {
+  const save = async() => {
     if (!checkValidField() || !checkValidAddField()) {
       return
     }
 
     setLoading(true)
+
+    // Get Original Values
+    var response = await fetch(`draft/${props.draftKey}`);
+    var responseJSON = await response.json();
+    var imageEntities = JSON.parse(responseJSON.imageEntities);
+
+    for await (var imageId of props.index) {
+      for await (var imageEntity of imageEntities) {
+        if (imageEntity["Id"] == imageId) {
+          // Update Name
+          if (option["Name"] != "nil") {
+            if (option["Name"] == "begin") {
+              imageEntity["Name"] = defaultValue["Name"] + imageEntity["Name"]
+            }
+            else if (option["Name"] == "end") {
+              imageEntity["Name"] = imageEntity["Name"] + defaultValue["Name"]
+            }
+            else {
+              imageEntity["Name"] = defaultValue["Name"]
+            }
+          }
+
+          // Update Location
+          if (option["Location"] != "nil") {
+            if (option["Location"] == "begin") {
+              imageEntity["Location"] = defaultValue["Location"] + imageEntity["Location"]
+            }
+            else if (option["Location"] == "end") {
+              imageEntity["Location"] = imageEntity["Location"] + defaultValue["Location"]
+            }
+            else {
+              imageEntity["Location"] = defaultValue["Location"]
+            }
+          }
+
+          // Update Copyright
+          if (option["Copyright"] != "nil") {
+            if (option["Copyright"] == "begin") {
+              imageEntity["Copyright"] = defaultValue["Copyright"] + imageEntity["Copyright"]
+            }
+            else if (option["Copyright"] == "end") {
+              imageEntity["Copyright"] = imageEntity["Copyright"] + defaultValue["Copyright"]
+            }
+            else {
+              imageEntity["Copyright"] = defaultValue["Copyright"]
+            }
+          }
+
+          // Update Caption
+          if (option["Caption"] != "nil") {
+            if (option["Caption"] == "begin") {
+              imageEntity["Caption"] = defaultValue["Caption"] + imageEntity["Caption"]
+            }
+            else if (option["Caption"] == "end") {
+              imageEntity["Caption"] = imageEntity["Caption"] + defaultValue["Caption"]
+            }
+            else {
+              imageEntity["Caption"] = defaultValue["Caption"]
+            }
+          }
+
+          // Update Tags
+          if (option["Tags"] != "nil") {
+            if (option["Tags"] == "end") {
+              imageEntity["Tag"] = imageEntity["Tag"] + "," + defaultValue["Tags"]
+            }
+            else {
+              imageEntity["Tag"] = defaultValue["Tags"]
+            }
+          }
+
+          imageEntity["AdditionalField"] = []
+          for await (var field of newField) {
+            delete field["allId"];
+            imageEntity["AdditionalField"].push(field);
+          }
+
+          await fetch(`draft/${props.draftKey}/${imageId}`, {
+            method: 'PUT',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(imageEntity)
+          })
+          break
+        }
+      }
+    }
+
     setTimeout(() => {
       setLoading(false)
       props.renderRefresh()
@@ -611,7 +716,8 @@ EditItem.propTypes = {
   setEditItem: PropTypes.func,
   index: PropTypes.arrayOf(PropTypes.string),
   renderRefresh: PropTypes.func,
-  editType: PropTypes.string
+  editType: PropTypes.string,
+  draftKey: PropTypes.string
 }
 
 export default EditItem
