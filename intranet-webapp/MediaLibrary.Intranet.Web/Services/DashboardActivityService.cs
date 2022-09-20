@@ -446,10 +446,10 @@ namespace MediaLibrary.Intranet.Web.Services
                     }
                     report.PlanningArea = planningArea;
                     report.ImageURL = "";
-                    report.StaffName = activity.DisplayName;
+                    report.StaffName = "";
                     report.Email = deletedFile.Email;
-                    report.Department = activity.Department;
-                    report.Group = "(Group)";
+                    report.Department = "";
+                    report.Group = "";
                     report.ActivityDateTime = deletedFile.ActivityDateTime;
                 }
                 else
@@ -474,11 +474,11 @@ namespace MediaLibrary.Intranet.Web.Services
                         planningArea = area;
                     }
                     report.PlanningArea = planningArea;
-                    report.ImageURL = "";
-                    report.StaffName = activity.DisplayName;
+                    report.ImageURL = "https://medialibrary.uraaz.gov.sg/Gallery/Item/" + activity.FileId;
+                    report.StaffName = "";
                     report.Email = activity.Email;
-                    report.Department = activity.Department;
-                    report.Group = "(Group)";
+                    report.Department = "";
+                    report.Group = "";
                     report.ActivityDateTime = activity.ActivityDateTime;
                 }
 
