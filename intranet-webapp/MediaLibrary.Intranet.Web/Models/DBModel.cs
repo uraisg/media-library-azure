@@ -44,10 +44,6 @@ namespace MediaLibrary.Intranet.Web.Models
         public string Email { get; set; }
         public DateTime ActivityDateTime { get; set; }
         public int Activity { get; set; }
-
-        //TODO: To be Removed
-        public string Department { get; set; }
-        public string DisplayName { get; set; }
     }
 
     public class FileDetails
