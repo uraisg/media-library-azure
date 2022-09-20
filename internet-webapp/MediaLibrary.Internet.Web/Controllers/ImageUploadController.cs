@@ -95,6 +95,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.Project = image["Project"].ToString();
                 json.LocationName = image["LocationName"].ToString();
                 json.Copyright = image["Copyright"].ToString();
+                json.AdditionalField = JsonConvert.DeserializeObject<List<object>>(image["AdditionalField"].ToString());
 
                 await IndexUploadToTable(json, _appSettings);
             }
@@ -481,8 +482,61 @@ namespace MediaLibrary.Internet.Web.Controllers
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             CloudTable table = tableClient.GetTableReference(tableName);
 
-            TableOperation insertOperation = TableOperation.Insert(json);
+            JArray jsonArray = new JArray();
+            foreach (var i in json.AdditionalField)
+            {
+                JObject additionalFields = JObject.FromObject(i);
+                jsonArray.Add(additionalFields);
+            }
+
+            json.Location = json.Location.Replace("\\", "");
+
+            TransferEntity transferEntity = new TransferEntity()
+            {
+                RowKey = json.RowKey,
+                Id = json.Id,
+                Name = json.Name,
+                DateTaken = json.DateTaken,
+                Location = json.Location,
+                Tag = json.Tag,
+                Caption = json.Caption,
+                Author = json.Author,
+                UploadDate = json.UploadDate,
+                FileURL = json.FileURL,
+                ThumbnailURL = json.ThumbnailURL,
+                Project = json.Project,
+                Event = json.Event,
+                LocationName = json.LocationName,
+                Copyright = json.Copyright,
+                AdditionalField = jsonArray.ToString()
+            };
+
+            TableOperation insertOperation = TableOperation.Insert(transferEntity);
             await table.ExecuteAsync(insertOperation);
+        }
+
+        public class TransferEntity : TableEntity
+        {
+            public TransferEntity()
+            {
+                PartitionKey = TransferPartitionKey;
+                RowKey = Guid.NewGuid().ToString();
+            }
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public DateTime DateTaken { get; set; }
+            public string Location { get; set; }
+            public string Tag { get; set; }
+            public string Caption { get; set; }
+            public string Author { get; set; }
+            public DateTime UploadDate { get; set; }
+            public string FileURL { get; set; }
+            public string ThumbnailURL { get; set; }
+            public string Project { get; set; }
+            public string Event { get; set; }
+            public string LocationName { get; set; }
+            public string Copyright { get; set; }
+            public string AdditionalField { get; set; }
         }
     }
 }
