@@ -16,8 +16,6 @@ CREATE TABLE [DashboardActivity] (
     [Email]            VARCHAR (320)    NULL,
     [ActivityDateTime] DATETIME         NULL,
     [Activity]         INT              NULL,
-    [DisplayName]      VARCHAR (255)    NULL,
-    [Department]       VARCHAR (255)    NULL,
     CONSTRAINT [PK_DashboardActivity] PRIMARY KEY CLUSTERED ([DActivityId] ASC),
     CONSTRAINT [FK_DashboardActivity_AllActivity] FOREIGN KEY ([Activity]) REFERENCES [AllActivity] ([AActivityId])
 );

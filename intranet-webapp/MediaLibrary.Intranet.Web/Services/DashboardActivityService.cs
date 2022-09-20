@@ -284,8 +284,7 @@ namespace MediaLibrary.Intranet.Web.Services
             int itemPerPage = 30;
             int skipItem = pageno * itemPerPage;
 
-            AllSortOption option;
-            bool checkSort = Enum.TryParse(sortOption, out option);
+            bool checkSort = Enum.TryParse(sortOption, out AllSortOption option);
             if (!checkSort)
             {
                 _logger.LogError("Error in sorting activity report by {sort}", sortOption);
@@ -319,9 +318,11 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public Tuple<List<StaffResult>, int, int> GetAllStaff(StaffQuery staff)
         {
-            List<int> option = new List<int>();
-            option.Add((int)DBActivity.Upload);
-            option.Add((int)DBActivity.Download);
+            List<int> option = new List<int>
+            {
+                (int)DBActivity.Upload,
+                (int)DBActivity.Download
+            };
             string searchQuery = staff.SearchQuery;
 
             var result = from da in _mediaLibraryContext.Set<DashboardActivity>()
@@ -349,8 +350,7 @@ namespace MediaLibrary.Intranet.Web.Services
             int skipResult = pageno * itemPerPage;
             string sortOption = staff.SortOption;
 
-            AllSortOption option;
-            bool checkSort = Enum.TryParse(sortOption, out option);
+            bool checkSort = Enum.TryParse(sortOption, out AllSortOption option);
             if (!checkSort)
             {
                 _logger.LogError("Error in sorting staff by {sort}", sortOption);
@@ -385,12 +385,14 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public List<DashboardActivity> GetAllActivity(string fileId)
         {
-            List<int> option = new List<int>();
-            option.Add((int)DBActivity.Upload);
-            option.Add((int)DBActivity.Download);
+            List<int> option = new List<int>
+            {
+                (int)DBActivity.Upload,
+                (int)DBActivity.Download
+            };
             return (from da in _mediaLibraryContext.Set<DashboardActivity>()
                     where option.Contains(da.Activity) && da.FileId == fileId
-                    select new DashboardActivity { DActivityId = da.DActivityId, FileId = da.FileId, Email = da.Email, Activity = da.Activity, ActivityDateTime = da.ActivityDateTime, DisplayName = da.DisplayName, Department = da.Department }).ToList();
+                    select new DashboardActivity { DActivityId = da.DActivityId, FileId = da.FileId, Email = da.Email, Activity = da.Activity, ActivityDateTime = da.ActivityDateTime }).ToList();
         }
 
         public string GetActivityName(int id)
@@ -402,11 +404,13 @@ namespace MediaLibrary.Intranet.Web.Services
         {
             List<GenerateReportResult> result = new List<GenerateReportResult>();
 
-            List<int> option = new List<int>();
-            option.Add((int)DBActivity.Upload);
-            option.Add((int)DBActivity.Download);
-            option.Add((int)DBActivity.Edit);
-            option.Add((int)DBActivity.Delete);
+            List<int> option = new List<int>
+            {
+                (int)DBActivity.Upload,
+                (int)DBActivity.Download,
+                (int)DBActivity.Edit,
+                (int)DBActivity.Delete
+            };
 
             var dashboardActivities = _mediaLibraryContext.dashboardActivity.Where(e => option.Contains(e.Activity)).ToList();
             foreach(DashboardActivity activity in dashboardActivities)
