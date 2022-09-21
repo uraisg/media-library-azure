@@ -490,6 +490,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
 
             json.Location = json.Location.Replace("\\", "");
+            json.Location = json.Location.Substring(1, json.Location.Length - 2);
 
             TransferEntity transferEntity = new TransferEntity()
             {

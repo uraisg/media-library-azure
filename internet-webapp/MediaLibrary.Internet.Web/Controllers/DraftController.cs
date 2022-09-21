@@ -303,8 +303,8 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             string tableConnectionString = _appSettings.TableConnectionString;
             string tableName = _appSettings.TableName;
-            var containerName = _appSettings.MediaStorageContainer;
-            var storageConnectionString = _appSettings.MediaStorageConnectionString;
+            string containerName = _appSettings.MediaStorageContainer;
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
 
             //initialize table client
             CloudStorageAccount storageAccount;
@@ -331,24 +331,30 @@ namespace MediaLibrary.Internet.Web.Controllers
             {
                 if (jsonArray[i]["Id"].ToString() == image)
                 {
-                    var fileArray = jsonArray[i]["FileURL"].ToString().Split("/");
-                    var thumbArray = jsonArray[i]["ThumbnailURL"].ToString().Split("/");
+                    var fileName = jsonArray[i]["Id"] + "_" + jsonArray[i]["Name"];
 
-                    var fileName = "";
-                    var thumbName = "";
-                    foreach (var p in fileArray.Skip(4).ToArray())
+                    var thumbArray = jsonArray[i]["Name"].ToString().Split(".");
+                    var thumbName = jsonArray[i]["Id"] + "_";
+                    foreach (var thumb in thumbArray)
                     {
-                        fileName += p.ToString();
-                    }
-                    foreach (var p in thumbArray.Skip(4).ToArray())
-                    {
-                        thumbName += p.ToString();
+                        if (thumb == thumbArray[0])
+                        {
+                            thumbName += thumb;
+                        }
+                        else if (thumb != thumbArray[^1])
+                        {
+                            thumbName += "." + thumb;
+                        }
+                        else
+                        {
+                            thumbName += "_thumb.jpg";
+                        }
                     }
 
                     var fileBlob = blobContainerClient.GetBlobClient(fileName);
-                    var thumnBlob = blobContainerClient.GetBlobClient(thumbName);
+                    var thumbBlob = blobContainerClient.GetBlobClient(thumbName);
                     await fileBlob.DeleteIfExistsAsync();
-                    await thumnBlob.DeleteIfExistsAsync();
+                    await thumbBlob.DeleteIfExistsAsync();
                     jsonArray.RemoveAt(i);
                 }
             }

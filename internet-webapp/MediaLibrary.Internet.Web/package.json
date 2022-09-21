@@ -37,6 +37,7 @@
     "@mui/styled-engine-sc": "^5.8.0",
     "bootstrap": "^4.6.1",
     "bootstrap-icons": "^1.8.3",
+    "date-fns": "^2.29.3",
     "filepond-plugin-file-validate-size": "^2.2.7",
     "filepond-plugin-file-validate-type": "^1.2.8",
     "filepond-plugin-image-exif-orientation": "^1.0.11",

@@ -126,21 +126,13 @@ namespace MediaLibrary.Intranet.Web.Background
                 string thumbnailFileName = HttpUtility.UrlDecode(encodedThumbnailFileName);
                 await ImageUploadToBlob(imageBlobContainerClient, thumbnailContent, thumbnailFileName);
 
-                GeographyPoint y = null;
-                var Location = y;
-                System.Diagnostics.Debug.WriteLine(item.location);
-                if (item.location != null)
-                {
-                    Location = JsonConvert.DeserializeObject<GeographyPoint>(item.location, new GeographyPointJsonConverter());
-                }
-
                 //create new object to serialize to json
                 var mediaItem = new MediaItem()
                 {
                     Id = item.id,
                     Name = item.name,
                     DateTaken = item.dateTaken,
-                    Location = Location,
+                    Location = JsonConvert.DeserializeObject<GeographyPoint>(item.location, new GeographyPointJsonConverter()),
                     Tag = item.tag.Split(",").ToArray(),
                     Caption = item.caption,
                     Author = item.author,
