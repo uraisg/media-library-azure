@@ -46,7 +46,7 @@ const Step2 = (props) => {
     fetch(`draft/${props.draftKey}`)
       .then((res) => res.json())
       .then((res) => {
-        var imageEntities = JSON.parse(res.imageEntities)
+        const imageEntities = JSON.parse(res.imageEntities)
         formContext.setRetrievedFile(imageEntities)
         setImageData(imageEntities)
       })
@@ -136,7 +136,7 @@ const Step2 = (props) => {
 
   const deleteItem = async() => {
     // Delete image
-    for await (var file of index) {
+    for await (let file of index) {
       await fetch(`draft/${props.draftKey}/${file}`, {
         method: 'DELETE'
       })

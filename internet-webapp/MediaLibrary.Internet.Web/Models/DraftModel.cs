@@ -21,7 +21,7 @@ namespace MediaLibrary.Internet.Web.Models
         public string ImageEntities { get; set; }
     }
 
-    public class addImageModel
+    public class AddImageModel
     {
         [Required]
         [Display(Name = "Title for the images")]
@@ -35,19 +35,5 @@ namespace MediaLibrary.Internet.Web.Models
         [Required]
         [Display(Name = "Image(s) to upload")]
         public IFormFile file { get; set; }
-    }
-
-    // Incomplete
-    public class updateDraftReq
-    {
-        public string PartitionKey { get; set; }
-        public string RowKey { get; set; }
-        public string ImageEntityId { get; set; }
-    }
-
-    public class deleteDraftReq
-    {
-        public string PartitionKey { get; set; }
-        public string RowKey { get; set; }
     }
 }

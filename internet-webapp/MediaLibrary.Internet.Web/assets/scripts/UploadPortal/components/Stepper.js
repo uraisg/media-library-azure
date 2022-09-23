@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -75,8 +75,8 @@ const StepperForm = () => {
     const rowKey = responseData.rowKey;
     setDraftKey(rowKey);
 
-    for await (var file of files) {
-      var data = new FormData();
+    for await (let file of files) {
+      let data = new FormData();
       data.append('name', name)
       data.append('location', location)
       data.append('copyright', copyright)
@@ -93,7 +93,7 @@ const StepperForm = () => {
         .then((response) => response.json())
         .then((response) => {
           try {
-            var imageEntities = JSON.parse(response.imageEntities)
+            const imageEntities = JSON.parse(response.imageEntities)
             formContext.setRetrievedFile(imageEntities)
 
             setProgressBar(false)

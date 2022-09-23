@@ -190,7 +190,7 @@ const SingleEdit = (props) => {
     setLoading(true)
 
     newDetails.AdditionalField = []
-    for (var field in newField) {
+    for (let field in newField) {
       newDetails.AdditionalField.push(newField[field])
     }
     setNewDetails(newDetails)
@@ -359,8 +359,6 @@ const BatchEdit = (props) => {
       const tempId = Math.random().toString(16).slice(2)
       return { Id: tempId, allId: allId, Key: key, Value: value }
     }
-
-    return
   }
 
   const updateField = (e) => {
@@ -468,12 +466,12 @@ const BatchEdit = (props) => {
     setLoading(true)
 
     // Get Original Values
-    var response = await fetch(`draft/${props.draftKey}`);
-    var responseJSON = await response.json();
-    var imageEntities = JSON.parse(responseJSON.imageEntities);
+    const response = await fetch(`draft/${props.draftKey}`);
+    const responseJSON = await response.json();
+    const imageEntities = JSON.parse(responseJSON.imageEntities);
 
-    for await (var imageId of props.index) {
-      for await (var imageEntity of imageEntities) {
+    for await (let imageId of props.index) {
+      for await (let imageEntity of imageEntities) {
         if (imageEntity["Id"] == imageId) {
           // Update Name
           if (option["Name"] != "nil") {
@@ -538,7 +536,7 @@ const BatchEdit = (props) => {
           }
 
           imageEntity["AdditionalField"] = []
-          for await (var field of newField) {
+          for await (let field of newField) {
             delete field["allId"];
             imageEntity["AdditionalField"].push(field);
           }

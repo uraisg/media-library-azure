@@ -82,7 +82,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         // AntiForgeryToken should be used
         [HttpPost("draft/{rowkey}/addImage")]
         [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
-        public async Task AddImage([FromForm]addImageModel req, string rowKey, CancellationToken cancellationToken)
+        public async Task AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
             _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
 
@@ -812,7 +812,10 @@ namespace MediaLibrary.Internet.Web.Controllers
                 JObject resultObject = JObject.Parse(resultJSON);
                 jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
             }
-            catch (Exception e){}
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Issue with draft while trying to upload image to draft.");
+            }
 
             JObject imageJObject = JObject.FromObject(json);
 

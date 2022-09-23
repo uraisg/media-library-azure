@@ -80,8 +80,8 @@ const DisplayItem = (props) => {
       setNullLocation(true);
 
       const coordinates = JSON.parse(props.item.Location).coordinates;
-      var coordsText = "";
-      for (var i of coordinates) {
+      let coordsText = "";
+      for (let i of coordinates) {
         if (coordsText != "") {
           coordsText += ", "
         }

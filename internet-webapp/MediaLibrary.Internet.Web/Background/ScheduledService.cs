@@ -44,15 +44,13 @@ namespace MediaLibrary.Internet.Web.Background
 
         private readonly AppSettings _appSettings;
         private readonly ILogger<ScheduledService> _logger;
-        private readonly IHttpClientFactory _clientFactory;
 
-        public ScheduledService(IOptions<AppSettings> appSettings, ILogger<ScheduledService> logger, IHttpClientFactory clientFactory)
+        public ScheduledService(IOptions<AppSettings> appSettings, ILogger<ScheduledService> logger)
         {
             _schedule = CrontabSchedule.Parse(Schedule);
             _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
             _appSettings = appSettings.Value;
             _logger = logger;
-            _clientFactory = clientFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -141,9 +139,6 @@ namespace MediaLibrary.Internet.Web.Background
                     }
                 }
             }
-
-            //TableOperation deleteOperation = TableOperation.Delete(tableEntity);
-            //await table.ExecuteAsync(deleteOperation);
         }
     }
 }
