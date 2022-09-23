@@ -189,11 +189,12 @@ const SingleEdit = (props) => {
 
     setLoading(true)
 
-    newDetails.AdditionalField = []
+    let newAdditionalField = []
     for (let field in newField) {
-      newDetails.AdditionalField.push(newField[field])
+      newAdditionalField.push(newField[field])
     }
-    setNewDetails(newDetails)
+    setNewDetails(newAdditionalField)
+
     fetch(`draft/${props.draftKey}/${fileArr.Id}`, {
       method: 'PUT',
       headers: {
