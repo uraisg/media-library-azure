@@ -38,6 +38,7 @@ namespace MediaLibrary.Internet.Web.Background
 
         // Run once at every second minute
         private static readonly string Schedule = "*/2 * * * *";
+        private static readonly int timeBetweenRun = 1; // Days
 
         private static readonly string DraftPartitionKey = "draft";
 
@@ -75,7 +76,7 @@ namespace MediaLibrary.Internet.Web.Background
                     _logger.LogError(ex, "Unhandled exception occurred, will retry processing at next interval");
                 }
 
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(15000, stoppingToken);
             }
         }
 
@@ -103,7 +104,7 @@ namespace MediaLibrary.Internet.Web.Background
             {
                 if (entity.PartitionKey == DraftPartitionKey)
                 {
-                    if (entity.Timestamp < DateTime.Now.AddMinutes(-1))
+                    if (entity.Timestamp < DateTime.Now.AddDays(timeBetweenRun))
                     {
                         JArray imageEntities = JArray.Parse(entity.ImageEntities);
 
@@ -113,22 +114,13 @@ namespace MediaLibrary.Internet.Web.Background
                             var fileName = imageEntities[i]["Id"] + "_" + imageEntities[i]["Name"];
 
                             var thumbArray = imageEntities[i]["Name"].ToString().Split(".");
-                            var thumbName = imageEntities[i]["Id"] + "_";
-                            foreach (var thumb in thumbArray)
+                            var thumbName = imageEntities[i]["Id"] + "_" + thumbArray[0];
+                            var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                            foreach (var thumb in middleThumbArray)
                             {
-                                if (thumb == thumbArray[0])
-                                {
-                                    thumbName += thumb;
-                                }
-                                else if (thumb != thumbArray[^1])
-                                {
-                                    thumbName += "." + thumb;
-                                }
-                                else
-                                {
-                                    thumbName += "_thumb.jpg";
-                                }
+                                thumbName += "." + thumb;
                             }
+                            thumbName += "_thumb.jpg";
 
                             var fileBlob = blobContainerClient.GetBlobClient(fileName);
                             var thumnBlob = blobContainerClient.GetBlobClient(thumbName);

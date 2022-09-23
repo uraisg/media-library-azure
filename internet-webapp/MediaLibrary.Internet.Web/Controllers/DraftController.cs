@@ -334,22 +334,13 @@ namespace MediaLibrary.Internet.Web.Controllers
                     var fileName = jsonArray[i]["Id"] + "_" + jsonArray[i]["Name"];
 
                     var thumbArray = jsonArray[i]["Name"].ToString().Split(".");
-                    var thumbName = jsonArray[i]["Id"] + "_";
-                    foreach (var thumb in thumbArray)
+                    var thumbName = jsonArray[i]["Id"] + "_" + thumbArray[0];
+                    var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                    foreach (var thumb in middleThumbArray)
                     {
-                        if (thumb == thumbArray[0])
-                        {
-                            thumbName += thumb;
-                        }
-                        else if (thumb != thumbArray[^1])
-                        {
-                            thumbName += "." + thumb;
-                        }
-                        else
-                        {
-                            thumbName += "_thumb.jpg";
-                        }
+                        thumbName += "." + thumb;
                     }
+                    thumbName += "_thumb.jpg";
 
                     var fileBlob = blobContainerClient.GetBlobClient(fileName);
                     var thumbBlob = blobContainerClient.GetBlobClient(thumbName);
