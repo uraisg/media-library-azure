@@ -31,8 +31,6 @@ namespace MediaLibrary.Internet.Web.Controllers
     {
         private static readonly string TransferPartitionKey = "transfer";
         private static readonly string DraftPartitionKey = "draft";
-        private static readonly int ComputerVisionMaxFileSize = 4 * 1024 * 1024; // 4MB
-        private static readonly int DefaultJpegQuality = 80;
 
         private readonly AppSettings _appSettings;
         private readonly ILogger _logger;

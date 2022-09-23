@@ -814,7 +814,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Issue with draft while trying to upload image to draft.");
+                Debug.WriteLine("Issue with draft while trying to upload image to draft: " + e);
             }
 
             JObject imageJObject = JObject.FromObject(json);

@@ -466,9 +466,9 @@ const BatchEdit = (props) => {
     setLoading(true)
 
     // Get Original Values
-    const response = await fetch(`draft/${props.draftKey}`);
-    const responseJSON = await response.json();
-    const imageEntities = JSON.parse(responseJSON.imageEntities);
+    let response = await fetch(`draft/${props.draftKey}`);
+    let responseJSON = await response.json();
+    let imageEntities = JSON.parse(responseJSON.imageEntities);
 
     for await (let imageId of props.index) {
       for await (let imageEntity of imageEntities) {

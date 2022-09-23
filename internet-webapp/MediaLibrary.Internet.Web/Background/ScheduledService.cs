@@ -102,7 +102,7 @@ namespace MediaLibrary.Internet.Web.Background
             {
                 if (entity.PartitionKey == DraftPartitionKey)
                 {
-                    if (entity.Timestamp < DateTime.Now.AddDays(timeBetweenRun))
+                    if (entity.Timestamp < DateTime.Now.AddDays(-timeBetweenRun))
                     {
                         JArray imageEntities = JArray.Parse(entity.ImageEntities);
 
