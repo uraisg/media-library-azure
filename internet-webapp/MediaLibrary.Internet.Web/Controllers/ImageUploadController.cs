@@ -47,7 +47,6 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         [HttpPost("FileUpload/{rowkey}")]
-        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task<IActionResult> Index(string rowkey)
         {
             _logger.LogInformation("{UserName} uploading to intranet", User.Identity.Name);
