@@ -92,7 +92,10 @@ const Step2 = (props) => {
 
       // Delete draft as the draft is empty
       fetch(`draft/${props.draftKey}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+        }
       })
     }
   }, [formContext.retrievedFile])
@@ -138,7 +141,10 @@ const Step2 = (props) => {
     // Delete image
     for await (let file of index) {
       await fetch(`draft/${props.draftKey}/${file}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+        }
       })
     }
 

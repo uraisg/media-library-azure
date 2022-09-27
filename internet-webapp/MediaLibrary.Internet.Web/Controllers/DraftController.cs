@@ -51,7 +51,6 @@ namespace MediaLibrary.Internet.Web.Controllers
 
         // Create a new draft (without images)
         [HttpPost("draft/create")]
-        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task<JsonResult> CreateDraft()
         {
             string email = User.GetUserGraphEmail();
@@ -81,7 +80,6 @@ namespace MediaLibrary.Internet.Web.Controllers
         // Adding images to a draft
         // AntiForgeryToken should be used
         [HttpPost("draft/{rowkey}/addImage")]
-        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
             _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
@@ -241,7 +239,6 @@ namespace MediaLibrary.Internet.Web.Controllers
 
         // Edit images in a draft
         [HttpPut("draft/{rowkey}/{image}")]
-        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task UpdateImage([FromBody] ImageEntity updateImageEntity, string rowkey, string image)
         {
             string tableConnectionString = _appSettings.TableConnectionString;
@@ -298,7 +295,6 @@ namespace MediaLibrary.Internet.Web.Controllers
 
         // Remove images from a draft
         [HttpDelete("draft/{rowkey}/{image}")]
-        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task DeleteImage(string rowkey, string image)
         {
             string tableConnectionString = _appSettings.TableConnectionString;
@@ -365,7 +361,6 @@ namespace MediaLibrary.Internet.Web.Controllers
 
         // Delete a draft
         [HttpDelete("draft/{rowkey}")]
-        [IgnoreAntiforgeryToken] // SHOULD BE CHANGED
         public async Task DeleteDraft(string rowkey)
         {
             string tableConnectionString = _appSettings.TableConnectionString;

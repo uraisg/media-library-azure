@@ -68,7 +68,10 @@ const StepperForm = () => {
     const files = formContext.files
 
     const response = await fetch("draft/create", {
-      method: 'POST'
+      method: 'POST',
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
     })
 
     const responseData = await response.json();
@@ -84,6 +87,9 @@ const StepperForm = () => {
 
       await fetch(`draft/${rowKey}/addImage`, {
         method: 'POST',
+        headers: {
+          RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+        },
         body: data
       })
     }
@@ -113,7 +119,10 @@ const StepperForm = () => {
 
     //Call api here
     fetch(`FileUpload/${draftKey}`, {
-      method: 'POST'
+      method: 'POST',
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
     })
 
     //Replace the first timeout with post api call

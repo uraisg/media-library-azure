@@ -71,7 +71,7 @@ const SingleEdit = (props) => {
   const [newDetails, setNewDetails] = useState(fileArr)
   const [newField, setNewField] = useState([])
   const [loading, setLoading] = useState(false)
-  const [errMsg, setErrMsg] = useState({ Name: false, Location: false })
+  const [errMsg, setErrMsg] = useState({ Name: false, Project: false })
   const [curimageURL, setCurImageURL] = useState("");
 
   fetch(`/api/sasUri`)
@@ -136,19 +136,19 @@ const SingleEdit = (props) => {
       setErrMsg(item => ({ ...item, Name: false }))
     }
 
-    if (newDetails.Location === "") {
-      setErrMsg(item => ({ ...item, Location: true }))
+    if (newDetails.Project === "") {
+      setErrMsg(item => ({ ...item, Project: true }))
       err = true
     }
     else {
-      setErrMsg(item => ({ ...item, Location: false }))
+      setErrMsg(item => ({ ...item, Project: false }))
     }
 
     if (err) {
       return false
     }
     else {
-      setErrMsg({ Name: false, Location: false })
+      setErrMsg({ Name: false, Project: false })
       return true
     }
   }
@@ -199,7 +199,8 @@ const SingleEdit = (props) => {
       method: 'PUT',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       },
       body: JSON.stringify(newDetails)
     })
@@ -252,8 +253,8 @@ const SingleEdit = (props) => {
               <div className="mt-2 row">
                 <div className="mt-2 col-12 col-md-2 col-lg-3 col-xl-2"><strong>Location:<span className="text-danger">*</span></strong></div>
                 <div className="col-12 col-md-10 col-lg-9 col-xl-10">
-                  <input type="text" value={newDetails.Location} onChange={updateField} id="Location" className="form-control" />
-                  {errMsg.Location &&
+                  <input type="text" value={newDetails.Project} onChange={updateField} id="Project" className="form-control" />
+                  {errMsg.Project &&
                     <span className="text-danger">The Location Field is required</span>
                   }
                 </div>
@@ -307,10 +308,10 @@ const BatchEdit = (props) => {
   const formContext = useForm()
   const [newField, setNewField] = useState(checkAddField())
   const [loading, setLoading] = useState(false)
-  const [errMsg, setErrMsg] = useState({ Name: false, Location: false })
+  const [errMsg, setErrMsg] = useState({ Name: false, Project: false })
 
-  const [defaultValue, setDefaultValue] = useState({ Name: "", Location: "", Copyright: "", Caption: "", Tags: "" })
-  const [option, setOption] = useState({ Name: "nil", Location: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
+  const [defaultValue, setDefaultValue] = useState({ Name: "", Project: "", Copyright: "", Caption: "", Tags: "" })
+  const [option, setOption] = useState({ Name: "nil", Project: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
   const updateOption = [{ Value: "nil", Option: "No change" }, { Value: "begin", Option: "Insert at beginning" }, { Value: "end", Option: "Insert at end" }, { Value: "all", Option: "Replace all" }]
   const updateTagsOptions = [{ Value: "nil", Option: "No change" }, { Value: "end", Option: "Add" }, { Value: "all", Option: "Replace all" }]
 
@@ -399,8 +400,8 @@ const BatchEdit = (props) => {
   }
 
   const reset = () => {
-    setDefaultValue({ Name: "", Location: "", Copyright: "", Caption: "", Tags: "" })
-    setOption({ Name: "nil", Location: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
+    setDefaultValue({ Name: "", Project: "", Copyright: "", Caption: "", Tags: "" })
+    setOption({ Name: "nil", Project: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
     $(".update-option").val("nil")
     setNewField(checkAddField())
   }
@@ -414,18 +415,18 @@ const BatchEdit = (props) => {
     } else {
       setErrMsg(item => ({ ...item, Name: false }))
     }
-    if (option.Location !== "nil" && defaultValue.Location === "") {
-      setErrMsg(item => ({ ...item, Location: true }))
+    if (option.Project !== "nil" && defaultValue.Project === "") {
+      setErrMsg(item => ({ ...item, Project: true }))
       err = true
     } else {
-      setErrMsg(item => ({ ...item, Location: false }))
+      setErrMsg(item => ({ ...item, Project: false }))
     }
 
     if (err) {
       return false
     }
     else {
-      setErrMsg({ Name: false, Location: false })
+      setErrMsg({ Name: false, Project: false })
       return true
     }
   }
@@ -487,16 +488,16 @@ const BatchEdit = (props) => {
             }
           }
 
-          // Update Location
-          if (option["Location"] != "nil") {
-            if (option["Location"] == "begin") {
-              imageEntity["Location"] = defaultValue["Location"] + imageEntity["Location"]
+          // Update Project
+          if (option["Project"] != "nil") {
+            if (option["Project"] == "begin") {
+              imageEntity["Project"] = defaultValue["Project"] + imageEntity["Project"]
             }
-            else if (option["Location"] == "end") {
-              imageEntity["Location"] = imageEntity["Location"] + defaultValue["Location"]
+            else if (option["Project"] == "end") {
+              imageEntity["Project"] = imageEntity["Project"] + defaultValue["Project"]
             }
             else {
-              imageEntity["Location"] = defaultValue["Location"]
+              imageEntity["Project"] = defaultValue["Project"]
             }
           }
 
@@ -546,7 +547,8 @@ const BatchEdit = (props) => {
             method: 'PUT',
             headers: {
               'Accept': 'application/json',
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
             },
             body: JSON.stringify(imageEntity)
           })
@@ -607,7 +609,7 @@ const BatchEdit = (props) => {
           <div className="mt-2 row">
             <div className="mt-1 col-3"><strong>Location:<span className="text-danger">*</span></strong></div>
             <div className="col-9">
-              <select className="update-option form-control" defaultValue="nil" id="Location-select" onChange={handleOption}>
+              <select className="update-option form-control" defaultValue="nil" id="Project-select" onChange={handleOption}>
                 {updateOption.map((item, index) => (
                   <option key={index} value={item.Value}>{item.Option}</option>
                 ))}
@@ -615,10 +617,10 @@ const BatchEdit = (props) => {
             </div>
           </div>
 
-          {option.Location !== "nil" &&
+          {option.Project !== "nil" &&
             <>
-              <input type="text" className="mt-2 form-control" id="Location" value={defaultValue.Location} onChange={updateField} placeholder="Edit location here" />
-              {errMsg.Location &&
+            <input type="text" className="mt-2 form-control" id="Project" value={defaultValue.Project} onChange={updateField} placeholder="Edit location here" />
+            {errMsg.Project &&
                 <span className="text-danger">The Location field is required.</span>
               }
             </>

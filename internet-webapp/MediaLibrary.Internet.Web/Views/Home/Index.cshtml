@@ -1,4 +1,10 @@
-﻿@model UploadFormModel
+﻿@using Microsoft.AspNetCore.Routing;
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+@model UploadFormModel
 @{
     ViewData["Title"] = "Home";
 }
@@ -91,6 +97,7 @@ if (!string.IsNullOrEmpty(alertType))
         @alertMessage
     </div>
 }
+<meta name="RequestVerificationToken" content="@requestToken">
 <div id="root"></div>
 }
 
