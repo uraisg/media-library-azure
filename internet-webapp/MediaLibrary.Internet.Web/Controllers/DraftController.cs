@@ -273,6 +273,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                         additionalField.Add(JToken.Parse(jsonString));
                     }
                     updateImageEntity.AdditionalField = additionalField.ToObject<List<object>>();
+
+                    if (updateImageEntity.Tag.Substring(0, 1) == ",")
+                    {
+                        updateImageEntity.Tag = updateImageEntity.Tag.Substring(1);
+                    }
+
                     jsonArray.RemoveAt(i);
                     jsonArray.Add(JToken.FromObject(updateImageEntity));
 
