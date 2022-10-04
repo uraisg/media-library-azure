@@ -274,10 +274,14 @@ namespace MediaLibrary.Internet.Web.Controllers
                     }
                     updateImageEntity.AdditionalField = additionalField.ToObject<List<object>>();
 
-                    if (updateImageEntity.Tag.Substring(0, 1) == ",")
+                    try
                     {
-                        updateImageEntity.Tag = updateImageEntity.Tag.Substring(1);
+                        if (updateImageEntity.Tag.Substring(0, 1) == ",")
+                        {
+                            updateImageEntity.Tag = updateImageEntity.Tag.Substring(1);
+                        }
                     }
+                    catch(Exception e) { };
 
                     jsonArray.RemoveAt(i);
                     jsonArray.Add(JToken.FromObject(updateImageEntity));

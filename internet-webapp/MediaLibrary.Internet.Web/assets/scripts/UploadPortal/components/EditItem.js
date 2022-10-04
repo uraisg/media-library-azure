@@ -193,7 +193,11 @@ const SingleEdit = (props) => {
     for (let field in newField) {
       newAdditionalField.push(newField[field])
     }
+
     setNewDetails(newAdditionalField)
+
+    let bodyDetails = newDetails
+    bodyDetails.AdditionalField = newAdditionalField
 
     fetch(`draft/${props.draftKey}/${fileArr.Id}`, {
       method: 'PUT',
@@ -202,7 +206,7 @@ const SingleEdit = (props) => {
         'Content-Type': 'application/json',
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       },
-      body: JSON.stringify(newDetails)
+      body: JSON.stringify(bodyDetails)
     })
 
     setTimeout(() => {
