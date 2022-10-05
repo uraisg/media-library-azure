@@ -37,7 +37,7 @@ namespace MediaLibrary.Internet.Web.Background
         private DateTime _nextRun;
 
         // Run once at every second minute
-        private static readonly string Schedule = "*/2 * * * *";
+        private static readonly string Schedule = "59 23 * * *";
         private static readonly int timeBetweenRun = 1; // Days
 
         private static readonly string DraftPartitionKey = "draft";

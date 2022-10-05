@@ -27,10 +27,6 @@
     <None Include="$(SpaRoot)**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MediaLibrary.Internet.Api\MediaLibrary.Internet.Api.csproj" />
-  </ItemGroup>
-
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">

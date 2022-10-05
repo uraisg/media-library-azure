@@ -234,7 +234,6 @@ namespace MediaLibrary.Internet.Web.Controllers
                 TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
                 return;
             }
-            return;
         }
 
         // Edit images in a draft
