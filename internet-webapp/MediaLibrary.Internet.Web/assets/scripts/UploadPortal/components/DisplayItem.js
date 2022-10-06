@@ -58,11 +58,17 @@ const DisplayItem = (props) => {
 
   const uploadTags = props.item.Tag.split(",");
 
-  fetch(`/api/sasUri`)
-    .then((res) => res.text())
-    .then((res) => {
-      setCurImageURL(props.item.FileURL + res);
-    })
+  fetch(`/api/convert`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+    },
+    body: JSON.stringify({ Name: props.item.FileURL })
+  })
+    .then((res) => res.json())
+    .then((res) => setCurImageURL(res));
 
   function getStaticMapUrl(coords, zoom) {
     const decimalPlaces = 5

@@ -74,11 +74,17 @@ const SingleEdit = (props) => {
   const [errMsg, setErrMsg] = useState({ Name: false, Project: false })
   const [curimageURL, setCurImageURL] = useState("");
 
-  fetch(`/api/sasUri`)
-    .then((res) => res.text())
-    .then((res) => {
-      setCurImageURL(fileArr.FileURL + res);
-    })
+  fetch(`/api/convert`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+    },
+    body: JSON.stringify({ Name: props.item.FileURL })
+  })
+    .then((res) => res.json())
+    .then((res) => setCurImageURL(res));
 
 
   useEffect(() => {

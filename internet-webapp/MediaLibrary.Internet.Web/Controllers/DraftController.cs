@@ -26,6 +26,7 @@ using ImageMagick;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Newtonsoft.Json.Linq;
+using Azure;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -38,6 +39,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         private readonly ILogger<DraftController> _logger;
         private readonly AppSettings _appSettings;
 
+        private static BlobContainerClient _blobContainerClient = null;
         public DraftController(IOptions<AppSettings> appSettings, ILogger<DraftController> logger)
         {
             _appSettings = appSettings.Value;
@@ -415,28 +417,43 @@ namespace MediaLibrary.Internet.Web.Controllers
             return result.Result;
         }
 
-        // Get SASToken for loading images
-        [HttpGet("/api/sasUri")]
-        public String GetMediaFile()
+        [HttpPost("/api/convert")]
+        public String GetMediaURL([FromBody] apiAsset name)
         {
-            BlobContainerClient _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionStringImage, _appSettings.MediaStorageContainer);
+            string encodedFileName = Path.GetFileName(name.Name);
+            encodedFileName = Uri.UnescapeDataString(encodedFileName);
+            encodedFileName = "/api/assets/" + encodedFileName;
+            return encodedFileName;
+        }
 
-            // Generate together when user logs in instead of generating a new token for every image
-            // Create a SAS token
-            BlobSasBuilder sasBuilder = new BlobSasBuilder()
+        [HttpGet("/api/assets/{name}", Name = nameof(GetMediaFile))]
+        public async Task<IActionResult> GetMediaFile(string name)
+        {
+            if (_blobContainerClient == null)
             {
-                BlobContainerName = _blobContainerClient.Name,
-                Resource = "c"
-            };
-            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(1); // Only valid for one hour.
-            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read); // This SAS token can only be used for reading (prevent misuse to write/delete)
+                if (!string.IsNullOrEmpty(_appSettings.MediaStorageConnectionString))
+                {
+                    _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionStringImage, _appSettings.MediaStorageContainer);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
 
-            Uri sasUri = _blobContainerClient.GenerateSasUri(sasBuilder);
+            _logger.LogInformation("Getting blob with name {name}", name);
 
-            string[] uri = sasUri.ToString().Split("?");
-            string url = "?" + uri[1];
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
 
-            return url;
+            try
+            {
+                BlobDownloadInfo download = await blobClient.DownloadAsync();
+                return File(download.Content, download.ContentType);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            {
+                return NotFound();
+            }
         }
 
         /// <summary>
@@ -841,5 +858,10 @@ namespace MediaLibrary.Internet.Web.Controllers
             await table.ExecuteAsync(updateOperation);
         }
 
+
+        public class apiAsset
+        {
+            public string Name { get; set; }
+        }
     }
 }
