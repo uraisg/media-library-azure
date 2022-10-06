@@ -814,7 +814,10 @@ namespace MediaLibrary.Internet.Web.Controllers
             try
             {
                 JObject resultObject = JObject.Parse(resultJSON);
-                jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+                if (resultObject["ImageEntities"].ToString() != "")
+                {
+                    jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+                }
             }
             catch (Exception e)
             {

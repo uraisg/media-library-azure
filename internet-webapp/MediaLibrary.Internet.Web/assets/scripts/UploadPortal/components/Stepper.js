@@ -111,26 +111,6 @@ const StepperForm = () => {
           console.log(e)
         }
       })
-
-    /*
-    setTimeout(() => {
-      fetch(`draft/${rowKey}`)
-        .then((response) => response.json())
-        .then((response) => {
-          try {
-            const imageEntities = JSON.parse(response.imageEntities)
-            formContext.setRetrievedFile(imageEntities)
-
-            setProgressBar(false)
-            setActiveStep((prevActiveStep) => prevActiveStep + 1)
-            window.scrollTo(0, 0)
-          }
-          catch (e) {
-            console.log(e)
-          }
-        })
-    }, 2000)
-    */
   }
 
   const uploadStep3 = () => {
@@ -152,28 +132,12 @@ const StepperForm = () => {
         formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
         setActiveStep(0)
         window.scrollTo(0, 0)
-
+      })
+      .then((done) => {
         // Shows alert for "Uploading to intranet in 10 minutes"
         formContext.setAlertActive(true)
         setTimeout(() => { formContext.setAlertActive(false) }, 5000)
       })
-
-    //Replace the first timeout with post api call
-    /*
-    setTimeout(() => {
-      setCompletePercentage(100)
-      setTimeout(() => {
-        setProgressBar(false)
-        formContext.setFiles([])
-        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
-        setActiveStep(0)
-        window.scrollTo(0, 0)
-      }, 500)
-
-      formContext.setAlertActive(true)
-      setTimeout(() => { formContext.setAlertActive(false) }, 5000)
-    }, 4000)
-    */
   }
 
   return (

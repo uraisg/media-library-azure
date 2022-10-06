@@ -49,16 +49,13 @@ const Step2 = (props) => {
         const imageEntities = JSON.parse(res.imageEntities)
         formContext.setRetrievedFile(imageEntities)
         setImageData(imageEntities)
-      })
 
-    //Replace first setTimeout
-    setTimeout(() => {
-      $('.item-chkbox').css("pointer-events", "auto")
-      $('#all-chkbox').css("pointer-events", "auto")
-      $('.item-chkbox').prop("checked", false)
-      $('.item-list').removeClass("border bg-light")
-      setRefresh(false)
-    }, 1000)
+        $('.item-chkbox').css("pointer-events", "auto")
+        $('#all-chkbox').css("pointer-events", "auto")
+        $('.item-chkbox').prop("checked", false)
+        $('.item-list').removeClass("border bg-light")
+        setRefresh(false)
+      })
   }
 
   const setCheckValue = (e) => {
@@ -149,9 +146,7 @@ const Step2 = (props) => {
     }
 
     closeModal()
-    setTimeout(() => {
-      renderRefresh();
-    }, 1000)
+    renderRefresh();
   }
 
   return (

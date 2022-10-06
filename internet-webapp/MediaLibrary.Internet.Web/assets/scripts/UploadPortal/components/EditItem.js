@@ -208,12 +208,11 @@ const SingleEdit = (props) => {
       },
       body: JSON.stringify(bodyDetails)
     })
-
-    setTimeout(() => {
-      setLoading(false)
-      props.renderRefresh()
-      off()
-    }, 2000)
+      .then((done) => {
+        setLoading(false)
+        props.renderRefresh()
+        off()
+      })
   }
 
   const reset = () => {
@@ -561,11 +560,9 @@ const BatchEdit = (props) => {
       }
     }
 
-    setTimeout(() => {
-      setLoading(false)
-      props.renderRefresh()
-      off()
-    }, 2000)
+    setLoading(false)
+    props.renderRefresh()
+    off()
   }
 
   const off = () => {
