@@ -16,8 +16,6 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Azure.Storage.Sas;
 using MediaLibrary.Internet.Web.Common;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
@@ -40,6 +38,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         private readonly AppSettings _appSettings;
 
         private static BlobContainerClient _blobContainerClient = null;
+
         public DraftController(IOptions<AppSettings> appSettings, ILogger<DraftController> logger)
         {
             _appSettings = appSettings.Value;
