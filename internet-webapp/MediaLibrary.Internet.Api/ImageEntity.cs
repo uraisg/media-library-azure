@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Azure.Cosmos.Table;
+using Newtonsoft.Json;
 
 namespace MediaLibrary.Internet.Api
 {
@@ -24,5 +26,6 @@ namespace MediaLibrary.Internet.Api
         public string Event { get; set; }
         public string LocationName { get; set; }
         public string Copyright { get; set; }
+        public List<object> AdditionalField { get; set; }
     }
 }

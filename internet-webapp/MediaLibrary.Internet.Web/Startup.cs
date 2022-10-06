@@ -1,4 +1,5 @@
 ﻿using MediaLibrary.Internet.Web.Configuration;
+using MediaLibrary.Internet.Web.Background;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -42,6 +43,7 @@ namespace MediaLibrary.Internet.Web
             services.AddCustomMvcConfig();
 
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
+            services.AddHostedService<ScheduledService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
