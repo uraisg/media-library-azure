@@ -3,7 +3,9 @@ import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import styled from 'styled-components'
+import styled from 'styled-components';
+import { Modal, Button } from 'react-bootstrap';
+import { X } from 'react-bootstrap-icons';
 
 import FormSteps from '@/components/FormSteps'
 import Progressbar from '@/components/ProgressBar'
@@ -24,6 +26,10 @@ const StepperForm = () => {
   const [completePercentage, setCompletePercentage] = useState(0)
   const [errMsg, setErrMsg] = useState(false)
   const [draftKey, setDraftKey] = useState("")
+  const [cancelModal, setCancelModal] = useState(false);
+
+  const closeModal = () => setCancelModal(false);
+  const openModal = () => setCancelModal(true);
 
   const handleNext = () => {
     if (activeStep == 0) {
@@ -52,10 +58,6 @@ const StepperForm = () => {
 
   const handleBack = () => {
     window.scrollTo(0, 0)
-    if (activeStep == 1) {
-      //Uncomment when api are completed
-      //setRetrievedFile([])
-    }
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   };
 
@@ -94,6 +96,23 @@ const StepperForm = () => {
       })
     }
 
+    fetch(`draft/${rowKey}`)
+      .then((response) => response.json())
+      .then((response) => {
+        try {
+          const imageEntities = JSON.parse(response.imageEntities)
+          formContext.setRetrievedFile(imageEntities)
+
+          setProgressBar(false)
+          setActiveStep((prevActiveStep) => prevActiveStep + 1)
+          window.scrollTo(0, 0)
+        }
+        catch (e) {
+          console.log(e)
+        }
+      })
+
+    /*
     setTimeout(() => {
       fetch(`draft/${rowKey}`)
         .then((response) => response.json())
@@ -111,6 +130,7 @@ const StepperForm = () => {
           }
         })
     }, 2000)
+    */
   }
 
   const uploadStep3 = () => {
@@ -124,14 +144,25 @@ const StepperForm = () => {
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       }
     })
+      .then((done) => {
+        setCompletePercentage(100)
+
+        setProgressBar(false)
+        formContext.setFiles([])
+        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
+        setActiveStep(0)
+        window.scrollTo(0, 0)
+
+        // Shows alert for "Uploading to intranet in 10 minutes"
+        formContext.setAlertActive(true)
+        setTimeout(() => { formContext.setAlertActive(false) }, 5000)
+      })
 
     //Replace the first timeout with post api call
+    /*
     setTimeout(() => {
       setCompletePercentage(100)
       setTimeout(() => {
-        //Uncomment when api are completed
-        //setRetrievedFile([])
-
         setProgressBar(false)
         formContext.setFiles([])
         formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
@@ -142,6 +173,7 @@ const StepperForm = () => {
       formContext.setAlertActive(true)
       setTimeout(() => { formContext.setAlertActive(false) }, 5000)
     }, 4000)
+    */
   }
 
   return (
@@ -177,7 +209,11 @@ const StepperForm = () => {
 
       <React.Fragment>
         <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-        <button color="inherit" disabled={activeStep === 0} onClick={handleBack} className="btn btn-secondary">Back</button>
+          {activeStep === 1 ?
+            <button color="inherit" onClick={openModal} className="btn btn-danger">Cancel</button>
+            :
+            <button color="inherit" disabled={activeStep === 0} onClick={handleBack} className="btn btn-secondary">Back</button>
+          }
 
         <Box sx={{ flex: '1 1 auto' }} />
         {activeStep === 1 &&
@@ -188,6 +224,27 @@ const StepperForm = () => {
           {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
         </button>
         </Box>
+      </React.Fragment>
+
+      <React.Fragment>
+        <Modal show={cancelModal}>
+          <Modal.Header>
+            <Modal.Title>Confirm Cancel</Modal.Title>
+            <Modal.Title className="float-right"><X size={35} onClick={closeModal} /></Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Are you sure you want to cancel this process? This action cannot be undone.</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeModal}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={() => {
+              handleBack();
+              closeModal();
+            }}>
+              Confirm
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </React.Fragment>
     </Box>
   );
