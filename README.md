@@ -21,14 +21,14 @@ Media Library implements the capabilities of internet uploading and intranet ret
 
 # Installing
 - [Microsoft Visual Studio 2019](https://my.visualstudio.com/Downloads?q=visual%20studio%202019&wt.mc_id=o~msft~vscom~older-downloads)
-- [Node.js v14 required - with msi extension](https://nodejs.org/download/release/v14.19.0/)
+- [Node.js (minimum v16 required](https://nodejs.org/dist/latest-v16.x/)
 - Github on "Master" Branch
 - (Optional)[NPM Task Runner](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.NPMTaskRunner)
 
 # Local Deployment
 - Copy new updated appsetings.json into project according to the names of project solution.
 ```
-Run command "npm run watch" 
+Run command "npm run watch"
 OR
 NPM Task Runner by configuring watch script to run after build.
 ```
