@@ -53,5 +53,8 @@
     "react-filepond": "^7.1.2",
     "react-loader-spinner": "^5.1.5",
     "styled-components": "^5.3.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
