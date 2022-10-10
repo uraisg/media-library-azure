@@ -28,7 +28,7 @@
     "laravel-mix": "^6.0.41",
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.49.7",
-    "sass-loader": "^12.4.0"
+    "sass-loader": "^13.1.0"
   },
   "dependencies": {
     "@emotion/react": "^11.9.3",
