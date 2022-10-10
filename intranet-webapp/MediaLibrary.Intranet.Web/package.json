@@ -37,7 +37,7 @@
     "jquery": "^3.6.0",
     "jquery-validation": "^1.19.5",
     "jquery-validation-unobtrusive": "^3.2.12",
-    "leaflet": "^1.7.1",
+    "leaflet": "^1.9.2",
     "prop-types": "^15.8.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.4",
