@@ -58,18 +58,20 @@ const DisplayItem = (props) => {
 
   const uploadTags = props.item.Tag.split(",");
 
-  fetch(`/api/convert`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
-    },
-    body: JSON.stringify({ Name: props.item.FileURL })
-  })
-    .then((res) => res.json())
-    .then((res) => setCurImageURL(res));
-
+  useEffect(() => {
+    fetch(`/api/convert`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      },
+      body: JSON.stringify({ Name: props.item.FileURL })
+    })
+      .then((res) => res.json())
+      .then((res) => setCurImageURL(res));
+  }, [])
+  
   function getStaticMapUrl(coords, zoom) {
     const decimalPlaces = 5
     const lat = coords[1].toFixed(decimalPlaces)
