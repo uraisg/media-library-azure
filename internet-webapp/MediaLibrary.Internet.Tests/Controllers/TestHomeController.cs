@@ -18,7 +18,7 @@ namespace MediaLibrary.Internet.Tests.Controllers
         }
 
         [TestMethod]
-        public void GetIndexPage()
+        public void Get_IndexPage()
         {
             // Act
             var actionResult = _controller.Index();
@@ -29,7 +29,7 @@ namespace MediaLibrary.Internet.Tests.Controllers
         }
 
         [TestMethod]
-        public void GetErrorPage()
+        public void Get_ErrorPage()
         {
             // Assert
             Assert.IsNull(_controller.ViewData.Model);

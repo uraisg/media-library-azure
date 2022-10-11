@@ -12,6 +12,9 @@ namespace MediaLibrary.Internet.Tests.Models
     [TestClass]
     public class TestDraftModel
     {
+        // Should be changed depending on sample image location
+        public string sampleImgPath = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\1.jpg";
+
         [TestMethod]
         public void TestDraft()
         {
@@ -84,7 +87,7 @@ namespace MediaLibrary.Internet.Tests.Models
         [TestMethod]
         public void TestAddImageModel()
         {
-            var filepath1 = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\1.jpg";
+            var filepath1 = sampleImgPath;
 
             var stream = File.OpenRead(filepath1);
             IFormFile model = new FormFile(stream, 0, stream.Length, null, Path.GetFileName(stream.Name));

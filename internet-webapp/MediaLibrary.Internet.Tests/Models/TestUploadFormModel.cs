@@ -11,13 +11,19 @@ namespace MediaLibrary.Internet.Tests.Models
     [TestClass]
     public class TestUploadFormModel
     {
+        // Should be changed depending on sample image location
+        public string sampleImgPath1 = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\1.jpg";
+        public string sampleImgPath2 = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\2.jpg";
+        public string sampleImgPath3 = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\3.jpg";
+
         [TestMethod]
         public void TestUploadFormModelObj()
         {
+            // Should be changed depending on sample image location
             List<IFormFile> files = new List<IFormFile>();
-            var filepath1 = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\1.jpg";
-            var filepath2 = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\2.jpg";
-            var filepath3 = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\3.jpg";
+            var filepath1 = sampleImgPath1;
+            var filepath2 = sampleImgPath2;
+            var filepath3 = sampleImgPath3;
 
             using (var stream = File.OpenRead(filepath1))
             {
