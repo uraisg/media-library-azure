@@ -41,7 +41,7 @@ namespace MediaLibrary.Internet.Tests.Controllers
             // Mock appsettings cannot be used as Azure requires a real location to direct towards
             AppSettings appSettings = new AppSettings();
 
-            using (StreamReader r = new StreamReader(sampleAppSettings))
+            using (StreamReader r = new StreamReader(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, sampleAppSettings))))
             {
                 string json = r.ReadToEnd();
                 dynamic item = JsonConvert.DeserializeObject<dynamic>(json);
