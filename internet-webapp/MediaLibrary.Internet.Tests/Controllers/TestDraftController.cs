@@ -34,8 +34,7 @@ namespace MediaLibrary.Internet.Tests.Controllers
 
         public string sampleEmail = "rin@gmail.com";
         public string sampleImgPath = "../../../Models/images/1.jpg";
-        // Should be changed to actual appsettings.json
-        public string sampleAppSettings = "../../../../MediaLibrary.Internet.Web/appsettings.sample.json";
+        public string sampleAppSettings = "../../../../MediaLibrary.Internet.Web/appsettings.json";
 
         public TestDraftController()
         {

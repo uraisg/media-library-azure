@@ -31,8 +31,7 @@ namespace MediaLibrary.Internet.Tests.Controllers
         public string rowKey = "96f3ab46-8397-428b-aff0-b96c1ae4dc68";
 
         public string sampleEmail = "rin@gmail.com";
-        // Should be changed to actual appsettings.json
-        public string sampleAppSettings = "../../../../MediaLibrary.Internet.Web/appsettings.sample.json";
+        public string sampleAppSettings = "../../../../MediaLibrary.Internet.Web/appsettings.json";
 
         public TestImageUploadController()
         {
