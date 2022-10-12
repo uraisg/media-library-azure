@@ -68,7 +68,17 @@ namespace MediaLibrary.Internet.Web.Controllers
             TableResult result = await table.ExecuteAsync(retrieveOperation);
             string resultJSON = JsonConvert.SerializeObject(result.Result);
             JObject resultObject = JObject.Parse(resultJSON);
-            JArray jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+
+            JArray jsonArray = new JArray();
+            try
+            {
+                jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+            }
+            catch (Exception e)
+            {
+                _logger.LogInformation("No files found inside draft: {e}", e);
+                return View();
+            };
 
             // Upload To Be Transfered Files
             foreach (var image in jsonArray)
