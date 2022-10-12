@@ -34,14 +34,15 @@ namespace MediaLibrary.Internet.Tests.Controllers
 
         public string sampleEmail = "rin@gmail.com";
         public string sampleImgPath = "../../../Models/images/1.jpg";
-        public string sampleAppSettings = "../../../../MediaLibrary.Internet.Web/appsettings.json";
+        // Should be changed to actual appsettings.json
+        public string sampleAppSettings = "../../../../MediaLibrary.Internet.Web/appsettings.sample.json";
 
         public TestDraftController()
         {
             // Mock appsettings cannot be used as Azure requires a real location to direct towards
             AppSettings appSettings = new AppSettings();
 
-            using (StreamReader r = new StreamReader(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, sampleAppSettings))))
+            using (StreamReader r = new StreamReader(sampleAppSettings))
             {
                 string json = r.ReadToEnd();
                 dynamic item = JsonConvert.DeserializeObject<dynamic>(json);
