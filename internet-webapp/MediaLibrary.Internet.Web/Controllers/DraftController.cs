@@ -83,7 +83,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPost("draft/{rowkey}/addImage")]
         public async Task AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
-            if (await CheckIfUserMatchDraft(rowKey) == false)
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowKey, true) == false)
             {
                 return;
             }
@@ -246,7 +246,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPut("draft/{rowkey}/{image}")]
         public async Task UpdateImage([FromBody] ImageEntity updateImageEntity, string rowkey, string image)
         {
-            if (await CheckIfUserMatchDraft(rowkey) == false)
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
                 return;
             }
@@ -317,7 +317,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpDelete("draft/{rowkey}/{image}")]
         public async Task DeleteImage(string rowkey, string image)
         {
-            if (await CheckIfUserMatchDraft(rowkey) == false)
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
                 return;
             }
@@ -388,7 +388,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpDelete("draft/{rowkey}")]
         public async Task DeleteDraft(string rowkey)
         {
-            if (await CheckIfUserMatchDraft(rowkey) == false)
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
                 return;
             }
@@ -417,7 +417,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpGet("draft/{rowkey}")]
         public async Task<object> GetDraft(string rowkey)
         {
-            if (await CheckIfUserMatchDraft(rowkey) == false)
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
                 return null;
             }
@@ -882,7 +882,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             await table.ExecuteAsync(updateOperation);
         }
 
-        private async Task<bool> CheckIfUserMatchDraft(string rowKey)
+        private async Task<bool> CheckIfDraftIsEmpty_N_UserMatchDraft(string rowKey, bool checkUser)
         {
             string tableConnectionString = _appSettings.TableConnectionString;
             string tableName = _appSettings.TableName;
@@ -899,11 +899,20 @@ namespace MediaLibrary.Internet.Web.Controllers
             );
 
             TableResult result = await table.ExecuteAsync(retrieveOperation);
-            var obj = JsonConvert.DeserializeObject<Draft>(JsonConvert.SerializeObject(result.Result));
 
-            if (User.Identity.Name != obj.Author)
+            if (result.Result == null)
             {
                 return false;
+            }
+
+            var obj = JsonConvert.DeserializeObject<Draft>(JsonConvert.SerializeObject(result.Result));
+
+            if (checkUser)
+            {
+                if (User.Identity.Name != obj.Author)
+                {
+                    return false;
+                }
             }
 
             return true;
