@@ -74,11 +74,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             {
                 jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
             }
-            catch (Exception e)
-            {
-                _logger.LogInformation("No files found inside draft: {e}", e);
-                return View();
-            };
+            catch (Exception){};
 
             // Upload To Be Transfered Files
             foreach (var image in jsonArray)
