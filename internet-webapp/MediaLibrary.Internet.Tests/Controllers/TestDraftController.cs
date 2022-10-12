@@ -28,15 +28,13 @@ namespace MediaLibrary.Internet.Tests.Controllers
         private readonly DraftController _controller;
 
         // Change the values according to the draft you want to test on
-        public string rowKey = "754401fd-1e14-463e-b467-f21e55e98fda";
+        public string rowKey = "261bf2bb-a2db-410e-b4f3-92c39fb78d16";
         public string imageKey = "QiaHh7eRgDDC3yfq";
         public string mediaFile = "Fvhgw5HPRzFgHZLc_1.jpg";
 
         public string sampleEmail = "rin@gmail.com";
-        // Should be changed depending on sample image location
-        public string sampleImgPath = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\1.jpg";
-        // Should be changed depending on appsetting.json location
-        public string sampleAppSettings = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Web\\appsettings.json";
+        public string sampleImgPath = "../../../Models/images/1.jpg";
+        public string sampleAppSettings = "../../../../MediaLibrary.Internet.Web/appsettings.json";
 
         public TestDraftController()
         {

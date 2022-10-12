@@ -12,8 +12,7 @@ namespace MediaLibrary.Internet.Tests.Models
     [TestClass]
     public class TestDraftModel
     {
-        // Should be changed depending on sample image location
-        public string sampleImgPath = "C:\\Users\\nianc\\Documents\\VS\\media-library-azure\\internet-webapp\\MediaLibrary.Internet.Tests\\Models\\images\\1.jpg";
+        public string sampleImgPath = "../../../Models/images/1.jpg";
 
         [TestMethod]
         public void TestDraft()
