@@ -66,6 +66,14 @@ namespace MediaLibrary.Internet.Web.Controllers
             );
 
             TableResult result = await table.ExecuteAsync(retrieveOperation);
+
+            // Check if the draft author and user are the same person
+            var obj = JsonConvert.DeserializeObject<Draft>(JsonConvert.SerializeObject(result.Result));
+            if (User.Identity.Name != obj.Author)
+            {
+                return NotFound();
+            }
+
             string resultJSON = JsonConvert.SerializeObject(result.Result);
             JObject resultObject = JObject.Parse(resultJSON);
             JArray jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());

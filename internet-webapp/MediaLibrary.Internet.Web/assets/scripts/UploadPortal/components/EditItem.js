@@ -74,18 +74,19 @@ const SingleEdit = (props) => {
   const [errMsg, setErrMsg] = useState({ Name: false, Project: false })
   const [curimageURL, setCurImageURL] = useState("");
 
-  fetch(`/api/convert`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
-    },
-    body: JSON.stringify({ Name: fileArr.FileURL })
-  })
-    .then((res) => res.json())
-    .then((res) => setCurImageURL(res));
-
+  useEffect(() => {
+    fetch(`/api/convert`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      },
+      body: JSON.stringify({ Name: fileArr.FileURL })
+    })
+      .then((res) => res.json())
+      .then((res) => setCurImageURL(res));
+  }, [])
 
   useEffect(() => {
     fileArr.AdditionalField.map((item) => {
