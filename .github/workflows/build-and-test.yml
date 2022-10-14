@@ -72,11 +72,11 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:"uraisg_media-library-azure_internet" /o:"uraisg" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+        dotnet tool install --global dotnet-coverage
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:"uraisg_media-library-azure_internet" /o:"uraisg" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
         dotnet build internet-webapp/MediaLibrary.Internet.sln --configuration Release
+        dotnet-coverage collect 'dotnet test internet-webapp/MediaLibrary.Internet.sln --no-build --verbosity normal --configuration Release' -f xml  -o 'coverage.xml'
         ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-    - name: Test
-      run: dotnet test internet-webapp/MediaLibrary.Internet.sln --no-build --verbosity normal --configuration Release
 
   # JOB to build and test intranet-facing code
   intranet:
@@ -119,8 +119,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:"uraisg_media-library-azure_intranet" /o:"uraisg" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+        dotnet tool install --global dotnet-coverage
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:"uraisg_media-library-azure_intranet" /o:"uraisg" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
         dotnet build intranet-webapp/MediaLibrary.Intranet.sln --configuration Release
+        dotnet-coverage collect 'dotnet test intranet-webapp/MediaLibrary.Intranet.sln --no-build --verbosity normal --configuration Release' -f xml  -o 'coverage.xml'
         ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-    - name: Test
-      run: dotnet test intranet-webapp/MediaLibrary.Intranet.sln --no-build --verbosity normal --configuration Release
+
