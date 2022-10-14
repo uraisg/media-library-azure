@@ -76,7 +76,13 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             string resultJSON = JsonConvert.SerializeObject(result.Result);
             JObject resultObject = JObject.Parse(resultJSON);
-            JArray jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+
+            JArray jsonArray = new JArray();
+            try
+            {
+                jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+            }
+            catch (Exception){};
 
             // Upload To Be Transfered Files
             foreach (var image in jsonArray)
