@@ -457,7 +457,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             {
                 if (!string.IsNullOrEmpty(_appSettings.MediaStorageConnectionString))
                 {
-                    _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionStringImage, _appSettings.MediaStorageContainer);
+                    _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionString, _appSettings.MediaStorageContainer);
                 }
                 else
                 {
