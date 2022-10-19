@@ -91,6 +91,10 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
           {
             icon: result.isSelected ? selectedIcon : notSelectedIcon,
             bubblingMouseEvents: false,
+            icon: L.icon({
+              iconUrl: 'styles/images/marker-icon-2x.png',
+              iconSize: [20, 32.8],
+            })
           }
         )
         marker.data = result
