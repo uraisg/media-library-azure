@@ -190,8 +190,12 @@ const SingleEdit = (props) => {
   }
 
   const save = () => {
+    props.setErrMsg1(false);
+
     if (!checkValidField() || !checkValidAddField()) {
-      return
+      props.setErrMsg1Text("Fields cannot be empty");
+      props.setErrMsg1(true);
+      return;
     }
 
     setLoading(true)
@@ -215,8 +219,16 @@ const SingleEdit = (props) => {
       },
       body: JSON.stringify(bodyDetails)
     })
-      .then((done) => {
+      .then((response) => response.json())
+      .then((response) => {
         setLoading(false)
+
+        if (!response.success) {
+          props.setErrMsg1Text(response.errorMessage);
+          props.setErrMsg1(true);
+          return;
+        }
+
         props.renderRefresh()
         off()
       })
@@ -297,6 +309,10 @@ const SingleEdit = (props) => {
               ))}
               {newField.length > 0 &&
                 <small className="text-secondary">Label name field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
+              }
+
+              {props.errMsg1 &&
+                <p className="text-danger">{props.errMsg1Text}</p>
               }
 
               <div className="mt-3">
@@ -480,7 +496,15 @@ const BatchEdit = (props) => {
     // Get Original Values
     let response = await fetch(`draft/${props.draftKey}`);
     let responseJSON = await response.json();
-    let imageEntities = JSON.parse(responseJSON.imageEntities);
+
+    if (!responseJSON.success) {
+      props.setErrMsg1Text(responseJSON.errorMessage);
+      props.setErrMsg1(true);
+      setLoading(false);
+      return;
+    }
+
+    let imageEntities = JSON.parse(responseJSON.result["imageEntities"]);
 
     for await (let imageId of props.index) {
       for await (let imageEntity of imageEntities) {
@@ -553,7 +577,7 @@ const BatchEdit = (props) => {
             imageEntity["AdditionalField"].push(field);
           }
 
-          await fetch(`draft/${props.draftKey}/${imageId}`, {
+          const response = await fetch(`draft/${props.draftKey}/${imageId}`, {
             method: 'PUT',
             headers: {
               'Accept': 'application/json',
@@ -562,6 +586,16 @@ const BatchEdit = (props) => {
             },
             body: JSON.stringify(imageEntity)
           })
+
+          const responseData = await response.json();
+
+          if (!responseData.success) {
+            props.setErrMsg1Text(responseData.errorMessage);
+            props.setErrMsg1(true);
+            setLoading(false);
+            return;
+          }
+
           break
         }
       }
@@ -699,6 +733,10 @@ const BatchEdit = (props) => {
             <small className="text-secondary">Label name field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
           }
 
+          {props.errMsg1 &&
+            <p className="text-danger">{props.errMsg1Text}</p>
+          }
+
           <ButtonArea>
             <span className="user-select-none pointer-cursor text-danger" onClick={addNewField}><Plus size={30} color={'red'} />Add new Field</span>
             <div className="float-right">
@@ -726,7 +764,11 @@ EditItem.propTypes = {
   index: PropTypes.arrayOf(PropTypes.string),
   renderRefresh: PropTypes.func,
   editType: PropTypes.string,
-  draftKey: PropTypes.string
+  draftKey: PropTypes.string,
+  errMsg1: PropTypes.bool,
+  setErrMsg1: PropTypes.func,
+  errMsg1Text: PropTypes.string,
+  setErrMsg1Text: PropTypes.func
 }
 
 export default EditItem

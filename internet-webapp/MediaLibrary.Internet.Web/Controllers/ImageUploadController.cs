@@ -47,79 +47,94 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         [HttpPost("FileUpload/{rowkey}")]
-        public async Task<IActionResult> Index(string rowkey)
+        public async Task<JsonResult> Index(string rowkey)
         {
             _logger.LogInformation("{UserName} uploading to intranet", User.Identity.Name);
 
-            string tableConnectionString = _appSettings.TableConnectionString;
-            string tableName = _appSettings.TableName;
-
-            //initialize table client
-            CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            CloudTable table = tableClient.GetTableReference(tableName);
-
-            TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
-                partitionKey: DraftPartitionKey,
-                rowkey: rowkey
-            );
-
-            TableResult result = await table.ExecuteAsync(retrieveOperation);
-
-            // Check if the draft author and user are the same person
-            var obj = JsonConvert.DeserializeObject<Draft>(JsonConvert.SerializeObject(result.Result));
-            if (User.Identity.Name != obj.Author)
+            try
             {
-                return NotFound();
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
+
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
+
+                TableResult result = await table.ExecuteAsync(retrieveOperation);
+
+                // Check if the draft author and user are the same person
+                var obj = JsonConvert.DeserializeObject<Draft>(JsonConvert.SerializeObject(result.Result));
+                if (User.Identity.Name != obj.Author)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                    });
+                }
+
+                string resultJSON = JsonConvert.SerializeObject(result.Result);
+                JObject resultObject = JObject.Parse(resultJSON);
+                JArray jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
+
+                // Upload To Be Transfered Files
+                foreach (var image in jsonArray)
+                {
+                    string id = GenerateId();
+
+                    //create json for indexing
+                    ImageEntity json = new ImageEntity();
+                    json.PartitionKey = TransferPartitionKey;
+                    json.RowKey = id;
+                    json.Id = id;
+                    json.Name = image["Name"].ToString();
+                    json.DateTaken = DateTime.Parse(image["DateTaken"].ToString());
+                    json.Location = JsonConvert.SerializeObject(image["Location"].ToString());
+                    json.Tag = image["Tag"].ToString();
+                    json.Caption = image["Caption"].ToString();
+                    json.Author = image["Author"].ToString();
+                    json.UploadDate = DateTime.Parse(image["UploadDate"].ToString());
+                    json.FileURL = image["FileURL"].ToString();
+                    json.ThumbnailURL = image["ThumbnailURL"].ToString();
+                    json.Project = image["Project"].ToString();
+                    json.LocationName = image["LocationName"].ToString();
+                    json.Copyright = image["Copyright"].ToString();
+                    json.AdditionalField = JsonConvert.DeserializeObject<List<object>>(image["AdditionalField"].ToString());
+
+                    await IndexUploadToTable(json, _appSettings);
+                }
+
+                // Remove draft
+                var tableEntity = new Draft
+                {
+                    PartitionKey = DraftPartitionKey,
+                    RowKey = rowkey,
+                    ETag = "*"
+                };
+
+                TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+                await table.ExecuteAsync(deleteOperation);
+
+                return Json(new
+                {
+                    success = true
+                });
             }
-
-            string resultJSON = JsonConvert.SerializeObject(result.Result);
-            JObject resultObject = JObject.Parse(resultJSON);
-            JArray jsonArray = JArray.Parse(resultObject["ImageEntities"].ToString());
-
-            // Upload To Be Transfered Files
-            foreach (var image in jsonArray)
+            catch (Exception ex)
             {
-                string id = GenerateId();
-
-                //create json for indexing
-                ImageEntity json = new ImageEntity();
-                json.PartitionKey = TransferPartitionKey;
-                json.RowKey = id;
-                json.Id = id;
-                json.Name = image["Name"].ToString();
-                json.DateTaken = DateTime.Parse(image["DateTaken"].ToString());
-                json.Location = JsonConvert.SerializeObject(image["Location"].ToString());
-                json.Tag = image["Tag"].ToString();
-                json.Caption = image["Caption"].ToString();
-                json.Author = image["Author"].ToString();
-                json.UploadDate = DateTime.Parse(image["UploadDate"].ToString());
-                json.FileURL = image["FileURL"].ToString();
-                json.ThumbnailURL = image["ThumbnailURL"].ToString();
-                json.Project = image["Project"].ToString();
-                json.LocationName = image["LocationName"].ToString();
-                json.Copyright = image["Copyright"].ToString();
-                json.AdditionalField = JsonConvert.DeserializeObject<List<object>>(image["AdditionalField"].ToString());
-
-                await IndexUploadToTable(json, _appSettings);
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to upload draft. Please correct the errors and try again."
+                });
             }
-
-            // Remove draft
-            var tableEntity = new Draft
-            {
-                PartitionKey = DraftPartitionKey,
-                RowKey = rowkey,
-                ETag = "*"
-            };
-
-            TableOperation deleteOperation = TableOperation.Delete(tableEntity);
-            await table.ExecuteAsync(deleteOperation);
-
-            ModelState.Clear();
-            TempData["Alert.Type"] = "success";
-            TempData["Alert.Message"] = "Your items have been uploaded successfully, and will be copied to intranet in 10 minutes.";
-            return View("~/Views/Home/Index.cshtml");
         }
 
         /// <summary>

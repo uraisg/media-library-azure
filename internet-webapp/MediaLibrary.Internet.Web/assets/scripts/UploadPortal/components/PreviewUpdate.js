@@ -31,8 +31,14 @@ const Step2 = (props) => {
   const [deleteModal, setDeleteModal] = useState(false)
   const [refresh, setRefresh] = useState(false)
   const [imageData, setImageData] = useState(Array)
+  const [errMsg2, setErrMsg2] = useState(false)
+  const [errMsg2Text, setErrMsg2Text] = useState("")
 
   const renderRefresh = () => {
+    setErrMsg2(false)
+    setErrMsg2Text("")
+    props.setErrMsg1(false)
+    props.setErrMsg1Text("")
     setCheckNo(0)
     setIndex([])
     setEditItem(false)
@@ -46,7 +52,14 @@ const Step2 = (props) => {
     fetch(`draft/${props.draftKey}`)
       .then((res) => res.json())
       .then((res) => {
-        const imageEntities = JSON.parse(res.imageEntities)
+        if (!res.success) {
+          setErrMsg1Text(res.errorMessage);
+          setErrMsg1(true);
+          setProgressBar(false);
+          return;
+        }
+
+        const imageEntities = JSON.parse(res.result["imageEntities"])
         formContext.setRetrievedFile(imageEntities)
         setImageData(imageEntities)
 
@@ -82,17 +95,35 @@ const Step2 = (props) => {
   }, [checkNo]);
 
   useEffect(() => {
-    if (formContext.retrievedFile.length === 0) {
-      formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
-      formContext.setFiles([])
-      props.setActiveStep(0)
-
+    const deleteDraft = async () => {
       // Delete draft as the draft is empty
-      fetch(`draft/${props.draftKey}`, {
+      const response = await fetch(`draft/${props.draftKey}`, {
         method: 'DELETE',
         headers: {
           RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
         }
+      })
+
+      const responseData = await response.json();
+
+      if (!responseData.success) {
+        setErrMsg2(true);
+        setErrMsg2Text(responseData.errorMessage);
+        return false;
+      }
+
+      return true;
+    }
+
+    if (formContext.retrievedFile.length === 0) {
+      deleteDraft().then((result) => {
+        if (!result) {
+          return;
+        }
+
+        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
+        formContext.setFiles([])
+        props.setActiveStep(0)
       })
     }
   }, [formContext.retrievedFile])
@@ -122,6 +153,9 @@ const Step2 = (props) => {
   }
 
   const displayEdit = (e) => {
+    props.setErrMsg1(false)
+    props.setErrMsg1Text("")
+
     setEditItem(true)
     if (checkNo == 1) {
       setEditType("Single")
@@ -134,15 +168,26 @@ const Step2 = (props) => {
   const closeModal = () => setDeleteModal(false);
   const openModal = () => setDeleteModal(true);
 
-  const deleteItem = async() => {
+  const deleteItem = async () => {
+    setErrMsg2(false);
+
     // Delete image
     for await (let file of index) {
-      await fetch(`draft/${props.draftKey}/${file}`, {
+      const response = await fetch(`draft/${props.draftKey}/${file}`, {
         method: 'DELETE',
         headers: {
           RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
         }
       })
+
+      const responseData = await response.json();
+
+      if (!responseData.success) {
+        setErrMsg2(true);
+        setErrMsg2Text(responseData.errorMessage);
+        closeModal();
+        return;
+      }
     }
 
     closeModal()
@@ -152,7 +197,17 @@ const Step2 = (props) => {
   return (
     <React.Fragment>
       {editItem &&
-        <EditItem setEditItem={setEditItem} index={index} renderRefresh={renderRefresh} editType={editType} draftKey={props.draftKey}/>
+        <EditItem
+          setEditItem={setEditItem}
+          index={index}
+          renderRefresh={renderRefresh}
+          editType={editType}
+          draftKey={props.draftKey}
+          errMsg1={props.errMsg1}
+          setErrMsg1={props.setErrMsg1}
+          errMsg1Text={props.errMsg1Text}
+          setErrMsg1Text={props.setErrMsg1Text}
+        />
       }
 
 
@@ -196,6 +251,11 @@ const Step2 = (props) => {
           </React.Fragment>
         }
       </div>
+
+      {errMsg2 &&
+        <p className="text-danger">{errMsg2Text}</p>
+      }
+
       {imageData.map((item, key) => (
         <div key={item.Id}>
           <hr />
@@ -213,7 +273,11 @@ const Step2 = (props) => {
 Step2.propTypes = {
   activeStep: PropTypes.number,
   setActiveStep: PropTypes.func,
-  draftKey: PropTypes.string
+  draftKey: PropTypes.string,
+  errMsg1: PropTypes.bool,
+  setErrMsg1: PropTypes.func,
+  errMsg1Text: PropTypes.string,
+  setErrMsg1Text: PropTypes.func
 }
 
 export default Step2

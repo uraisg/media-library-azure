@@ -57,35 +57,64 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             string email = User.GetUserGraphEmail();
 
-            Draft newDraft = new Draft()
+            if (string.IsNullOrEmpty(email))
             {
-                UploadDate = DateTime.UtcNow.AddHours(8),
-                Author = email,
-                ImageEntities = ""
-            };
+                _logger.LogError("Could not get associated email address for user {UserName}", User.Identity.Name);
 
-            string tableName = _appSettings.TableName;
-            string tableConnectionString = _appSettings.TableConnectionString;
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Could not find your email address."
+                });
+            }
 
-            //initialize table client
-            CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            CloudTable table = tableClient.GetTableReference(tableName);
+            try {
+                Draft newDraft = new Draft()
+                {
+                    UploadDate = DateTime.UtcNow.AddHours(8),
+                    Author = email,
+                    ImageEntities = ""
+                };
 
-            TableOperation insertOperation = TableOperation.Insert(newDraft);
-            await table.ExecuteAsync(insertOperation);
+                string tableName = _appSettings.TableName;
+                string tableConnectionString = _appSettings.TableConnectionString;
 
-            return Json(new { rowKey = insertOperation.Entity.RowKey.ToString() });
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                TableOperation insertOperation = TableOperation.Insert(newDraft);
+                await table.ExecuteAsync(insertOperation);
+
+                return Json(new
+                {
+                    success = true,
+                    rowKey = insertOperation.Entity.RowKey.ToString()
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Something went wrong. Please try again."
+                });
+            }
         }
 
         // Adding images to a draft
         [HttpPost("draft/{rowkey}/addImage")]
-        public async Task AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
+        public async Task<JsonResult> AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowKey, true) == false)
             {
-                return;
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                });
             }
 
             _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
@@ -99,9 +128,11 @@ namespace MediaLibrary.Internet.Web.Controllers
             {
                 _logger.LogError("Could not get associated email address for user {UserName}", User.Identity.Name);
 
-                TempData["Alert.Type"] = "danger";
-                TempData["Alert.Message"] = "Could not find your email address.";
-                return;
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Could not find your email address."
+                });
             }
 
             var file = req.file;
@@ -119,9 +150,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                 _logger.LogWarning("File {FileName} is empty.", untrustedFileName);
 
                 ModelState.AddModelError(file.Name, $"File {encodedFileName} is empty.");
-                TempData["Alert.Type"] = "danger";
-                TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
-                return;
+
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to upload files. Please correct the errors and try again."
+                });
             }
 
             // Check the content type and file extension
@@ -132,9 +166,12 @@ namespace MediaLibrary.Internet.Web.Controllers
                 ModelState.AddModelError(file.Name,
                     $"File {encodedFileName} has unsupported file extension. " +
                     "Support file extensions are .jpg, .jpeg, .png, .gif, .bmp, .heic");
-                TempData["Alert.Type"] = "danger";
-                TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
-                return;
+
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to upload files. Please correct the errors and try again."
+                });
             }
 
             try
@@ -230,215 +267,302 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.AdditionalField = new List<object>();
 
                 await ImageUploadToDraft(json, rowKey, _appSettings);
+
+                return Json(new
+                {
+                    success = true
+                });
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "File {FileName} failed to upload.", untrustedFileName);
 
                 ModelState.AddModelError(file.Name, $"File {encodedFileName} could not be uploaded.");
-                TempData["Alert.Type"] = "danger";
-                TempData["Alert.Message"] = "Failed to upload files. Please correct the errors and try again.";
-                return;
+
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to upload files. Please correct the errors and try again."
+                });
             }
         }
 
         // Edit images in a draft
         [HttpPut("draft/{rowkey}/{image}")]
-        public async Task UpdateImage([FromBody] ImageEntity updateImageEntity, string rowkey, string image)
+        public async Task<JsonResult> UpdateImage([FromBody] ImageEntity updateImageEntity, string rowkey, string image)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
-                return;
-            }
-
-            string tableConnectionString = _appSettings.TableConnectionString;
-            string tableName = _appSettings.TableName;
-
-            //initialize table client
-            CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            CloudTable table = tableClient.GetTableReference(tableName);
-
-            TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
-                partitionKey: DraftPartitionKey,
-                rowkey: rowkey
-            );
-
-            var result = await table.ExecuteAsync(retrieveOperation);
-
-            string resultJSON = JsonConvert.SerializeObject(result.Result);
-            JObject json = JObject.Parse(resultJSON);
-            JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
-
-            // Update value of image
-            for (int i = 0; i < jsonArray.Count; i++)
-            {
-                if (jsonArray[i]["Id"].ToString() == image)
+                return Json(new
                 {
-                    JArray additionalField = new JArray();
-                    foreach (var item in updateImageEntity.AdditionalField)
-                    {
-                        string jsonString = System.Text.Json.JsonSerializer.Serialize(item);
-                        additionalField.Add(JToken.Parse(jsonString));
-                    }
-                    updateImageEntity.AdditionalField = additionalField.ToObject<List<object>>();
-
-                    try
-                    {
-                        if (updateImageEntity.Tag.Substring(0, 1) == ",")
-                        {
-                            updateImageEntity.Tag = updateImageEntity.Tag.Substring(1);
-                        }
-                    }
-                    catch(Exception e) { };
-
-                    jsonArray.RemoveAt(i);
-                    jsonArray.Add(JToken.FromObject(updateImageEntity));
-
-                    break;
-                }
+                    success = false,
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                });
             }
 
-            Draft updateDraft = new Draft()
+            try
             {
-                PartitionKey = DraftPartitionKey,
-                RowKey = rowkey,
-                UploadDate = DateTime.Parse(json["UploadDate"].ToString()),
-                Author = json["Author"].ToString(),
-                ImageEntities = jsonArray.ToString()
-            };
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
 
-            TableOperation updateOperation = TableOperation.InsertOrReplace(updateDraft);
-            await table.ExecuteAsync(updateOperation);
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
+
+                var result = await table.ExecuteAsync(retrieveOperation);
+
+                string resultJSON = JsonConvert.SerializeObject(result.Result);
+                JObject json = JObject.Parse(resultJSON);
+                JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
+
+                // Update value of image
+                for (int i = 0; i < jsonArray.Count; i++)
+                {
+                    if (jsonArray[i]["Id"].ToString() == image)
+                    {
+                        JArray additionalField = new JArray();
+                        foreach (var item in updateImageEntity.AdditionalField)
+                        {
+                            string jsonString = System.Text.Json.JsonSerializer.Serialize(item);
+                            additionalField.Add(JToken.Parse(jsonString));
+                        }
+                        updateImageEntity.AdditionalField = additionalField.ToObject<List<object>>();
+
+                        try
+                        {
+                            if (updateImageEntity.Tag.Substring(0, 1) == ",")
+                            {
+                                updateImageEntity.Tag = updateImageEntity.Tag.Substring(1);
+                            }
+                        }
+                        catch (Exception e) { };
+
+                        jsonArray.RemoveAt(i);
+                        jsonArray.Add(JToken.FromObject(updateImageEntity));
+
+                        break;
+                    }
+                }
+
+                Draft updateDraft = new Draft()
+                {
+                    PartitionKey = DraftPartitionKey,
+                    RowKey = rowkey,
+                    UploadDate = DateTime.Parse(json["UploadDate"].ToString()),
+                    Author = json["Author"].ToString(),
+                    ImageEntities = jsonArray.ToString()
+                };
+
+                TableOperation updateOperation = TableOperation.InsertOrReplace(updateDraft);
+                await table.ExecuteAsync(updateOperation);
+
+                return Json(new
+                {
+                    success = true
+                });
+            }
+            catch (Exception e)
+            {
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to update files. Please correct the errors and try again."
+                });
+            }
         }
 
         // Remove images from a draft
         [HttpDelete("draft/{rowkey}/{image}")]
-        public async Task DeleteImage(string rowkey, string image)
+        public async Task<JsonResult> DeleteImage(string rowkey, string image)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
-                return;
-            }
-
-            string tableConnectionString = _appSettings.TableConnectionString;
-            string tableName = _appSettings.TableName;
-            string containerName = _appSettings.MediaStorageContainer;
-            string storageConnectionString = _appSettings.MediaStorageConnectionString;
-
-            //initialize table client
-            CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            CloudTable table = tableClient.GetTableReference(tableName);
-
-            //create a blob container client
-            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
-
-            TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
-                partitionKey: DraftPartitionKey,
-                rowkey: rowkey
-            );
-
-            var result = await table.ExecuteAsync(retrieveOperation);
-
-            string resultJSON = JsonConvert.SerializeObject(result.Result);
-            JObject json = JObject.Parse(resultJSON);
-            JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
-
-            // Update value of image
-            for (int i = 0; i < jsonArray.Count; i++)
-            {
-                if (jsonArray[i]["Id"].ToString() == image)
+                return Json(new
                 {
-                    var fileName = jsonArray[i]["Id"] + "_" + jsonArray[i]["Name"];
-
-                    var thumbArray = jsonArray[i]["Name"].ToString().Split(".");
-                    var thumbName = jsonArray[i]["Id"] + "_" + thumbArray[0];
-                    var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
-                    foreach (var thumb in middleThumbArray)
-                    {
-                        thumbName += "." + thumb;
-                    }
-                    thumbName += "_thumb.jpg";
-
-                    var fileBlob = blobContainerClient.GetBlobClient(fileName);
-                    var thumbBlob = blobContainerClient.GetBlobClient(thumbName);
-                    await fileBlob.DeleteIfExistsAsync();
-                    await thumbBlob.DeleteIfExistsAsync();
-                    jsonArray.RemoveAt(i);
-                }
+                    success = false,
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                });
             }
 
-            Draft updateDraft = new Draft()
+            try
             {
-                PartitionKey = DraftPartitionKey,
-                RowKey = rowkey,
-                UploadDate = DateTime.Parse(json["UploadDate"].ToString()),
-                Author = json["Author"].ToString(),
-                ImageEntities = jsonArray.ToString()
-            };
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
+                string containerName = _appSettings.MediaStorageContainer;
+                string storageConnectionString = _appSettings.MediaStorageConnectionString;
 
-            TableOperation updateOperation = TableOperation.InsertOrReplace(updateDraft);
-            await table.ExecuteAsync(updateOperation);
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                //create a blob container client
+                BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
+
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
+
+                var result = await table.ExecuteAsync(retrieveOperation);
+
+                string resultJSON = JsonConvert.SerializeObject(result.Result);
+                JObject json = JObject.Parse(resultJSON);
+                JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
+
+                // Update value of image
+                for (int i = 0; i < jsonArray.Count; i++)
+                {
+                    if (jsonArray[i]["Id"].ToString() == image)
+                    {
+                        var fileName = jsonArray[i]["Id"] + "_" + jsonArray[i]["Name"];
+
+                        var thumbArray = jsonArray[i]["Name"].ToString().Split(".");
+                        var thumbName = jsonArray[i]["Id"] + "_" + thumbArray[0];
+                        var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                        foreach (var thumb in middleThumbArray)
+                        {
+                            thumbName += "." + thumb;
+                        }
+                        thumbName += "_thumb.jpg";
+
+                        var fileBlob = blobContainerClient.GetBlobClient(fileName);
+                        var thumbBlob = blobContainerClient.GetBlobClient(thumbName);
+                        await fileBlob.DeleteIfExistsAsync();
+                        await thumbBlob.DeleteIfExistsAsync();
+                        jsonArray.RemoveAt(i);
+                    }
+                }
+
+                Draft updateDraft = new Draft()
+                {
+                    PartitionKey = DraftPartitionKey,
+                    RowKey = rowkey,
+                    UploadDate = DateTime.Parse(json["UploadDate"].ToString()),
+                    Author = json["Author"].ToString(),
+                    ImageEntities = jsonArray.ToString()
+                };
+
+                TableOperation updateOperation = TableOperation.InsertOrReplace(updateDraft);
+                await table.ExecuteAsync(updateOperation);
+
+                return Json(new
+                {
+                    success = true
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to delete files. Please correct the errors and try again."
+                });
+            }
         }
 
         // Delete a draft
         [HttpDelete("draft/{rowkey}")]
-        public async Task DeleteDraft(string rowkey)
+        public async Task<JsonResult> DeleteDraft(string rowkey)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
-                return;
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                });
             }
 
-            string tableConnectionString = _appSettings.TableConnectionString;
-            string tableName = _appSettings.TableName;
-
-            //initialize table client
-            CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            CloudTable table = tableClient.GetTableReference(tableName);
-
-            var tableEntity = new Draft
+            try
             {
-                PartitionKey = DraftPartitionKey,
-                RowKey = rowkey,
-                ETag = "*"
-            };
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
 
-            TableOperation deleteOperation = TableOperation.Delete(tableEntity);
-            await table.ExecuteAsync(deleteOperation);
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                var tableEntity = new Draft
+                {
+                    PartitionKey = DraftPartitionKey,
+                    RowKey = rowkey,
+                    ETag = "*"
+                };
+
+                TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+                await table.ExecuteAsync(deleteOperation);
+
+                return Json(new
+                {
+                    success = true
+                });
+            }
+            catch (Exception e)
+            {
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to delete draft. Please refresh the webpage."
+                });
+            }
         }
 
         // Get data inside a draft
         [HttpGet("draft/{rowkey}")]
-        public async Task<object> GetDraft(string rowkey)
+        public async Task<JsonResult> GetDraft(string rowkey)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
-                return null;
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                });
             }
 
-            string tableConnectionString = _appSettings.TableConnectionString;
-            string tableName = _appSettings.TableName;
+            try
+            {
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
 
-            //initialize table client
-            CloudStorageAccount storageAccount;
-            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            CloudTable table = tableClient.GetTableReference(tableName);
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
 
-            TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
-                partitionKey: DraftPartitionKey,
-                rowkey: rowkey
-            );
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
 
-            TableResult result = await table.ExecuteAsync(retrieveOperation);
+                TableResult result = await table.ExecuteAsync(retrieveOperation);
 
-            return result.Result;
+                return Json(new
+                {
+                    success = true,
+                    result = result.Result
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to get draft."
+                });
+            }
         }
 
         [HttpPost("/api/convert")]
@@ -909,6 +1033,12 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             if (checkUser)
             {
+
+                if (string.IsNullOrEmpty(User.Identity.Name))
+                {
+                    return false;
+                }
+
                 if (User.Identity.Name != obj.Author)
                 {
                     return false;
