@@ -21,16 +21,6 @@ const basemap = L.tileLayer(
   }
 )
 
-const notSelectedIcon = L.icon({
-  iconUrl: 'images/marker-icon-2x.png',
-  iconSize: [20, 32.8],
-})
-
-const selectedIcon = L.icon({
-  iconUrl: 'images/marker-icon-2x-orange.png',
-  iconSize: [20, 32.8],
-})
-
 const placesLayer = L.featureGroup()
 
 const defaultMapBounds = L.latLngBounds([1.56073, 104.11475], [1.16, 103.502])
@@ -40,6 +30,20 @@ const mapOptions = {
   zoom: 12,
   maxBounds: defaultMapBounds,
   layers: [placesLayer, basemap],
+}
+
+const markerStyle = {
+  radius: 5,
+  color: '#333333',
+  fillColor: '#004DA8',
+  weight: 1,
+  opacity: 1,
+  fillOpacity: 0.8,
+}
+
+const selectedStyle = {
+  color: '#263238',
+  fillColor: '#E57373',
 }
 
 const Map = ({ results, onMapClick, onMarkerClick }) => {
@@ -76,12 +80,17 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
     for (const result of results) {
       const pointFeature = result.location
       if (pointFeature) {
-        // for every location in results we will add a marker
+        // for every location in results we will add a circlemarker
         const marker = L.marker(
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
-            icon: result.isSelected ? selectedIcon : notSelectedIcon,
-            bubblingMouseEvents: false
+            ...markerStyle,
+            ...(result.isSelected ? selectedStyle : null),
+            bubblingMouseEvents: false,
+            icon: L.icon({
+              iconUrl: 'styles/images/marker-icon-2x.png',
+              iconSize: [20, 32.8],
+            })
           }
         )
         marker.data = result
