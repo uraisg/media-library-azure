@@ -264,7 +264,9 @@ const Step2 = (props) => {
             item={item}
             Key={item.Id}
             update={true}
-            setCheckValue={setCheckValue} />
+            setCheckValue={setCheckValue}
+            draftKey={props.draftKey}
+          />
         </div>
       ))}
     </React.Fragment>
