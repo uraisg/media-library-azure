@@ -81,12 +81,16 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
       const pointFeature = result.location
       if (pointFeature) {
         // for every location in results we will add a circlemarker
-        const marker = L.circleMarker(
+        const marker = L.marker(
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
             ...markerStyle,
             ...(result.isSelected ? selectedStyle : null),
             bubblingMouseEvents: false,
+            icon: L.icon({
+              iconUrl: 'styles/images/marker-icon-2x.png',
+              iconSize: [20, 32.8],
+            })
           }
         )
         marker.data = result
