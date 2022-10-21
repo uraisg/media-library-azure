@@ -164,7 +164,7 @@ const DisplayItem = (props) => {
                   <strong>Name:</strong>
                 </div>
                 <div className="col-8">
-                  {props.item.Name}
+                  {props.item.Project}
                 </div>
               </div>
               <div className="py-1 row">
@@ -205,7 +205,7 @@ const DisplayItem = (props) => {
                   <strong>Planning Area:</strong>
                 </div>
                 <div className="col-8">
-                  {props.item.Project}
+                  {props.item.LocationName}
                 </div>
               </div>
               <div className="py-1 row">
