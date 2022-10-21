@@ -80,10 +80,14 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         // Adding images to a draft
-        // AntiForgeryToken should be used
         [HttpPost("draft/{rowkey}/addImage")]
         public async Task AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowKey, true) == false)
+            {
+                return;
+            }
+
             _logger.LogInformation("{UserName} called file upload action", User.Identity.Name);
 
             var traceId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
@@ -242,6 +246,11 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPut("draft/{rowkey}/{image}")]
         public async Task UpdateImage([FromBody] ImageEntity updateImageEntity, string rowkey, string image)
         {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
+            {
+                return;
+            }
+
             string tableConnectionString = _appSettings.TableConnectionString;
             string tableName = _appSettings.TableName;
 
@@ -308,6 +317,11 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpDelete("draft/{rowkey}/{image}")]
         public async Task DeleteImage(string rowkey, string image)
         {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
+            {
+                return;
+            }
+
             string tableConnectionString = _appSettings.TableConnectionString;
             string tableName = _appSettings.TableName;
             string containerName = _appSettings.MediaStorageContainer;
@@ -374,6 +388,11 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpDelete("draft/{rowkey}")]
         public async Task DeleteDraft(string rowkey)
         {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
+            {
+                return;
+            }
+
             string tableConnectionString = _appSettings.TableConnectionString;
             string tableName = _appSettings.TableName;
 
@@ -398,6 +417,11 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpGet("draft/{rowkey}")]
         public async Task<object> GetDraft(string rowkey)
         {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
+            {
+                return null;
+            }
+
             string tableConnectionString = _appSettings.TableConnectionString;
             string tableName = _appSettings.TableName;
 
@@ -433,7 +457,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             {
                 if (!string.IsNullOrEmpty(_appSettings.MediaStorageConnectionString))
                 {
-                    _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionStringImage, _appSettings.MediaStorageContainer);
+                    _blobContainerClient = new BlobContainerClient(_appSettings.MediaStorageConnectionString, _appSettings.MediaStorageContainer);
                 }
                 else
                 {
@@ -858,6 +882,41 @@ namespace MediaLibrary.Internet.Web.Controllers
             await table.ExecuteAsync(updateOperation);
         }
 
+        private async Task<bool> CheckIfDraftIsEmpty_N_UserMatchDraft(string rowKey, bool checkUser)
+        {
+            string tableConnectionString = _appSettings.TableConnectionString;
+            string tableName = _appSettings.TableName;
+
+            //initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                partitionKey: DraftPartitionKey,
+                rowkey: rowKey
+            );
+
+            TableResult result = await table.ExecuteAsync(retrieveOperation);
+
+            if (result.Result == null)
+            {
+                return false;
+            }
+
+            var obj = JsonConvert.DeserializeObject<Draft>(JsonConvert.SerializeObject(result.Result));
+
+            if (checkUser)
+            {
+                if (User.Identity.Name != obj.Author)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         public class apiAsset
         {
