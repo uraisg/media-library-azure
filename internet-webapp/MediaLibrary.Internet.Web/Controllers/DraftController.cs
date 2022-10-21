@@ -99,7 +99,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "New draft cannot be created. Please try again."
+                    errorMessage = "Something went wrong. Please try again."
                 });
             }
         }
@@ -113,7 +113,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
                 });
             }
 
@@ -154,7 +154,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to upload files as the file name is empty. Please correct the errors and try again."
+                    errorMessage = "Failed to upload files. Please correct the errors and try again."
                 });
             }
 
@@ -170,7 +170,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to upload files as the file extension is not supported. Please correct the errors and try again."
+                    errorMessage = "Failed to upload files. Please correct the errors and try again."
                 });
             }
 
@@ -282,7 +282,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to upload files. Please try again."
+                    errorMessage = "Failed to upload files. Please correct the errors and try again."
                 });
             }
         }
@@ -296,7 +296,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
                 });
             }
 
@@ -373,7 +373,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to update files. Please try again."
+                    errorMessage = "Failed to update files. Please correct the errors and try again."
                 });
             }
         }
@@ -387,7 +387,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
                 });
             }
 
@@ -464,7 +464,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to delete files. Please try again."
+                    errorMessage = "Failed to delete files. Please correct the errors and try again."
                 });
             }
         }
@@ -478,7 +478,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
                 });
             }
 
@@ -527,7 +527,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
                 });
             }
 
@@ -560,7 +560,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to get draft. Please try again."
+                    errorMessage = "Failed to get draft."
                 });
             }
         }
