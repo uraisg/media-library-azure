@@ -135,14 +135,6 @@ const SingleEdit = (props) => {
 
   const checkValidField = () => {
     let err = false
-    if (newDetails.Name === "") {
-      setErrMsg(item => ({ ...item, Name: true }))
-      err = true
-    }
-    else {
-      setErrMsg(item => ({ ...item, Name: false }))
-    }
-
     if (newDetails.Project === "") {
       setErrMsg(item => ({ ...item, Project: true }))
       err = true
@@ -151,11 +143,19 @@ const SingleEdit = (props) => {
       setErrMsg(item => ({ ...item, Project: false }))
     }
 
+    if (newDetails.LocationName === "") {
+      setErrMsg(item => ({ ...item, LocationName: true }))
+      err = true
+    }
+    else {
+      setErrMsg(item => ({ ...item, LocationName: false }))
+    }
+
     if (err) {
       return false
     }
     else {
-      setErrMsg({ Name: false, Project: false })
+      setErrMsg({ Project: false, LocationName: false })
       return true
     }
   }
@@ -190,8 +190,12 @@ const SingleEdit = (props) => {
   }
 
   const save = () => {
+    props.setErrMsg1(false);
+
     if (!checkValidField() || !checkValidAddField()) {
-      return
+      props.setErrMsg1Text("Fields cannot be empty");
+      props.setErrMsg1(true);
+      return;
     }
 
     setLoading(true)
@@ -215,8 +219,16 @@ const SingleEdit = (props) => {
       },
       body: JSON.stringify(bodyDetails)
     })
-      .then((done) => {
+      .then((response) => response.json())
+      .then((response) => {
         setLoading(false)
+
+        if (!response.success) {
+          props.setErrMsg1Text(response.errorMessage);
+          props.setErrMsg1(true);
+          return;
+        }
+
         props.renderRefresh()
         off()
       })
@@ -254,8 +266,8 @@ const SingleEdit = (props) => {
               <div className="mt-2 row">
                 <div className="mt-2 col-12 col-md-2 col-lg-3 col-xl-2"><strong>Name:<span className="text-danger">*</span></strong></div>
                 <div className="col-12 col-md-10 col-lg-9 col-xl-10">
-                  <input type="text" value={newDetails.Name} id="Name" onChange={updateField} className="form-control" />
-                  {errMsg.Name &&
+                  <input type="text" value={newDetails.Project} id="Project" onChange={updateField} className="form-control" />
+                  {errMsg.Project &&
                     <span className="text-danger">The Name Field is required</span>
                   }
                 </div>
@@ -263,8 +275,8 @@ const SingleEdit = (props) => {
               <div className="mt-2 row">
                 <div className="mt-2 col-12 col-md-2 col-lg-3 col-xl-2"><strong>Location:<span className="text-danger">*</span></strong></div>
                 <div className="col-12 col-md-10 col-lg-9 col-xl-10">
-                  <input type="text" value={newDetails.Project} onChange={updateField} id="Project" className="form-control" />
-                  {errMsg.Project &&
+                  <input type="text" value={newDetails.LocationName} onChange={updateField} id="LocationName" className="form-control" />
+                  {errMsg.LocationName &&
                     <span className="text-danger">The Location Field is required</span>
                   }
                 </div>
@@ -299,6 +311,10 @@ const SingleEdit = (props) => {
                 <small className="text-secondary">Label name field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
               }
 
+              {props.errMsg1 &&
+                <p className="text-danger">{props.errMsg1Text}</p>
+              }
+
               <div className="mt-3">
                 <span className="user-select-none pointer-cursor text-danger" onClick={addNewField}><Plus size={30} color={'red'} /> Add new Field</span>
                 <div className="float-right">
@@ -320,8 +336,8 @@ const BatchEdit = (props) => {
   const [loading, setLoading] = useState(false)
   const [errMsg, setErrMsg] = useState({ Name: false, Project: false })
 
-  const [defaultValue, setDefaultValue] = useState({ Name: "", Project: "", Copyright: "", Caption: "", Tags: "" })
-  const [option, setOption] = useState({ Name: "nil", Project: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
+  const [defaultValue, setDefaultValue] = useState({ Project: "", LocationName: "", Copyright: "", Caption: "", Tags: "" })
+  const [option, setOption] = useState({ Project: "nil", LocationName: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
   const updateOption = [{ Value: "nil", Option: "No change" }, { Value: "begin", Option: "Insert at beginning" }, { Value: "end", Option: "Insert at end" }, { Value: "all", Option: "Replace all" }]
   const updateTagsOptions = [{ Value: "nil", Option: "No change" }, { Value: "end", Option: "Add" }, { Value: "all", Option: "Replace all" }]
 
@@ -410,8 +426,8 @@ const BatchEdit = (props) => {
   }
 
   const reset = () => {
-    setDefaultValue({ Name: "", Project: "", Copyright: "", Caption: "", Tags: "" })
-    setOption({ Name: "nil", Project: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
+    setDefaultValue({ Project: "", LocationName: "", Copyright: "", Caption: "", Tags: "" })
+    setOption({ Project: "nil", LocationName: "nil", Copyright: "nil", Caption: "nil", Tags: "nil" })
     $(".update-option").val("nil")
     setNewField(checkAddField())
   }
@@ -420,23 +436,23 @@ const BatchEdit = (props) => {
     let err = false
 
     if (option.Name !== "nil" && defaultValue.Name === "") {
-      setErrMsg(item => ({ ...item, Name: true }))
-      err = true
-    } else {
-      setErrMsg(item => ({ ...item, Name: false }))
-    }
-    if (option.Project !== "nil" && defaultValue.Project === "") {
       setErrMsg(item => ({ ...item, Project: true }))
       err = true
     } else {
       setErrMsg(item => ({ ...item, Project: false }))
+    }
+    if (option.Project !== "nil" && defaultValue.Project === "") {
+      setErrMsg(item => ({ ...item, LocationName: true }))
+      err = true
+    } else {
+      setErrMsg(item => ({ ...item, LocationName: false }))
     }
 
     if (err) {
       return false
     }
     else {
-      setErrMsg({ Name: false, Project: false })
+      setErrMsg({ Project: false, LocationName: false })
       return true
     }
   }
@@ -480,25 +496,20 @@ const BatchEdit = (props) => {
     // Get Original Values
     let response = await fetch(`draft/${props.draftKey}`);
     let responseJSON = await response.json();
-    let imageEntities = JSON.parse(responseJSON.imageEntities);
+
+    if (!responseJSON.success) {
+      props.setErrMsg1Text(responseJSON.errorMessage);
+      props.setErrMsg1(true);
+      setLoading(false);
+      return;
+    }
+
+    let imageEntities = JSON.parse(responseJSON.result["imageEntities"]);
 
     for await (let imageId of props.index) {
       for await (let imageEntity of imageEntities) {
         if (imageEntity["Id"] == imageId) {
           // Update Name
-          if (option["Name"] != "nil") {
-            if (option["Name"] == "begin") {
-              imageEntity["Name"] = defaultValue["Name"] + imageEntity["Name"]
-            }
-            else if (option["Name"] == "end") {
-              imageEntity["Name"] = imageEntity["Name"] + defaultValue["Name"]
-            }
-            else {
-              imageEntity["Name"] = defaultValue["Name"]
-            }
-          }
-
-          // Update Project
           if (option["Project"] != "nil") {
             if (option["Project"] == "begin") {
               imageEntity["Project"] = defaultValue["Project"] + imageEntity["Project"]
@@ -508,6 +519,19 @@ const BatchEdit = (props) => {
             }
             else {
               imageEntity["Project"] = defaultValue["Project"]
+            }
+          }
+
+          // Update Project
+          if (option["LocationName"] != "nil") {
+            if (option["LocationName"] == "begin") {
+              imageEntity["LocationName"] = defaultValue["LocationName"] + imageEntity["LocationName"]
+            }
+            else if (option["LocationName"] == "end") {
+              imageEntity["LocationName"] = imageEntity["LocationName"] + defaultValue["LocationName"]
+            }
+            else {
+              imageEntity["LocationName"] = defaultValue["LocationName"]
             }
           }
 
@@ -553,7 +577,7 @@ const BatchEdit = (props) => {
             imageEntity["AdditionalField"].push(field);
           }
 
-          await fetch(`draft/${props.draftKey}/${imageId}`, {
+          const response = await fetch(`draft/${props.draftKey}/${imageId}`, {
             method: 'PUT',
             headers: {
               'Accept': 'application/json',
@@ -562,6 +586,16 @@ const BatchEdit = (props) => {
             },
             body: JSON.stringify(imageEntity)
           })
+
+          const responseData = await response.json();
+
+          if (!responseData.success) {
+            props.setErrMsg1Text(responseData.errorMessage);
+            props.setErrMsg1(true);
+            setLoading(false);
+            return;
+          }
+
           break
         }
       }
@@ -597,26 +631,6 @@ const BatchEdit = (props) => {
           <div className="row">
             <div className="mt-1 col-3"><strong>Name:<span className="text-danger">*</span></strong></div>
             <div className="col-9">
-              <select className="update-option form-control" defaultValue="nil" id="Name-select" onChange={handleOption}>
-                {updateOption.map((item, index) => (
-                  <option key={index} value={item.Value}>{item.Option}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {option.Name !== "nil" &&
-            <>
-              <input type="text" className="mt-2 form-control" id="Name" value={defaultValue.Name} onChange={updateField} placeholder="Edit name here" />
-              {errMsg.Name &&
-                <span className="text-danger">The Name field is required.</span>
-              }
-            </>
-          }
-
-          <div className="mt-2 row">
-            <div className="mt-1 col-3"><strong>Location:<span className="text-danger">*</span></strong></div>
-            <div className="col-9">
               <select className="update-option form-control" defaultValue="nil" id="Project-select" onChange={handleOption}>
                 {updateOption.map((item, index) => (
                   <option key={index} value={item.Value}>{item.Option}</option>
@@ -627,8 +641,28 @@ const BatchEdit = (props) => {
 
           {option.Project !== "nil" &&
             <>
-            <input type="text" className="mt-2 form-control" id="Project" value={defaultValue.Project} onChange={updateField} placeholder="Edit location here" />
+            <input type="text" className="mt-2 form-control" id="Project" value={defaultValue.Project} onChange={updateField} placeholder="Edit name here" />
             {errMsg.Project &&
+                <span className="text-danger">The Name field is required.</span>
+              }
+            </>
+          }
+
+          <div className="mt-2 row">
+            <div className="mt-1 col-3"><strong>Location:<span className="text-danger">*</span></strong></div>
+            <div className="col-9">
+              <select className="update-option form-control" defaultValue="nil" id="LocationName-select" onChange={handleOption}>
+                {updateOption.map((item, index) => (
+                  <option key={index} value={item.Value}>{item.Option}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {option.LocationName !== "nil" &&
+            <>
+            <input type="text" className="mt-2 form-control" id="LocationName" value={defaultValue.LocationName} onChange={updateField} placeholder="Edit location here" />
+            {errMsg.LocationName &&
                 <span className="text-danger">The Location field is required.</span>
               }
             </>
@@ -699,6 +733,10 @@ const BatchEdit = (props) => {
             <small className="text-secondary">Label name field is required to identify additional information (e.g. Details, Comments, Team, etc.)</small>
           }
 
+          {props.errMsg1 &&
+            <p className="text-danger">{props.errMsg1Text}</p>
+          }
+
           <ButtonArea>
             <span className="user-select-none pointer-cursor text-danger" onClick={addNewField}><Plus size={30} color={'red'} />Add new Field</span>
             <div className="float-right">
@@ -726,7 +764,11 @@ EditItem.propTypes = {
   index: PropTypes.arrayOf(PropTypes.string),
   renderRefresh: PropTypes.func,
   editType: PropTypes.string,
-  draftKey: PropTypes.string
+  draftKey: PropTypes.string,
+  errMsg1: PropTypes.bool,
+  setErrMsg1: PropTypes.func,
+  errMsg1Text: PropTypes.string,
+  setErrMsg1Text: PropTypes.func
 }
 
 export default EditItem

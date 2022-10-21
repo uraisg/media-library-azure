@@ -25,6 +25,8 @@ const StepperForm = () => {
   const [progressBar, setProgressBar] = useState(false)
   const [completePercentage, setCompletePercentage] = useState(0)
   const [errMsg, setErrMsg] = useState(false)
+  const [errMsg1, setErrMsg1] = useState(false)
+  const [errMsg1Text, setErrMsg1Text] = useState("")
   const [draftKey, setDraftKey] = useState("")
   const [cancelModal, setCancelModal] = useState(false);
 
@@ -63,6 +65,7 @@ const StepperForm = () => {
 
   const uploadStep1 = async() => {
     setProgressBar(true)
+    setErrMsg1(false);
 
     const name = formContext.validInput.Name.trim()
     const location = formContext.validInput.Location.trim()
@@ -77,6 +80,14 @@ const StepperForm = () => {
     })
 
     const responseData = await response.json();
+
+    if (!responseData.success) {
+      setErrMsg1Text(responseData.errorMessage);
+      setErrMsg1(true);
+      setProgressBar(false);
+      return;
+    }
+
     const rowKey = responseData.rowKey;
     setDraftKey(rowKey);
 
@@ -87,20 +98,36 @@ const StepperForm = () => {
       data.append('copyright', copyright)
       data.append('file', file.file);
 
-      await fetch(`draft/${rowKey}/addImage`, {
+      const response1 = await fetch(`draft/${rowKey}/addImage`, {
         method: 'POST',
         headers: {
           RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
         },
         body: data
       })
+
+      const responseData1 = await response1.json();
+
+      if (!responseData1.success) {
+        setErrMsg1Text(responseData1.errorMessage);
+        setErrMsg1(true);
+        setProgressBar(false);
+        return;
+      }
     }
 
     fetch(`draft/${rowKey}`)
       .then((response) => response.json())
       .then((response) => {
+        if (!response.success) {
+          setErrMsg1Text(response.errorMessage);
+          setErrMsg1(true);
+          setProgressBar(false);
+          return;
+        }
+
         try {
-          const imageEntities = JSON.parse(response.imageEntities)
+          const imageEntities = JSON.parse(response.result["imageEntities"])
           formContext.setRetrievedFile(imageEntities)
 
           setProgressBar(false)
@@ -108,7 +135,10 @@ const StepperForm = () => {
           window.scrollTo(0, 0)
         }
         catch (e) {
-          console.log(e)
+          console.log(e);
+          setErrMsg1Text(e);
+          setErrMsg1(true);
+          setProgressBar(false);
         }
       })
   }
@@ -124,7 +154,15 @@ const StepperForm = () => {
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       }
     })
-      .then((done) => {
+      .then((response) => response.json())
+      .then((response) => {
+        if (!response.success) {
+          setErrMsg1Text(response.errorMessage);
+          setErrMsg1(true);
+          setProgressBar(false);
+          return;
+        }
+
         setCompletePercentage(100)
 
         setProgressBar(false)
@@ -132,8 +170,7 @@ const StepperForm = () => {
         formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
         setActiveStep(0)
         window.scrollTo(0, 0)
-      })
-      .then((done) => {
+
         // Shows alert for "Uploading to intranet in 10 minutes"
         formContext.setAlertActive(true)
         setTimeout(() => { formContext.setAlertActive(false) }, 5000)
@@ -168,6 +205,10 @@ const StepperForm = () => {
           setErrMsg={setErrMsg}
           setActiveStep={setActiveStep}
           draftKey={draftKey}
+          errMsg1={errMsg1}
+          setErrMsg1={setErrMsg1}
+          errMsg1Text={errMsg1Text}
+          setErrMsg1Text={setErrMsg1Text}
         />
       </FormModel>
 

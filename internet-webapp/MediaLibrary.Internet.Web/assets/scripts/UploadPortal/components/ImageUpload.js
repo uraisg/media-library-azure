@@ -46,13 +46,21 @@ const Step1 = (props) => {
       {props.errMsg &&
         <p className="text-danger">Fields cannot be empty</p>
       }
+
+      {props.errMsg1 &&
+        <p className="text-danger">{props.errMsg1Text}</p>
+      }
     </React.Fragment >
    )
 }
 
 Step1.propTypes = {
-  errMsg: PropTypes.string,
-  setErrMsg: PropTypes.func
+  errMsg: PropTypes.bool,
+  setErrMsg: PropTypes.func,
+  errMsg1: PropTypes.bool,
+  setErrMsg1: PropTypes.func,
+  errMsg1Text: PropTypes.string,
+  setErrMsg1Text: PropTypes.func
 }
 
 export default Step1
