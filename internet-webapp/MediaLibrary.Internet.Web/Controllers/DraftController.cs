@@ -580,13 +580,65 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             string encodedFileName = Path.GetFileName(name.Name);
             encodedFileName = Uri.UnescapeDataString(encodedFileName);
-            encodedFileName = "/api/assets/" + encodedFileName;
+            encodedFileName = "/api/assets/" + encodedFileName + "/" + name.RowKey;
             return encodedFileName;
         }
 
-        [HttpGet("/api/assets/{name}", Name = nameof(GetMediaFile))]
-        public async Task<IActionResult> GetMediaFile(string name)
+        [HttpGet("/api/assets/{name}/{rowkey}")]
+        public async Task<IActionResult> GetMediaFile(string name, string rowkey)
         {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
+            {
+                return NotFound();
+            }
+
+            // Check if image exist in the draft
+            try
+            {
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
+
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
+
+                var result = await table.ExecuteAsync(retrieveOperation);
+
+                string resultJSON = JsonConvert.SerializeObject(result.Result);
+                JObject json = JObject.Parse(resultJSON);
+                JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
+
+                bool found = false;
+                for (int i = 0; i < jsonArray.Count; i++)
+                {
+                    string encodedFileName = Path.GetFileName(jsonArray[i]["FileURL"].ToString());
+                    encodedFileName = Uri.UnescapeDataString(encodedFileName);
+
+                    if (encodedFileName == name)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    return NotFound();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception while trying to get image.");
+
+                return NotFound();
+            }
+
             if (_blobContainerClient == null)
             {
                 if (!string.IsNullOrEmpty(_appSettings.MediaStorageConnectionString))
@@ -1064,6 +1116,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         public class apiAsset
         {
             public string Name { get; set; }
+            public string RowKey { get; set; }
         }
     }
 }
