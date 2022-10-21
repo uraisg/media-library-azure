@@ -20,8 +20,12 @@
 
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
+    <Compile Remove="assets\styles\images\**" />
     <Content Remove="$(SpaRoot)**" />
+    <Content Remove="assets\styles\images\**" />
+    <EmbeddedResource Remove="assets\styles\images\**" />
     <None Remove="$(SpaRoot)**" />
+    <None Remove="assets\styles\images\**" />
     <None Include="$(SpaRoot)**" />
   </ItemGroup>
 
