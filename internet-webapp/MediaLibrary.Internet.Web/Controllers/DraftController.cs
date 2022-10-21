@@ -96,10 +96,12 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Got exception while creating a new draft.");
+
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Something went wrong. Please try again."
+                    errorMessage = "New draft cannot be created. Please try again."
                 });
             }
         }
@@ -113,7 +115,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                 });
             }
 
@@ -154,7 +156,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to upload files. Please correct the errors and try again."
+                    errorMessage = "Failed to upload files as the file name is empty. Please correct the errors and try again."
                 });
             }
 
@@ -170,7 +172,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to upload files. Please correct the errors and try again."
+                    errorMessage = "Failed to upload files as the file extension is not supported. Please correct the errors and try again."
                 });
             }
 
@@ -282,7 +284,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to upload files. Please correct the errors and try again."
+                    errorMessage = "Failed to upload files. Please try again."
                 });
             }
         }
@@ -296,7 +298,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                 });
             }
 
@@ -368,12 +370,14 @@ namespace MediaLibrary.Internet.Web.Controllers
                     success = true
                 });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Got exception while editing images in draft.");
+
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to update files. Please correct the errors and try again."
+                    errorMessage = "Failed to update files. Please try again."
                 });
             }
         }
@@ -387,7 +391,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                 });
             }
 
@@ -461,10 +465,12 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Got exception while deleting images from draft.");
+
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to delete files. Please correct the errors and try again."
+                    errorMessage = "Failed to delete files. Please try again."
                 });
             }
         }
@@ -478,7 +484,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                 });
             }
 
@@ -508,8 +514,10 @@ namespace MediaLibrary.Internet.Web.Controllers
                     success = true
                 });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Got exception while deleting a draft.");
+
                 return Json(new
                 {
                     success = false,
@@ -527,7 +535,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                 });
             }
 
@@ -557,10 +565,12 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Got exception while trying to retrieve a draft.");
+
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to get draft."
+                    errorMessage = "Failed to get draft. Please try again."
                 });
             }
         }
@@ -1031,15 +1041,18 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             var obj = JsonConvert.DeserializeObject<Draft>(JsonConvert.SerializeObject(result.Result));
 
+            var email = User.GetUserGraphEmail();
+
             if (checkUser)
             {
-
-                if (string.IsNullOrEmpty(User.Identity.Name))
+                if (string.IsNullOrEmpty(email))
                 {
+                    _logger.LogError("Could not get associated email address for user {UserName}", User.Identity.Name);
+
                     return false;
                 }
 
-                if (User.Identity.Name != obj.Author)
+                if (email != obj.Author)
                 {
                     return false;
                 }

@@ -76,7 +76,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     return Json(new
                     {
                         success = false,
-                        errorMessage = "The draft does not exist or the user logged in is not the same as the draft's author."
+                        errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                     });
                 }
 
@@ -129,10 +129,12 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Got exception while uploading files to intranet.");
+
                 return Json(new
                 {
                     success = false,
-                    errorMessage = "Failed to upload draft. Please correct the errors and try again."
+                    errorMessage = "Failed to upload draft. Please try again."
                 });
             }
         }
