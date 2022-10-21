@@ -81,7 +81,7 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
             icon: result.isSelected ? selectedIcon : notSelectedIcon,
-            bubblingMouseEvents: false
+            bubblingMouseEvents: false,
           }
         )
         marker.data = result
