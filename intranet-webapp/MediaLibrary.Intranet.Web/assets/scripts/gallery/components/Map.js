@@ -51,6 +51,8 @@ const mapOptions = {
   layers: [placesLayer, basemap],
 }
 
+}
+
 const Map = ({ results, onMapClick, onMarkerClick }) => {
   const mapRef = useRef(null)
   const map = useMap()
@@ -83,18 +85,14 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
     }
 
     for (const result of results) {
-      const pointFeature = result.location
-      if (pointFeature) {
         // for every location in results we will add a marker
+        const marker = L.marker(
+        // for every location in results we will add a circlemarker
         const marker = L.marker(
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
             icon: result.isSelected ? selectedIcon : notSelectedIcon,
             bubblingMouseEvents: false,
-            icon: L.icon({
-              iconUrl: 'styles/images/marker-icon-2x.png',
-              iconSize: [20, 32.8],
-            })
           }
         )
         marker.data = result
