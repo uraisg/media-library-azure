@@ -580,12 +580,12 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             string encodedFileName = Path.GetFileName(name.Name);
             encodedFileName = Uri.UnescapeDataString(encodedFileName);
-            encodedFileName = "/api/assets/" + encodedFileName + "/" + name.RowKey;
+            encodedFileName = "/api/assets/" + name.RowKey + "/" + encodedFileName;
             return encodedFileName;
         }
 
-        [HttpGet("/api/assets/{name}/{rowkey}")]
-        public async Task<IActionResult> GetMediaFile(string name, string rowkey)
+        [HttpGet("/api/assets/{rowkey}/{name}")]
+        public async Task<IActionResult> GetMediaFile(string rowkey, string name)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
