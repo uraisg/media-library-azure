@@ -33,10 +33,10 @@ function loadFileInfo() {
       downloadBtnLarge.href = data['largeImage']
 
       img.onload = function (event) {
-        downloadBtnOriginal.innerText = "Original (" + img.naturalHeight + " x " + img.naturalWidth + ")";
-        downloadBtnSmall.innerText = "Small (" + img.naturalHeight * 0.25 + " x " + img.naturalWidth * 0.25 + ")";
-        downloadBtnMedium.innerText = "Medium (" + img.naturalHeight * 0.5 + " x " + img.naturalWidth * 0.5 + ")";
-        downloadBtnLarge.innerText = "Large (" + img.naturalHeight * 0.75 + " x " + img.naturalWidth * 0.75 + ")";
+        downloadBtnOriginal.innerText = "Original (" + img.naturalHeight + "x" + img.naturalWidth + ")";
+        downloadBtnSmall.innerText = "Small (" + data['smallImageSize'] + ")";
+        downloadBtnMedium.innerText = "Medium (" + data['mediumImageSize'] + ")";
+        downloadBtnLarge.innerText = "Large (" + data['largeImageSize'] + ")";
       }
 
       renderMetadataSection(data)
@@ -114,7 +114,7 @@ async function renderMetadataSection(data) {
   if (editAbility){
     deleteListener(data['Id'], data['Name'])
   }
-  
+
 }
 
 function formatLatLng(coords) {
