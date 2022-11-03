@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
@@ -14,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
+using Newtonsoft.Json.Linq;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -84,6 +89,38 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
         }
 
+        [HttpGet("/api/assets/{name}/{size}")]
+        public async Task<IActionResult> GetMediaFileWithSize(string name, string size)
+        {
+            _logger.LogInformation("Getting blob with name {name} and resize to {size}", name, size);
+
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
+            string[] sizes = size.Split("-");
+
+            try
+            {
+                BlobDownloadInfo download = await blobClient.DownloadAsync();
+
+                var image = Image.FromStream(download.Content);
+                var resized = new Bitmap(image, new Size(int.Parse(sizes[1]), int.Parse(sizes[0])));
+
+                using (var stream = new MemoryStream())
+                {
+                    resized.Save(stream, ImageFormat.Jpeg);
+                    return File(stream.ToArray(), download.ContentType, name);
+                }
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Issue with getting media file in specific size.", ex);
+                return NotFound();
+            }
+        }
+
         [HttpGet("/api/media/{id}", Name = nameof(GetMediaItem))]
         public async Task<IActionResult> GetMediaItem(string id)
         {
@@ -93,7 +130,26 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
             if (item != null)
             {
-                return Ok(item);
+                JObject objectItem = JObject.FromObject(item);
+                string fileName = (objectItem["FileURL"].ToString().Split("/"))[3];
+
+                BlobClient blobClient = _blobContainerClient.GetBlobClient(fileName);
+
+                try
+                {
+                    BlobDownloadInfo download = await blobClient.DownloadAsync();
+                    Image image = Image.FromStream(download.Content);
+
+                    objectItem["smallImage"] = objectItem["FileURL"] + "/" + (image.Height * 0.25) + "-" + (image.Width * 0.25);
+                    objectItem["mediumImage"] = objectItem["FileURL"] + "/" + (image.Height * 0.5) + "-" + (image.Width * 0.5);
+                    objectItem["largeImage"] = objectItem["FileURL"] + "/" + (image.Height * 0.75) + "-" + (image.Width * 0.75);
+                }
+                catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+                {
+                    _logger.LogInformation("Could not get blob while trying to get the original size of the image.", ex);
+                }
+
+                return Ok(objectItem);
             }
             else
             {

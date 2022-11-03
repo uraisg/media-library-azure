@@ -3,7 +3,10 @@ import { getDisplayName } from './DisplayName'
 
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
-  const downloadBtn = document.querySelector('#media-download')
+  const downloadBtnOriginal = document.querySelector('#media-download-original')
+  const downloadBtnSmall = document.querySelector('#media-download-small')
+  const downloadBtnMedium = document.querySelector('#media-download-medium')
+  const downloadBtnLarge = document.querySelector('#media-download-large')
   const fileInfoId = img.dataset.fileinfoid
   if (!fileInfoId) return
 
@@ -24,7 +27,17 @@ function loadFileInfo() {
     .then((data) => {
       img.alt = data['Name']
       img.src = data['FileURL']
-      downloadBtn.href = img.src
+      downloadBtnOriginal.href = img.src;
+      downloadBtnSmall.href = data['smallImage']
+      downloadBtnMedium.href = data['mediumImage']
+      downloadBtnLarge.href = data['largeImage']
+
+      img.onload = function (event) {
+        downloadBtnOriginal.innerText = "Original (" + img.naturalHeight + " x " + img.naturalWidth + ")";
+        downloadBtnSmall.innerText = "Small (" + img.naturalHeight * 0.25 + " x " + img.naturalWidth * 0.25 + ")";
+        downloadBtnMedium.innerText = "Medium (" + img.naturalHeight * 0.5 + " x " + img.naturalWidth * 0.5 + ")";
+        downloadBtnLarge.innerText = "Large (" + img.naturalHeight * 0.75 + " x " + img.naturalWidth * 0.75 + ")";
+      }
 
       renderMetadataSection(data)
 
