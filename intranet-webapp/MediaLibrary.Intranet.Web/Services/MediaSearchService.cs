@@ -181,5 +181,29 @@ namespace MediaLibrary.Intranet.Web.Services
             _logger.LogInformation("Deleted {id} from indexer succesfully", id);
 
         }
+
+        public async Task<List<MediaSearchResult>> GetAllMediaItemsAsync()
+        {
+            List<MediaSearchResult> allSearchResult = new List<MediaSearchResult>();
+            int totalSkip = 0;
+            DocumentSearchResult<MediaItem> result;
+
+            var parameters = new SearchParameters()
+            {
+                Skip = totalSkip,
+                Top = 1000
+            };
+
+            do
+            {
+                result = await _searchIndexClient.Documents.SearchAsync<MediaItem>("*", parameters);
+                MediaSearchResult mediaSearchResult = new MediaSearchResult(result);
+                allSearchResult.Add(mediaSearchResult);
+                totalSkip += mediaSearchResult.Count;
+
+            } while (result.Count > 0);
+
+            return allSearchResult;
+        }
     }
 }
