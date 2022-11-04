@@ -25,12 +25,34 @@ function loadFileInfo() {
       return response.json()
     })
     .then((data) => {
-      img.alt = data['Name']
-      img.src = data['FileURL']
+      img.alt = data['Name'];
+      img.src = data['FileURL'];
       downloadBtnOriginal.href = img.src;
-      downloadBtnSmall.href = data['smallImage']
-      downloadBtnMedium.href = data['mediumImage']
-      downloadBtnLarge.href = data['largeImage']
+      downloadBtnSmall.href = data['smallImage'];
+      downloadBtnMedium.href = data['mediumImage'];
+      downloadBtnLarge.href = data['largeImage'];
+
+      console.log(data['showSmall'])
+      if (data["showSmall"]) {
+        downloadBtnSmall.style.display = "block";
+      }
+      else {
+        downloadBtnSmall.style.display = "none";
+      }
+
+      if (data["showMedium"]) {
+        downloadBtnMedium.style.display = "block";
+      }
+      else {
+        downloadBtnMedium.style.display = "none";
+      }
+
+      if (data["showLarge"]) {
+        downloadBtnLarge.style.display = "block";
+      }
+      else {
+        downloadBtnLarge.style.display = "none";
+      }
 
       img.onload = function (event) {
         downloadBtnOriginal.innerText = "Original (" + img.naturalHeight + "x" + img.naturalWidth + ")";
