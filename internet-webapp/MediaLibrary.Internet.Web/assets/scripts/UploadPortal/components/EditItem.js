@@ -75,7 +75,7 @@ const SingleEdit = (props) => {
   const [curimageURL, setCurImageURL] = useState("");
 
   useEffect(() => {
-    fetch(`/api/convert`, {
+    fetch('api/convert', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -105,7 +105,6 @@ const SingleEdit = (props) => {
     const temp = newField.filter(item => item.Id !== e.target.id)
     setNewField(temp)
   }
-  
 
   const updateField = (e) => {
     setNewDetails(item => ({ ...item, [e.target.id]: e.target.value }))

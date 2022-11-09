@@ -60,7 +60,7 @@ const DisplayItem = (props) => {
   const uploadTags = props.item.Tag.split(",");
 
   useEffect(() => {
-    fetch(`/api/convert`, {
+    fetch('api/convert', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
