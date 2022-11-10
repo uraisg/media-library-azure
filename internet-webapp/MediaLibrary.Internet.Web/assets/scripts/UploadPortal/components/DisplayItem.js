@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 
@@ -9,10 +9,11 @@ function formatDate(date) {
   return format(new Date(date), DATE_FORMAT);
 }
 
-const Checkbox = styled.input.attrs({ type: 'checkbox' })`
+const Checkbox = styled.input`
   height: 20px;
   width: 20px;
 `
+Checkbox.defaultProps = { type: 'checkbox' }
 
 const Img = styled.img`
   object-fit: cover;
@@ -71,7 +72,7 @@ const DisplayItem = (props) => {
       .then((res) => res.json())
       .then((res) => setCurImageURL(res));
   }, [])
-  
+
   function getStaticMapUrl(coords, zoom) {
     const decimalPlaces = 5
     const lat = coords[1].toFixed(decimalPlaces)

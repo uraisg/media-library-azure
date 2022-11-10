@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components'
+import { styled } from '@linaria/react'
 import { Button } from 'react-bootstrap'
 import { X, Plus } from 'react-bootstrap-icons'
 import PropTypes from 'prop-types'
