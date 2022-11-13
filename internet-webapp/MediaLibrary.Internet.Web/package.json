@@ -33,9 +33,6 @@
     "sass-loader": "^13.2.0"
   },
   "dependencies": {
-    "@emotion/react": "^11.9.3",
-    "@emotion/styled": "^11.9.3",
-    "@mui/material": "^5.8.5",
     "bootstrap": "^4.6.1",
     "date-fns": "^2.29.3",
     "filepond-plugin-file-validate-size": "^2.2.7",
@@ -46,6 +43,7 @@
     "jquery-validation": "^1.19.5",
     "jquery-validation-unobtrusive": "^4.0.0",
     "prop-types": "^15.8.1",
+    "rc-steps": "^5.0.0",
     "react": "^18.2.0",
     "react-bootstrap": "^1.6.6",
     "react-bootstrap-icons": "^1.9.1",
