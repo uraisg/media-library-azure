@@ -21,14 +21,23 @@ const basemap = L.tileLayer(
   }
 )
 
-const notSelectedIcon = L.icon({
-  iconUrl: 'images/marker-icon-2x.png',
-  iconSize: [20, 32.8],
+const SmallLIcon = L.Icon.extend({
+  options: {
+    iconSize: [19, 33],
+    iconAnchor: [9, 33],
+    popupAnchor: [0, -25],
+    tooltipAnchor: [12, -22],
+  },
 })
 
-const selectedIcon = L.icon({
-  iconUrl: 'images/marker-icon-2x-orange.png',
-  iconSize: [20, 32.8],
+const notSelectedIcon = new SmallLIcon({
+  iconUrl: '../images/marker-icon.png',
+  iconRetinaUrl: '../images/marker-icon-2x.png',
+})
+
+const selectedIcon = new SmallLIcon({
+  iconUrl: '../images/marker-icon-orange.png',
+  iconRetinaUrl: '../images/marker-icon-orange-2x.png',
 })
 
 const placesLayer = L.featureGroup()
