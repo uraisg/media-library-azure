@@ -32,7 +32,7 @@ namespace MediaLibrary.Internet.Web.Configuration
             app.Use(async (context, next) =>
             {
                 var headers = context.Response.Headers;
-                headers["Content-Security-Policy"] = $"form-action 'self'{aadInstanceHost}; script-src 'self'{scriptSrcUnsafeEval}; object-src 'none'; frame-ancestors 'none'";
+                headers["Content-Security-Policy"] = $"form-action 'self'{aadInstanceHost}; script-src 'self' blob:{scriptSrcUnsafeEval}; object-src 'none'; frame-ancestors 'none'";
                 headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
                 headers["X-Content-Type-Options"] = "nosniff";
                 headers["X-Frame-Options"] = "DENY";

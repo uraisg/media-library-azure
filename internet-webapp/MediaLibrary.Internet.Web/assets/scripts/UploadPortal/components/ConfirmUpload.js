@@ -19,7 +19,7 @@ const Step3 = (props) => {
       {fileContext.retrievedFile.map((item, key) => (
         <div key={item.Id}>
           <hr />
-          <DisplayItem item={item} Key={item.Id} update={false} />
+          <DisplayItem item={item} Key={item.Id} update={false} draftKey={props.draftKey}/>
         </div>
 
       ))}
@@ -28,6 +28,7 @@ const Step3 = (props) => {
 }
 
 Step3.propTypes = {
+  draftKey: PropTypes.string,
   errMsg1: PropTypes.bool,
   setErrMsg1: PropTypes.func,
   errMsg1Text: PropTypes.string,
