@@ -1,28 +1,21 @@
-import React, { useState } from 'react'
-import { styled } from '@linaria/react'
-import Steps from 'rc-steps'
-import { Button, Modal } from 'react-bootstrap'
-import { Check2, X } from 'react-bootstrap-icons'
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import styled from 'styled-components';
+import { Modal, Button } from 'react-bootstrap';
+import { X } from 'react-bootstrap-icons';
 
 import FormSteps from '@/components/FormSteps'
 import Progressbar from '@/components/ProgressBar'
 import { useForm, useBtnDisabled } from '@/components/AllContext'
 
-import 'rc-steps/assets/index.css'
-
-const steps = [
-  { title: 'Upload Images' },
-  { title: 'Preview & Update' },
-  { title: 'Confirm & Finish' },
-]
-const stepsIcons = {
-  finish: <Check2 aria-label="finish" />,
-}
-
-const StepsContainer = styled.div`
-  max-width: 720px;
-  margin: 0 auto 1.5rem;
+const FormModel = styled.div`
+  margin-block: 2em;
 `
+
+const steps = ['Image Upload', 'Preview & Update', 'Confirm Upload'];
 
 const StepperForm = () => {
   const formContext = useForm()
@@ -192,25 +185,27 @@ const StepperForm = () => {
   }
 
   return (
-    <div className="py-3 px-lg-3">
-      {progressBar && (
+    <Box sx={{ width: '90%', margin: '2% auto' }}>
+      {progressBar &&
         <Progressbar
-          completed={completePercentage}
-          setCompletePercentage={setCompletePercentage}
-          activeStep={activeStep}
-        />
-      )}
+        completed={completePercentage}
+        setCompletePercentage={setCompletePercentage}
+        activeStep={activeStep} />
+      }
 
-      <StepsContainer>
-        <Steps
-          current={activeStep}
-          labelPlacement="vertical"
-          icons={stepsIcons}
-          items={steps}
-        />
-      </StepsContainer>
+      <Stepper activeStep={activeStep} alternativeLabel>
+        {steps.map((label, index) => {
+          const stepProps = {}
+          const labelProps = {}
+          return (
+            <Step key={label} {...stepProps}>
+              <StepLabel {...labelProps}>{label}</StepLabel>
+            </Step>
+          );
+        })}
+      </Stepper>
 
-      <div className="mb-4">
+      <FormModel>
         <FormSteps
           activeStep={activeStep}
           errMsg={errMsg}
@@ -222,35 +217,26 @@ const StepperForm = () => {
           errMsg1Text={errMsg1Text}
           setErrMsg1Text={setErrMsg1Text}
         />
-      </div>
+      </FormModel>
 
-      <div className="d-flex mb-4">
-        {activeStep === 1 && (
-          <Button variant="danger" onClick={openModal}>
-            Cancel
-          </Button>
-        )}
-        {activeStep >= 2 && (
-          <Button variant="secondary" onClick={handleBack}>
-            Back
-          </Button>
-        )}
+      <React.Fragment>
+        <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+          {activeStep === 1 ?
+            <button color="inherit" onClick={openModal} className="btn btn-danger">Cancel</button>
+            :
+            <button color="inherit" disabled={activeStep === 0} onClick={handleBack} className="btn btn-secondary">Back</button>
+          }
 
-        <div className="ml-auto d-flex align-items-center">
-          {activeStep === 1 && (
-            <span className="mr-3">
-              Uploading {formContext.retrievedFile.length} image(s)
-            </span>
-          )}
-          <Button
-            variant="primary"
-            onClick={handleNext}
-            disabled={activeStep === 0 ? stepCompleteContext.btnDisabled : false}
-          >
-            {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
-          </Button>
-        </div>
-      </div>
+        <Box sx={{ flex: '1 1 auto' }} />
+        {activeStep === 1 &&
+          <span style={{ marginRight: '2%', marginTop: '0.5%' }}>Uploading {formContext.retrievedFile.length} image(s)</span>
+          }
+
+        <button onClick={handleNext} className="btn btn-primary" disabled={activeStep === 0 ? stepCompleteContext.btnDisabled : false}>
+          {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
+        </button>
+        </Box>
+      </React.Fragment>
 
       <React.Fragment>
         <Modal show={cancelModal}>
@@ -272,8 +258,8 @@ const StepperForm = () => {
           </Modal.Footer>
         </Modal>
       </React.Fragment>
-    </div>
-  )
+    </Box>
+  );
 }
 
 export default StepperForm

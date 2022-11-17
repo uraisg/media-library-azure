@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import { styled } from '@linaria/react'
+import styled from 'styled-components'
 import L from 'leaflet'
 import { useMap, useInitMap } from '@/contexts'
 
@@ -20,25 +20,6 @@ const basemap = L.tileLayer(
       New OneMap | Map data &copy; contributors, <a href="https://www.sla.gov.sg">Singapore Land Authority</a>',
   }
 )
-
-const SmallLIcon = L.Icon.extend({
-  options: {
-    iconSize: [19, 33],
-    iconAnchor: [9, 33],
-    popupAnchor: [0, -25],
-    tooltipAnchor: [12, -22],
-  },
-})
-
-const notSelectedIcon = new SmallLIcon({
-  iconUrl: '../images/marker-icon.png',
-  iconRetinaUrl: '../images/marker-icon-2x.png',
-})
-
-const selectedIcon = new SmallLIcon({
-  iconUrl: '../images/marker-icon-orange.png',
-  iconRetinaUrl: '../images/marker-icon-orange-2x.png',
-})
 
 const placesLayer = L.featureGroup()
 
@@ -85,13 +66,12 @@ const Map = ({ results, onMapClick, onMarkerClick }) => {
     }
 
     for (const result of results) {
-        // for every location in results we will add a marker
-        const marker = L.marker(
-        // for every location in results we will add a circlemarker
+        // for every location in results we will add a marker]
         const marker = L.marker(
           [pointFeature.coordinates[1], pointFeature.coordinates[0]],
           {
-            icon: result.isSelected ? selectedIcon : notSelectedIcon,
+            ...markerStyle,
+            ...(result.isSelected ? selectedStyle : null),
             bubblingMouseEvents: false,
           }
         )

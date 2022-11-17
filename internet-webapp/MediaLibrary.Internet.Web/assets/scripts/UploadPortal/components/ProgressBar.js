@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { ProgressBar } from 'react-bootstrap'
-import { styled } from '@linaria/react'
+import styled from 'styled-components'
 
 const Background = styled.div`
   position: fixed;
@@ -39,6 +39,8 @@ const Progressbar = (props) => {
     }
     return () => clearInterval(interval)
   }, [])
+
+  
 
   return (
     <Background>
