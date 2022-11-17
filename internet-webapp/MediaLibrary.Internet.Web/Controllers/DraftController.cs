@@ -108,6 +108,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
         // Adding images to a draft
         [HttpPost("draft/{rowkey}/addImage")]
+        [RequestSizeLimit(42_000_000)]
         public async Task<JsonResult> AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowKey, true) == false)
