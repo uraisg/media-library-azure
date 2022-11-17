@@ -8,8 +8,15 @@ module.exports = {
       action: 'ignore',
     },
     {
-      test: /\/node_modules\/react-bootstrap\/esm\//,
-      action: require('@linaria/shaker').default,
+      // Do not ignore ES-modules
+      test: (filename, code) => {
+        if (!/\/node_modules\//.test(filename)) {
+          return false;
+        }
+
+        return /(?:^|\n|;)\s*(?:export|import)\s+/.test(code);
+      },
+      action: require.resolve('@linaria/shaker'),
     },
   ],
 }
