@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
+import { styled } from '@linaria/react'
 import ReactPaginate from 'react-paginate'
 import DelayedSpinner from '@/components/DelayedSpinner'
 import MediaGrid from '@/components/MediaGrid'

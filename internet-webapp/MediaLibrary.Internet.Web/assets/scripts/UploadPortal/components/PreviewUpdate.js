@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import styled from 'styled-components'
+import { styled } from '@linaria/react'
 import { Modal, Button } from 'react-bootstrap'
 import { ArrowClockwise, PencilSquare, Trash, X } from 'react-bootstrap-icons'
 import { TailSpin } from 'react-loader-spinner'
@@ -16,10 +16,11 @@ const VR = styled.div`
   border: 1px solid black;
 `
 
-const Checkbox = styled.input.attrs({ type: 'checkbox' })`
+const Checkbox = styled.input`
   height: 20px;
   width: 20px;
 `
+Checkbox.defaultProps = { type: 'checkbox' }
 
 const Step2 = (props) => {
   const formContext = useForm()
