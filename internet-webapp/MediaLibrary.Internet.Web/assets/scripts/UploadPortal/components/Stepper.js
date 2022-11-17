@@ -113,6 +113,13 @@ const StepperForm = () => {
         body: data
       })
 
+      if (!response1.ok) {
+        setErrMsg1Text("An error has occured. Please try again.");
+        setErrMsg1(true);
+        setProgressBar(false);
+        return;
+      }
+
       const responseData1 = await response1.json();
 
       if (!responseData1.success) {
