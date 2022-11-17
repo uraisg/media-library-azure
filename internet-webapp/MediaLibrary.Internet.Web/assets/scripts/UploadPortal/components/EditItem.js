@@ -82,7 +82,7 @@ const SingleEdit = (props) => {
         'Content-Type': 'application/json',
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       },
-      body: JSON.stringify({ Name: fileArr.FileURL, RowKey: props.draftKey })
+      body: JSON.stringify({ Name: fileArr.FileURL })
     })
       .then((res) => res.json())
       .then((res) => setCurImageURL(res));
