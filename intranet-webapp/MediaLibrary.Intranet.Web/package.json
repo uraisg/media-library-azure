@@ -5,6 +5,8 @@
   "scripts": {
     "development": "mix",
     "watch": "mix watch",
+    "watch-poll": "mix watch -- --watch-options-poll=1000",
+    "hot": "mix watch --hot",
     "production": "mix --production"
   },
   "keywords": [],
@@ -21,25 +23,21 @@
     "last 2 iOS major versions"
   ],
   "devDependencies": {
-    "@babel/preset-react": "^7.18.6",
-    "@linaria/babel-preset": "^4.3.0",
-    "@linaria/core": "^4.2.2",
-    "@linaria/react": "^4.3.0",
-    "@linaria/webpack5-loader": "^4.1.8",
+    "@babel/preset-react": "^7.16.7",
     "laravel-mix": "^6.0.49",
-    "postcss": "^8.4.19",
+    "postcss": "^8.4.6",
     "resolve-url-loader": "^5.0.0",
-    "sass": "^1.56.1",
-    "sass-loader": "^13.2.0"
+    "sass": "^1.55.0",
+    "sass-loader": "^13.1.0"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.7.2",
     "bootstrap": "^4.6.1",
-    "date-fns": "^2.29.3",
-    "jquery": "^3.6.1",
+    "date-fns": "^2.28.0",
+    "jquery": "^3.6.0",
     "jquery-validation": "^1.19.5",
-    "jquery-validation-unobtrusive": "^4.0.0",
-    "leaflet": "^1.9.2",
+    "jquery-validation-unobtrusive": "^3.2.12",
+    "leaflet": "^1.7.1",
     "prop-types": "^15.8.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.4",
@@ -48,7 +46,8 @@
     "react-paginate": "^7.1.5",
     "react-redux": "^7.2.6",
     "react-router-dom": "^5.3.0",
-    "redux": "^4.1.2"
+    "redux": "^4.1.2",
+    "styled-components": "^5.3.3"
   },
   "engines": {
     "node": ">=16.0.0"
