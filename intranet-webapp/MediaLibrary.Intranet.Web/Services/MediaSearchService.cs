@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -65,11 +66,61 @@ namespace MediaLibrary.Intranet.Web.Services
             int? skip = null)
         {
             searchTerm = searchTerm ?? "";
+            string newSearchTerm = "";
 
             string filterExpression;
             try
             {
-                filterExpression = CreateFilterExpression(searchOptions);
+                var keyList = new List<string>();
+                var valueList = new List<string>();
+                List<int> foundIndexes = new List<int>();
+                for (int i = searchTerm.IndexOf('\"'); i > -1; i = searchTerm.IndexOf('\"', i + 1))
+                {
+                    foundIndexes.Add(i);
+                }
+
+                var originalSearch = searchTerm;
+                if (foundIndexes.Count == 0)
+                {
+                    newSearchTerm = originalSearch;
+                }
+                else
+                {
+                    for (int i = 0; i < foundIndexes.Count; i++)
+                    {
+                        var indexOfChar = originalSearch.IndexOf("\"");
+
+                        var left = originalSearch.Substring(0, indexOfChar);
+                        var right = originalSearch.Substring(indexOfChar);
+
+                        if (i % 2 != 0)
+                        {
+                            valueList.Add(left.Replace("\"", ""));
+                        }
+                        else
+                        {
+                            var strList = left.Split(" ");
+
+                            foreach (var str in strList)
+                            {
+                                if (str.Contains(":"))
+                                {
+                                    keyList.Add(str.Replace(":", ""));
+                                }
+                                else
+                                {
+                                    newSearchTerm += str;
+                                }
+                            }
+                        }
+
+                        originalSearch = right.Substring(1);
+                    }
+
+                    newSearchTerm += originalSearch;
+                }
+
+                filterExpression = CreateFilterExpression(keyList, valueList, searchOptions);
             }
             catch (ArgumentException ex) // Invalid spatial filter
             {
@@ -96,14 +147,14 @@ namespace MediaLibrary.Intranet.Web.Services
                 IncludeTotalResultCount = true,
             };
 
-            var result = await _searchIndexClient.Documents.SearchAsync<MediaItem>(searchTerm, parameters);
+            var result = await _searchIndexClient.Documents.SearchAsync<MediaItem>(newSearchTerm, parameters);
 
             _logger.LogInformation("Completed search query successfully");
 
             return new MediaSearchResult(result);
         }
 
-        private string CreateFilterExpression(MediaSearchOptions o)
+        private string CreateFilterExpression(List<string> keyList, List<string> valueList, MediaSearchOptions o)
         {
             var subexpressions = new List<string>();
 
@@ -154,7 +205,35 @@ namespace MediaLibrary.Intranet.Web.Services
                 subexpressions.Add($"geo.distance(Location, geography'POINT({lon} {lat})') le {o.DistanceSearch.Radius / 1000.0}");
             }
 
+            subexpressions.AddRange(AddAdvancedSearch(keyList, valueList));
+
             return string.Join(" and ", subexpressions);
+        }
+
+        private List<string> AddAdvancedSearch(List<string> keyList, List<string> valueList)
+        {
+            var subexpressions = new List<string>();
+
+            for (var i = 0; i < keyList.Count; i++)
+            {
+                try
+                {
+                    if (keyList[i] == "Author")
+                    {
+                        subexpressions.Add($"search.in({keyList[i]}, '{valueList[i]}')");
+                    }
+                    else
+                    {
+                        subexpressions.Add($"search.ismatch('{valueList[i]}*', '{keyList[i]}')");
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            return subexpressions;
         }
 
         private string TransformSpatialFilter(string spatialFilter)
