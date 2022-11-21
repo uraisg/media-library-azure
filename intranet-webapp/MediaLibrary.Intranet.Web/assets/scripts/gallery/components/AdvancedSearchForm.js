@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
-const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setCurrentSearchTerm }) => {
+const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setCurrentSearchTerm, displayAdvancedSearch, setDisplayAdvancedSearch }) => {
   const [user, setUser] = useState("");
   const [location, setLocation] = useState("");
   const [caption, setCaption] = useState("");
@@ -17,8 +17,8 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
   const subtitleFontStyle = { fontWeight: "100", fontSize: 12 };
 
   const handleSearchButtonClick = () => {
-    var [newSearchTerm, keyList, valueList] = getValueFromSearch(currentSearchTerm);
-    var newSearch = newSearchTerm;
+    const [newSearchTerm, keyList, valueList] = getValueFromSearch(currentSearchTerm);
+    let newSearch = newSearchTerm;
 
     if (user.trim() != "") {
       newSearch += (' Author:"' + user.replaceAll('\"', "") + '"');
@@ -46,6 +46,7 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
 
     setCurrentSearchTerm(newSearch);
     setSearchTerm(newSearch);
+    setDisplayAdvancedSearch(false);
   };
 
   const handleInputKeyDown = (e) => {
@@ -57,34 +58,34 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
   }
 
   function getValueFromSearch(searchTerm) {
-    var newSearchTerm = "";
-    var keyList = [];
-    var valueList = [];
-    var foundIndexes = [];
+    let newSearchTerm = "";
+    let keyList = [];
+    let valueList = [];
+    let foundIndexes = [];
 
     try {
-      for (var i = searchTerm.indexOf('\"'); i > -1; i = searchTerm.indexOf('\"', i + 1)) {
-        foundIndexes.push(i);
+      for (let o = searchTerm.indexOf('\"'); o > -1; o = searchTerm.indexOf('\"', o + 1)) {
+        foundIndexes.push(o);
       }
 
-      var originalSearch = searchTerm;
+      let originalSearch = searchTerm;
       if (foundIndexes.length == 0) {
         newSearchTerm = originalSearch;
       }
       else {
-        for (var i = 0; i < foundIndexes.length; i++) {
-          var indexOfChar = originalSearch.indexOf("\"");
+        for (let i = 0; i < foundIndexes.length; i++) {
+          let indexOfChar = originalSearch.indexOf("\"");
 
-          var left = originalSearch.substring(0, indexOfChar);
-          var right = originalSearch.substring(indexOfChar);
+          let left = originalSearch.substring(0, indexOfChar);
+          let right = originalSearch.substring(indexOfChar);
 
           if (i % 2 != 0) {
             valueList.push(left.replaceAll("\"", ""));
           }
           else {
-            var strList = left.split(" ");
+            let strList = left.split(" ");
 
-            for (var p = 0; p < strList.length; p++) {
+            for (let p = 0; p < strList.length; p++) {
               if (strList[p].includes(":")) {
                 keyList.push(strList[p].replaceAll(":", ""));
               }
@@ -108,10 +109,10 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
   }
 
   useEffect(() => {
-    var [newSearchTerm, keyList, valueList] = getValueFromSearch(currentSearchTerm);
+    const [newSearchTerm, keyList, valueList] = getValueFromSearch(currentSearchTerm);
 
     try {
-      for (var i = 0; i < keyList.length; i++) {
+      for (let i = 0; i < keyList.length; i++) {
         switch (keyList[i]) {
           case "Author":
             setUser(valueList[i]);
@@ -235,6 +236,8 @@ AdvancedSearchForm.propTypes = {
   setSearchTerm: PropTypes.func.isRequired,
   currentSearchTerm: PropTypes.string,
   setCurrentSearchTerm: PropTypes.func,
+  displayAdvancedSearch: PropTypes.bool,
+  setDisplayAdvancedSearch: PropTypes.func,
 }
 
 export default AdvancedSearchForm

@@ -11,6 +11,7 @@ import AdvancedSearchForm from '@/components/AdvancedSearchForm';
 const TopBar = ({ searchTerm, setSearchTerm }) => {
   const [currentSearchTerm, setCurrentSearchTerm] = useState(searchTerm);
   const [advancedSearchBtn, setAdvancedSearchBtn] = useState(false);
+  const [displayAdvancedSearch, setDisplayAdvancedSearch] = useState(false);
 
   useEffect(() => {
     setCurrentSearchTerm(searchTerm)
@@ -38,13 +39,15 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
     if (e.which === 13 || e.keyCode === 13) {
       // Trigger callback function from props
       setSearchTerm(trimmed);
+      setDisplayAdvancedSearch(false);
     }
   }
 
   const handleButtonClick = () => {
     const trimmed = currentSearchTerm.trim()
     // Trigger callback function from props
-    setSearchTerm(trimmed)
+    setSearchTerm(trimmed);
+    setDisplayAdvancedSearch(false);
   }
 
   useEffect(() => {
@@ -77,6 +80,8 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
             position="bottom right"
             arrow={false}
             closeOnDocumentClick={false}
+            open={displayAdvancedSearch}
+            onOpen={() => setDisplayAdvancedSearch(true)}
             {...{ contentStyle }}
           >
             <AdvancedSearchForm
@@ -84,6 +89,8 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
               setSearchTerm={setSearchTerm}
               currentSearchTerm={currentSearchTerm}
               setCurrentSearchTerm={setCurrentSearchTerm}
+              displayAdvancedSearch={displayAdvancedSearch}
+              setDisplayAdvancedSearch={setDisplayAdvancedSearch}
             />
           </Popup>
         </InputGroup.Append>
