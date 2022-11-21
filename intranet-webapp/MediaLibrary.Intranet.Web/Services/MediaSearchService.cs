@@ -222,6 +222,15 @@ namespace MediaLibrary.Intranet.Web.Services
                     {
                         subexpressions.Add($"search.in({keyList[i]}, '{valueList[i]}')");
                     }
+                    else if (keyList[i] == "Tag")
+                    {
+                        var tagList = valueList[i].Split(",");
+
+                        foreach (var tag in tagList)
+                        {
+                            subexpressions.Add($"Tag/any(t: t eq '{tag}')");
+                        }
+                    }
                     else
                     {
                         subexpressions.Add($"search.ismatch('{valueList[i]}*', '{keyList[i]}')");
