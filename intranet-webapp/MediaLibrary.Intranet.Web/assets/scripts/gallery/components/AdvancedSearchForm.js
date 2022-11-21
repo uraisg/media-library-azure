@@ -85,12 +85,12 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
           else {
             let strList = left.split(" ");
 
-            for (let p = 0; p < strList.length; p++) {
-              if (strList[p].includes(":")) {
-                keyList.push(strList[p].replaceAll(":", ""));
+            for (let str of strList) {
+              if (str.includes(":")) {
+                keyList.push(str.replaceAll(":", ""));
               }
               else {
-                newSearchTerm += strList[p];
+                newSearchTerm += str;
               }
             }
           }
@@ -196,6 +196,8 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
             </Col>
           </Form.Group>
 
+          {/* Commented out as Copyright does not exist in the current search index system */}
+          {/*
           <Form.Group as={Row} className="mb-3 justify-content-between">
             <Form.Label column sm="2" style={boldFontStyle}>Copyright</Form.Label>
             <Col sm="8">
@@ -207,6 +209,7 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
               />
             </Col>
           </Form.Group>
+          */}
 
           <Form.Group as={Row} className="mb-3 justify-content-between">
             <Form.Label column sm="2" style={boldFontStyle}>Tags</Form.Label>
