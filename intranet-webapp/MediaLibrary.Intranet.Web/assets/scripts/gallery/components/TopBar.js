@@ -10,7 +10,6 @@ import AdvancedSearchForm from '@/components/AdvancedSearchForm';
 
 const TopBar = ({ searchTerm, setSearchTerm }) => {
   const [currentSearchTerm, setCurrentSearchTerm] = useState(searchTerm);
-  const [advancedSearchBtn, setAdvancedSearchBtn] = useState(false);
   const [displayAdvancedSearch, setDisplayAdvancedSearch] = useState(false);
 
   useEffect(() => {
@@ -50,17 +49,6 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
     setDisplayAdvancedSearch(false);
   }
 
-  useEffect(() => {
-    const trimmed = currentSearchTerm.trim()
-
-    if (trimmed.length == 0) {
-      setAdvancedSearchBtn(false);
-    }
-    else {
-      setAdvancedSearchBtn(true);
-    }
-  }, [currentSearchTerm])
-
   const contentStyle = { background: "white", width: "60%", zIndex: 10000 };
 
   return ReactDOM.createPortal(
@@ -72,16 +60,26 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
         />
-      {advancedSearchBtn && (
         <InputGroup.Append>
           <Popup trigger={
-            <Button variant="outline-primary">v</Button>
+            <Button variant="outline-primary">
+              {displayAdvancedSearch ?
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-chevron-up" viewBox="0 0 16 16">
+                  <path d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+                </svg>
+                :
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-chevron-down" viewBox="0 0 16 16">
+                  <path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+                </svg>
+              }
+            </Button>
           }
             position="bottom right"
             arrow={false}
             closeOnDocumentClick={false}
             open={displayAdvancedSearch}
             onOpen={() => setDisplayAdvancedSearch(true)}
+            onClose={() => setDisplayAdvancedSearch(false)}
             {...{ contentStyle }}
           >
             <AdvancedSearchForm
@@ -94,7 +92,6 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
             />
           </Popup>
         </InputGroup.Append>
-      )}
       <InputGroup.Append>
         <Button variant="outline-primary" onClick={handleButtonClick}>
           {/* prettier-ignore */}

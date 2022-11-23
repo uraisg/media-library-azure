@@ -46,7 +46,7 @@ const AdvancedSearchForm = ({ searchTerm, setSearchTerm, currentSearchTerm, setC
 
     setCurrentSearchTerm(newSearch);
     setSearchTerm(newSearch);
-    setDisplayAdvancedSearch(false);
+    setDisplayAdvancedSearch(!displayAdvancedSearch);
   };
 
   const handleInputKeyDown = (e) => {
