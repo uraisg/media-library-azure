@@ -171,26 +171,9 @@ const DisplayItem = (props) => {
                 <div className="col-4">
                   <strong>Location:</strong>
                 </div>
-
-                { nullLocation ?
-                  <div className="col-8">
-                    <span className="dropdown">
-                      <a className="dropdown-toggle" role="button" id="metadata-geo-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{coords}</a>
-                      <div className="dropdown-menu py-0" aria-labelledby="metadata-geo-dropdown">
-                        <div className="image-stack" onMouseEnter={() => setOpaque(2)} onMouseLeave={() => setOpaque(1)}>
-                          <Circle></Circle>
-                          <img src={img1} alt="Location map" style={img1CSS}/>
-                          <img src={img2} alt="Location map" style={img2CSS} />
-                        </div>
-                      </div>
-                    </span>
-                  </div>
-                  :
-                  <div className="col-8">
-                    {props.item.Location}
-                  </div>
-                }
-
+                <div className="col-8">
+                  {props.item.LocationName}
+                </div>
               </div>
               <div className="py-1 row">
                 <div className="col-4">
@@ -204,9 +187,24 @@ const DisplayItem = (props) => {
                 <div className="col-4">
                   <strong>Planning Area:</strong>
                 </div>
-                <div className="col-8">
-                  {props.item.LocationName}
-                </div>
+                {nullLocation ?
+                  <div className="col-8">
+                    <span className="dropdown">
+                      <a className="dropdown-toggle" role="button" id="metadata-geo-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{coords}</a>
+                      <div className="dropdown-menu py-0" aria-labelledby="metadata-geo-dropdown">
+                        <div className="image-stack" onMouseEnter={() => setOpaque(2)} onMouseLeave={() => setOpaque(1)}>
+                          <Circle></Circle>
+                          <img src={img1} alt="Location map" style={img1CSS} />
+                          <img src={img2} alt="Location map" style={img2CSS} />
+                        </div>
+                      </div>
+                    </span>
+                  </div>
+                  :
+                  <div className="col-8">
+                    {props.item.Location}
+                  </div>
+                }
               </div>
               <div className="py-1 row">
                 <div className="col-4">
