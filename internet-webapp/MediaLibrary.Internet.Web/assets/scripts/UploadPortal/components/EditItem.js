@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { styled } from '@linaria/react'
+import styled from 'styled-components'
 import { Button } from 'react-bootstrap'
 import { X, Plus } from 'react-bootstrap-icons'
 import PropTypes from 'prop-types'
@@ -75,14 +75,14 @@ const SingleEdit = (props) => {
   const [curimageURL, setCurImageURL] = useState("");
 
   useEffect(() => {
-    fetch('api/convert', {
+    fetch(`/api/convert`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       },
-      body: JSON.stringify({ Name: fileArr.FileURL, RowKey: props.draftKey })
+      body: JSON.stringify({ Name: fileArr.FileURL })
     })
       .then((res) => res.json())
       .then((res) => setCurImageURL(res));
@@ -105,6 +105,7 @@ const SingleEdit = (props) => {
     const temp = newField.filter(item => item.Id !== e.target.id)
     setNewField(temp)
   }
+  
 
   const updateField = (e) => {
     setNewDetails(item => ({ ...item, [e.target.id]: e.target.value }))

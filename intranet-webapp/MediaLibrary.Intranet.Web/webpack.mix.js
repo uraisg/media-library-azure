@@ -12,17 +12,6 @@ mix.webpackConfig({
     },
   },
 })
-mix.override((config) => {
-  config.module.rules.forEach((rule) => {
-    // get the rule that contains babel-loader
-    if (rule.use?.find((loader) => loader.loader?.includes('babel-loader'))) {
-      // add @linaria/webpack5-loader to the rule
-      rule.use.push({
-        loader: '@linaria/webpack5-loader',
-      })
-    }
-  })
-})
 mix.sourceMaps(false) // enable source maps in dev mode, but not prod
 
 mix
@@ -41,6 +30,4 @@ mix
   .js('assets/scripts/item.js', 'scripts')
   .js('assets/scripts/edit.js', 'scripts')
   .sass('assets/styles/site.scss', 'styles')
-mix
-  .js('assets/scripts/gallery/main.js', 'scripts/gallery.js')
-  .react({ extractStyles: true })
+mix.js('assets/scripts/gallery/main.js', 'scripts/gallery.js').react()

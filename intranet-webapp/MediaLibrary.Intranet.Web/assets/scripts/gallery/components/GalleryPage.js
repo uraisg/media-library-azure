@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useHistory } from 'react-router-dom'
-import { styled } from '@linaria/react'
+import styled from 'styled-components'
 import TopBar from '@/components/TopBar'
 import Map from '@/components/Map'
 import FilterSettings from '@/components/FilterSettings'
