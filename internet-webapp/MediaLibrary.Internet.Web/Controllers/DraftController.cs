@@ -633,12 +633,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     string encodedFileName = Path.GetFileName(jsonArray[i]["FileURL"].ToString());
                     encodedFileName = Uri.UnescapeDataString(encodedFileName);
 
-                    if (encodedFileName == name)
-                    {
-                        found = true;
-                        break;
-                    }
-                    else if ((Path.GetFileNameWithoutExtension(encodedFileName) + "_thumb.jpg") == name)
+                    if ((encodedFileName == name) || ((Path.GetFileNameWithoutExtension(encodedFileName) + "_thumb.jpg") == name))
                     {
                         found = true;
                         break;

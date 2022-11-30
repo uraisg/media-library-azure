@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { styled } from '@linaria/react'
 import Steps from 'rc-steps'
 import { Button, Modal } from 'react-bootstrap'
@@ -9,7 +9,6 @@ import Progressbar from '@/components/ProgressBar'
 import { useForm, useBtnDisabled } from '@/components/AllContext'
 
 import 'rc-steps/assets/index.css'
-import { useEffect } from 'react'
 
 const steps = [
   { title: 'Upload Images' },
