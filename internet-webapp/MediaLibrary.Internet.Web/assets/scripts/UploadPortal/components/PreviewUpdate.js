@@ -232,8 +232,8 @@ const Step2 = (props) => {
       <div className="d-flex" >
         <Checkbox onClick={setAllCheck} id="all-chkbox" />
         <VR />
-        {checkNo === 0 ?
-          refresh ?
+        <React.Fragment>
+          {refresh ?
             <TailSpin
               height="20"
               width="20"
@@ -245,12 +245,19 @@ const Step2 = (props) => {
             <React.Fragment>
               <ArrowClockwise className="pointer-cursor" size={20} onClick={renderRefresh} />
             </React.Fragment>
-          :
-          <React.Fragment>
-            <PencilSquare size={20} className="pointer-cursor" onClick={displayEdit} />
-            <Trash size={20} className="pointer-cursor ml-2" onClick={openModal} />
-          </React.Fragment>
-        }
+          }
+          {checkNo === 0 ?
+            <React.Fragment>
+              <PencilSquare size={20} className="ml-2" color="grey" />
+              <Trash size={20} className="ml-2" color="grey" />
+            </React.Fragment>
+            :
+            <React.Fragment>
+              <PencilSquare size={20} className="pointer-cursor ml-2" onClick={displayEdit} />
+              <Trash size={20} className="pointer-cursor ml-2" onClick={openModal} />
+            </React.Fragment>
+          }
+        </React.Fragment>
       </div>
 
       {errMsg2 &&
