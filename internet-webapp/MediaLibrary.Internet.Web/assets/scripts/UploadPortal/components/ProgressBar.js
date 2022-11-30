@@ -23,23 +23,6 @@ const Bar = styled.div`
 `
 
 const Progressbar = (props) => {
-  let interval;
-
-  useEffect(() => {
-    if (props.completed < 90) {
-      interval = setInterval(() => {
-        props.setCompletePercentage((completed) => {
-          if (completed < 90) {
-            completed = completed + 10
-          }
-
-          return completed
-        })
-      }, 1000)
-    }
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <Background>
       <Bar>

@@ -43,9 +43,7 @@ const StepperForm = () => {
   const handleNext = () => {
     if (activeStep == 0) {
       if (validateInput()) {
-        setCompletePercentage(100 / formContext.files.length / 2)
         uploadStep1()
-        setErrMsg(false)
       }
     }
     else if (activeStep == 2) {
@@ -70,8 +68,11 @@ const StepperForm = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   };
 
-  const uploadStep1 = async() => {
-    setProgressBar(true)
+  const uploadStep1 = async () => {
+    let completedPer = 0;
+    setCompletePercentage(completedPer);
+    setProgressBar(true);
+    setErrMsg(false);
     setErrMsg1(false);
 
     const name = formContext.validInput.Name.trim()
@@ -94,6 +95,10 @@ const StepperForm = () => {
       setProgressBar(false);
       return;
     }
+
+    // Make the percentage bar 10% when Draft is created
+    completedPer = 10;
+    setCompletePercentage(completedPer);
 
     const rowKey = responseData.rowKey;
     setDraftKey(rowKey);
@@ -128,6 +133,10 @@ const StepperForm = () => {
         setProgressBar(false);
         return;
       }
+
+      const addPercentage = (100 - 20) / formContext.files.length;
+      completedPer += addPercentage
+      setCompletePercentage(completedPer);
     }
 
     fetch(`draft/${rowKey}`)
@@ -144,6 +153,7 @@ const StepperForm = () => {
           const imageEntities = JSON.parse(response.result["imageEntities"])
           formContext.setRetrievedFile(imageEntities)
 
+          setCompletePercentage(100);
           setProgressBar(false)
           setActiveStep((prevActiveStep) => prevActiveStep + 1)
           window.scrollTo(0, 0)
