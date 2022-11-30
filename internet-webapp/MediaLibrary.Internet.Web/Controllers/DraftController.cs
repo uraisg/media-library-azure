@@ -581,7 +581,19 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             string encodedFileName = Path.GetFileName(name.Name);
             encodedFileName = Uri.UnescapeDataString(encodedFileName);
-            encodedFileName = "/api/assets/" + name.RowKey + "/" + encodedFileName;
+
+            Debug.WriteLine("THUMBNAIL BOOL:");
+            Debug.WriteLine(name.Thumbnail);
+            if (name.Thumbnail)
+            {
+                string encodedFileNameWithoutExtension = Path.GetFileNameWithoutExtension(encodedFileName);
+                encodedFileName = "/api/assets/" + name.RowKey + "/" + encodedFileNameWithoutExtension + "_thumb.jpg";
+            }
+            else
+            {
+                encodedFileName = "/api/assets/" + name.RowKey + "/" + encodedFileName;
+            }
+
             return encodedFileName;
         }
 
@@ -622,6 +634,11 @@ namespace MediaLibrary.Internet.Web.Controllers
                     encodedFileName = Uri.UnescapeDataString(encodedFileName);
 
                     if (encodedFileName == name)
+                    {
+                        found = true;
+                        break;
+                    }
+                    else if ((Path.GetFileNameWithoutExtension(encodedFileName) + "_thumb.jpg") == name)
                     {
                         found = true;
                         break;
@@ -1118,6 +1135,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             public string Name { get; set; }
             public string RowKey { get; set; }
+            public bool Thumbnail { get; set; }
         }
     }
 }
