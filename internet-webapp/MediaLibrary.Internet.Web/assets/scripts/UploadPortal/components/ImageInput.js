@@ -32,10 +32,11 @@ const FileInput = () => {
         files={formContext.files}
         onupdatefiles={formContext.setFiles}
         allowMultiple={true}
+        maxFiles={25}
         name="files"
         labelIdle='Drag & Drop your files or Browse'
         allowFileSizeValidation={true}
-        maxTotalFileSize='40MB'
+        maxFileSize='40MB'
       />
     </div>
   )
