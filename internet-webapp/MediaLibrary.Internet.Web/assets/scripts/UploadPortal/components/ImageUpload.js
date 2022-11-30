@@ -23,7 +23,7 @@ const Step1 = (props) => {
 
   return (
     <React.Fragment>
-      <p>Up to 40 MB of images is accepted</p>
+      <p>Up to 40 MB of images is accepted, up to 25 images is accepted</p>
       <FileInput />
 
       <p>Provide more information to make your images easier to find</p>

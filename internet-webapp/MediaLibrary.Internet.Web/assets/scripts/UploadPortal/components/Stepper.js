@@ -9,11 +9,11 @@ import Progressbar from '@/components/ProgressBar'
 import { useForm, useBtnDisabled } from '@/components/AllContext'
 
 import 'rc-steps/assets/index.css'
+import { useEffect } from 'react'
 
 const steps = [
   { title: 'Upload Images' },
-  { title: 'Preview & Update' },
-  { title: 'Confirm & Finish' },
+  { title: 'Preview & Confirm' },
 ]
 const stepsIcons = {
   finish: <Check2 aria-label="finish" />,
@@ -36,9 +36,23 @@ const StepperForm = () => {
   const [errMsg1Text, setErrMsg1Text] = useState("")
   const [draftKey, setDraftKey] = useState("")
   const [cancelModal, setCancelModal] = useState(false);
+  const [disabledBtn, setDisabledBtn] = useState(false);
 
   const closeModal = () => setCancelModal(false);
   const openModal = () => setCancelModal(true);
+
+  useEffect(() => {
+    let disable = false;
+
+    for (const file of formContext.files) {
+      if (file.file.size > 40000000) {
+        disable = true;
+        break;
+      }
+    }
+
+    setDisabledBtn(disable);
+  }, [formContext.files])
 
   const handleNext = () => {
     if (activeStep == 0) {
@@ -46,8 +60,8 @@ const StepperForm = () => {
         uploadStep1()
       }
     }
-    else if (activeStep == 2) {
-      uploadStep3()
+    else if (activeStep == 1) {
+      uploadStep2()
     }
     else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -167,7 +181,7 @@ const StepperForm = () => {
       })
   }
 
-  const uploadStep3 = () => {
+  const uploadStep2 = () => {
     setProgressBar(true)
     setCompletePercentage(20)
 
@@ -240,11 +254,6 @@ const StepperForm = () => {
             Cancel
           </Button>
         )}
-        {activeStep >= 2 && (
-          <Button variant="secondary" onClick={handleBack}>
-            Back
-          </Button>
-        )}
 
         <div className="ml-auto d-flex align-items-center">
           {activeStep === 1 && (
@@ -255,7 +264,11 @@ const StepperForm = () => {
           <Button
             variant="primary"
             onClick={handleNext}
-            disabled={activeStep === 0 ? stepCompleteContext.btnDisabled : false}
+            disabled={disabledBtn ? true :
+              activeStep === 0 ?
+                stepCompleteContext.btnDisabled :
+                false
+            }
           >
             {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
           </Button>
