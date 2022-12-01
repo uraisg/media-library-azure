@@ -582,8 +582,6 @@ namespace MediaLibrary.Internet.Web.Controllers
             string encodedFileName = Path.GetFileName(name.Name);
             encodedFileName = Uri.UnescapeDataString(encodedFileName);
 
-            Debug.WriteLine("THUMBNAIL BOOL:");
-            Debug.WriteLine(name.Thumbnail);
             if (name.Thumbnail)
             {
                 string encodedFileNameWithoutExtension = Path.GetFileNameWithoutExtension(encodedFileName);
