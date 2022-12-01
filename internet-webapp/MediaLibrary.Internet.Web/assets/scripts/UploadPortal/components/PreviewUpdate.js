@@ -50,7 +50,11 @@ const Step2 = (props) => {
     $('#all-chkbox').css("pointer-events", "none")
 
     //Call api here
-    fetch(`draft/${props.draftKey}`)
+    fetch(`draft/${props.draftKey}`, {
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
+    })
       .then((res) => res.json())
       .then((res) => {
         if (!res.success) {

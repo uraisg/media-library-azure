@@ -10,6 +10,8 @@ import { useForm, useBtnDisabled } from '@/components/AllContext'
 
 import 'rc-steps/assets/index.css'
 
+const fileSizeLimit = 40000000;
+
 const steps = [
   { title: 'Upload Images' },
   { title: 'Preview & Confirm' },
@@ -44,7 +46,7 @@ const StepperForm = () => {
     let disable = false;
 
     for (const file of formContext.files) {
-      if (file.file.size > 40000000) {
+      if (file.file.size > fileSizeLimit) {
         disable = true;
         break;
       }
@@ -152,7 +154,11 @@ const StepperForm = () => {
       setCompletePercentage(completedPer);
     }
 
-    fetch(`draft/${rowKey}`)
+    fetch(`draft/${rowKey}`, {
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
+    })
       .then((response) => response.json())
       .then((response) => {
         if (!response.success) {

@@ -528,16 +528,21 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         // Get data inside a draft
+        [ValidateAntiForgeryToken]
         [HttpGet("draft/{rowkey}")]
         public async Task<JsonResult> GetDraft(string rowkey)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
-                return Json(new
+                JsonResult jsonResult = Json(new
                 {
                     success = false,
                     errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                 });
+
+                jsonResult.StatusCode = 400;
+
+                return jsonResult;
             }
 
             try
