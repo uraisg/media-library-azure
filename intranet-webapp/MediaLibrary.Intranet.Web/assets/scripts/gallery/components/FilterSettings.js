@@ -4,6 +4,7 @@ import { styled } from '@linaria/react'
 import DateFilter from '@/components/DateFilter'
 import SpatialFilter from '@/components/SpatialFilter'
 import LayoutTypeSwitch from '@/components/LayoutTypeSwitch'
+import ToggleSwitch from '@/components/ToggleSwitch'
 
 const Container = styled.div`
   padding: 1rem;
@@ -14,11 +15,14 @@ const Container = styled.div`
 
 const PushRight = styled.div`
   margin: 0 0.25rem 0 auto;
+  flex-direction: row;
 `
 const FilterSettings = ({
   filters,
   setFilters,
   areas,
+  popupChecked,
+  setPopupChecked,
   gridView,
   onSetView,
 }) => {
@@ -27,6 +31,7 @@ const FilterSettings = ({
       <SpatialFilter filters={filters} setFilters={setFilters} areas={areas} />
       <DateFilter filters={filters} setFilters={setFilters} />
       <PushRight>
+        <ToggleSwitch popupChecked={popupChecked} setPopupChecked={setPopupChecked} />
         <LayoutTypeSwitch gridView={gridView} setGridView={onSetView} />
       </PushRight>
     </Container>
@@ -37,6 +42,8 @@ FilterSettings.propTypes = {
   filters: PropTypes.object.isRequired,
   setFilters: PropTypes.func.isRequired,
   areas: PropTypes.array.isRequired,
+  popupChecked: PropTypes.bool,
+  setPopupChecked: PropTypes.func,
   gridView: PropTypes.bool.isRequired,
   onSetView: PropTypes.func.isRequired,
 }

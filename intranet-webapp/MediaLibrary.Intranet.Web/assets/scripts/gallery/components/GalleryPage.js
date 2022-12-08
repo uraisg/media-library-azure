@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useHistory } from 'react-router-dom'
 import { styled } from '@linaria/react'
@@ -42,6 +42,12 @@ const GalleryPage = () => {
   const dispatch = useDispatch()
   const location = useLocation()
   const history = useHistory()
+
+  let localStoragePopupChecked = true;
+  if (localStorage.getItem('popupChecked') != null) {
+    localStoragePopupChecked = false;
+  }
+  const [popupChecked, setPopupChecked] = useState(localStoragePopupChecked);
 
   const {
     searchTerm,
@@ -164,6 +170,16 @@ const GalleryPage = () => {
     dispatch(getSearchResults(q, filters, page))
   }, [location])
 
+  // Save to localstorage when user change their preference
+  useEffect(() => {
+    if (popupChecked) {
+      localStorage.removeItem('popupChecked');
+    }
+    else {
+      localStorage.setItem('popupChecked', false);
+    }
+  }, [popupChecked]);
+
   return (
     <LayoutContainer>
       <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
@@ -173,6 +189,8 @@ const GalleryPage = () => {
             filters={filters}
             setFilters={setFilters}
             areas={areas}
+            popupChecked={popupChecked}
+            setPopupChecked={setPopupChecked}
             gridView={gridView}
             onSetView={handleSetView}
           />
@@ -183,6 +201,7 @@ const GalleryPage = () => {
             totalPages={totalPages}
             onPageChange={setPage}
             gridView={gridView}
+            popupChecked={popupChecked}
           />
         </Sidebar>
         <NotSidebar>
