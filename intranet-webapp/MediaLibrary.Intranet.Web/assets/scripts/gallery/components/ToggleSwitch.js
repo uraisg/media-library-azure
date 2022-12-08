@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Switch from '@mui/material/Switch';
 import { styled } from '@linaria/react'
