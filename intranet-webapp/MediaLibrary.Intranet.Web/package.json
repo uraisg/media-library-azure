@@ -47,7 +47,7 @@
     "react-grid-gallery": "^0.5.5",
     "react-paginate": "^7.1.5",
     "react-redux": "^7.2.6",
-    "react-router-dom": "^5.3.0",
+    "react-router-dom": "^6.4.5",
     "redux": "^4.1.2"
   },
   "engines": {
