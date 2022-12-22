@@ -81,13 +81,7 @@ const DisplayItem = (props) => {
                 </div>
 
                 <div className="col-8">
-                  {props.item.Location !== 'null' ? (
-                    <PopupMap
-                      coordinates={JSON.parse(props.item.Location).coordinates}
-                    />
-                  ) : (
-                    'No geotag'
-                  )}
+                  {props.item.LocationName}
                 </div>
               </div>
               <div className="py-1 row">
@@ -96,14 +90,6 @@ const DisplayItem = (props) => {
                 </div>
                 <div className="col-8">
                   {props.item.Copyright}
-                </div>
-              </div>
-              <div className="py-1 row">
-                <div className="col-4">
-                  <strong>Planning Area:</strong>
-                </div>
-                <div className="col-8">
-                  {props.item.LocationName}
                 </div>
               </div>
               <div className="py-1 row">
@@ -129,6 +115,20 @@ const DisplayItem = (props) => {
                       ))}
                     </div>
                     }
+                </div>
+              </div>
+              <div className="py-1 row">
+                <div className="col-4">
+                  <strong>Geotag:</strong>
+                </div>
+                <div className="col-8">
+                  {props.item.Location !== 'null' ? (
+                    <PopupMap
+                      coordinates={JSON.parse(props.item.Location).coordinates}
+                    />
+                  ) : (
+                    'No geotag'
+                  )}
                 </div>
               </div>
               <div className="py-1 row">
