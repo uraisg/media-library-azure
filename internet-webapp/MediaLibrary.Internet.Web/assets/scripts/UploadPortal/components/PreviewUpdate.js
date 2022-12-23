@@ -9,12 +9,23 @@ import EditItem from '@/components/EditItem'
 import DisplayItem from '@/components/DisplayItem'
 import { useForm } from '@/components/AllContext'
 
-const VR = styled.div`
+const Separator = styled.div`
   height: 1.25em;
   width: 1px;
-  margin: 0 10px;
-  border: 1px solid black;
+  margin: 0 2px 0 10px;
+  border-right: 1px solid #6c757d;
 `
+
+const ToolbarButton = styled(Button)`
+  line-height: 1 !important;
+	padding: 0.25em !important;
+	border: none !important;
+	border-radius: 3px !important;
+
+  &:not(:focus):not(:hover):not(.focus):not(.hover), :disabled, .disabled {
+    background-color: transparent !important;
+  }
+`;
 
 const Checkbox = styled.input`
   height: 20px;
@@ -233,35 +244,26 @@ const Step2 = (props) => {
       </Modal>
 
       <p>Confirm uploads and update information as needed</p>
-      <div className="d-flex" >
-        <Checkbox onClick={setAllCheck} id="all-chkbox" />
-        <VR />
-        <React.Fragment>
-          {refresh ?
-            <TailSpin
-              height="20"
-              width="20"
-              color='grey'
-              ariaLabel='loading'
-              className="ml-2"
-            />
-            :
-            <React.Fragment>
-              <ArrowClockwise className="pointer-cursor" size={20} onClick={renderRefresh} />
-            </React.Fragment>
-          }
-          {checkNo === 0 ?
-            <React.Fragment>
-              <PencilSquare size={20} className="ml-2" color="grey" />
-              <Trash size={20} className="ml-2" color="grey" />
-            </React.Fragment>
-            :
-            <React.Fragment>
-              <PencilSquare size={20} className="pointer-cursor ml-2" onClick={displayEdit} />
-              <Trash size={20} className="pointer-cursor ml-2" onClick={openModal} />
-            </React.Fragment>
-          }
-        </React.Fragment>
+      <div className="d-flex align-items-center" role="toolbar">
+        <Checkbox onClick={setAllCheck} id="all-chkbox" title="Select" />
+
+        <Separator />
+
+        <ToolbarButton variant="light" className="ml-1" onClick={renderRefresh} disabled={refresh} title="Refresh">
+          {refresh ? (
+            <TailSpin height="20" width="20" aria-label="loading"/>
+          ) : (
+            <ArrowClockwise size={20} aria-label="refresh"/>
+          )}
+        </ToolbarButton>
+
+        <ToolbarButton variant="light" className="ml-1" onClick={displayEdit} disabled={checkNo === 0} title="Edit">
+          <PencilSquare size={20} aria-label="edit"/>
+        </ToolbarButton>
+
+        <ToolbarButton variant="light" className="ml-1" onClick={openModal} disabled={checkNo === 0} title="Delete">
+          <Trash size={20} aria-label="delete"/>
+        </ToolbarButton>
       </div>
 
       {errMsg2 &&
