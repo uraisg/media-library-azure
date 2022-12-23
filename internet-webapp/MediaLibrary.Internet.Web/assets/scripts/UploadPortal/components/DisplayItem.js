@@ -49,7 +49,7 @@ const DisplayItem = (props) => {
         'Content-Type': 'application/json',
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       },
-      body: JSON.stringify({ Name: props.item.FileURL, RowKey: props.draftKey })
+      body: JSON.stringify({ Name: props.item.FileURL, RowKey: props.draftKey, Thumbnail: true })
     })
       .then((res) => res.json())
       .then((res) => setCurImageURL(res));
