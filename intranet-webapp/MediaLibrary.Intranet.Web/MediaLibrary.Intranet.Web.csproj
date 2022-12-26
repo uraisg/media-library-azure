@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.14.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.12" allowedVersions="[6,7)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.1" allowedVersions="[6,7)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.12" allowedVersions="[6,7)" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="Microsoft.Azure.Search" Version="10.1.0" />
     <PackageReference Include="Microsoft.Identity.Web" Version="1.18.0" />
