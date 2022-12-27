@@ -79,6 +79,13 @@ const StepperForm = () => {
   }
 
   const handleBack = () => {
+    fetch(`draft/all/${rowKey}`, {
+      method: 'DELETE',
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
+    })
+
     window.scrollTo(0, 0)
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   };
