@@ -25,7 +25,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
-using MediaLibrary.Internet.Web.Controllers;
 
 namespace MediaLibrary.Internet.Web.Background
 {
@@ -83,7 +82,66 @@ namespace MediaLibrary.Internet.Web.Background
         {
             _logger.LogInformation("Starting background processing");
 
-            await DraftController.RemoveDraftAndImages(_appSettings.TableConnectionString, _appSettings.TableName, _appSettings.MediaStorageContainer, _appSettings.MediaStorageConnectionString);
+            string tableConnectionString = _appSettings.TableConnectionString;
+            string tableName = _appSettings.TableName;
+            string containerName = _appSettings.MediaStorageContainer;
+            string storageConnectionString = _appSettings.MediaStorageConnectionString;
+
+            //initialize table client
+            CloudStorageAccount storageAccount;
+            storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            //create a blob container client
+            BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
+
+            TableQuery<Draft> query = new TableQuery<Draft>();
+
+            foreach (Draft entity in table.ExecuteQuery(query))
+            {
+                if (entity.PartitionKey == DraftPartitionKey)
+                {
+                    if (entity.Timestamp < DateTime.Now.AddDays(-timeBetweenRun))
+                    {
+                        JArray imageEntities = JArray.Parse(entity.ImageEntities);
+
+                        if (imageEntities != null)
+                        {
+                            // Delete Images
+                            for (int i = 0; i < imageEntities.Count; i++)
+                            {
+                                var fileName = imageEntities[i]["Id"] + "_" + imageEntities[i]["Name"];
+
+                                var thumbArray = imageEntities[i]["Name"].ToString().Split(".");
+                                var thumbName = imageEntities[i]["Id"] + "_" + thumbArray[0];
+                                var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                                foreach (var thumb in middleThumbArray)
+                                {
+                                    thumbName += "." + thumb;
+                                }
+                                thumbName += "_thumb.jpg";
+
+                                var fileBlob = blobContainerClient.GetBlobClient(fileName);
+                                var thumnBlob = blobContainerClient.GetBlobClient(thumbName);
+                                await fileBlob.DeleteIfExistsAsync();
+                                await thumnBlob.DeleteIfExistsAsync();
+                            }
+                        }
+
+                        // Delete Draft
+                        var tableEntity = new Draft
+                        {
+                            PartitionKey = DraftPartitionKey,
+                            RowKey = entity.RowKey,
+                            ETag = "*"
+                        };
+
+                        TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+                        await table.ExecuteAsync(deleteOperation);
+                    }
+                }
+            }
         }
     }
 }
