@@ -347,8 +347,16 @@ namespace MediaLibrary.Internet.Web.Controllers
                         }
                         catch (Exception e) { };
 
+                        ImageEntity newImageEntity = jsonArray[i].ToObject<ImageEntity>();
+                        newImageEntity.Tag = updateImageEntity.Tag;
+                        newImageEntity.Caption = updateImageEntity.Caption;
+                        newImageEntity.Project = updateImageEntity.Project;
+                        newImageEntity.LocationName = updateImageEntity.LocationName;
+                        newImageEntity.Copyright = updateImageEntity.Copyright;
+                        newImageEntity.AdditionalField = updateImageEntity.AdditionalField;
+
                         jsonArray.RemoveAt(i);
-                        jsonArray.Add(JToken.FromObject(updateImageEntity));
+                        jsonArray.Add(JToken.FromObject(newImageEntity));
 
                         break;
                     }
