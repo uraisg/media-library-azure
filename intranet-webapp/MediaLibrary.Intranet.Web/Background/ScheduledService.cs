@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -126,6 +129,14 @@ namespace MediaLibrary.Intranet.Web.Background
                 string thumbnailFileName = HttpUtility.UrlDecode(encodedThumbnailFileName);
                 await ImageUploadToBlob(imageBlobContainerClient, thumbnailContent, thumbnailFileName);
 
+                string additionalFields = "";
+                JsonArray jsonArray = new JsonArray(item.additionalField);
+
+                foreach (string json in jsonArray)
+                {
+                    additionalFields += Regex.Replace(json, @"\t|\n|\r", "");
+                }
+
                 //create new object to serialize to json
                 var mediaItem = new MediaItem()
                 {
@@ -142,7 +153,8 @@ namespace MediaLibrary.Intranet.Web.Background
                     Project = item.project,
                     Event = item.@event,
                     LocationName = item.locationName,
-                    Copyright = item.copyright
+                    Copyright = item.copyright,
+                    AdditionalField = additionalFields
                 };
 
                 //upload to indexer blob

@@ -139,6 +139,22 @@ function renderMediaDetails(data) {
       fragment.append(dt, dd)
     }
   }
+
+  // Additional Fields
+  if (data['AdditionalField']) {
+    const listAdditionalField = JSON.parse(data['AdditionalField']);
+
+    listAdditionalField.forEach(json => {
+      console.log(json)
+      const clone = template.content.firstElementChild.cloneNode(true)
+      const dt = clone.querySelector('dt')
+      const dd = clone.querySelector('dd')
+      dt.textContent = json["Key"]
+      dd.textContent = json["Value"]
+      fragment.append(dt, dd)
+    })
+  }
+
   return fragment
 }
 
