@@ -79,7 +79,7 @@ const StepperForm = () => {
   }
 
   const handleBack = () => {
-    fetch(`draft/all/${rowKey}`, {
+    fetch(`draft/all/${draftKey}`, {
       method: 'DELETE',
       headers: {
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content

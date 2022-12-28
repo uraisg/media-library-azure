@@ -104,10 +104,10 @@ namespace MediaLibrary.Internet.Web.Background
                 {
                     if (entity.Timestamp < DateTime.Now.AddDays(-timeBetweenRun))
                     {
-                        JArray imageEntities = JArray.Parse(entity.ImageEntities);
-
-                        if (imageEntities != null)
+                        try
                         {
+                            JArray imageEntities = JArray.Parse(entity.ImageEntities);
+
                             // Delete Images
                             for (int i = 0; i < imageEntities.Count; i++)
                             {
@@ -127,6 +127,10 @@ namespace MediaLibrary.Internet.Web.Background
                                 await fileBlob.DeleteIfExistsAsync();
                                 await thumnBlob.DeleteIfExistsAsync();
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogInformation("Empty Draft");
                         }
 
                         // Delete Draft

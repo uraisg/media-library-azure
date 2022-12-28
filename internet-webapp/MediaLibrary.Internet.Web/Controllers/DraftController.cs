@@ -556,49 +556,47 @@ namespace MediaLibrary.Internet.Web.Controllers
                 //create a blob container client
                 BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
 
-                TableQuery<Draft> query = new TableQuery<Draft>();
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
 
-                foreach (Draft entity in table.ExecuteQuery(query))
+                var result = await table.ExecuteAsync(retrieveOperation);
+
+                string resultJSON = JsonConvert.SerializeObject(result.Result);
+                JObject json = JObject.Parse(resultJSON);
+                JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
+
+                // Update value of image
+                for (int i = 0; i < jsonArray.Count; i++)
                 {
-                    if (entity.PartitionKey == DraftPartitionKey)
+                    var fileName = jsonArray[i]["Id"] + "_" + jsonArray[i]["Name"];
+
+                    var thumbArray = jsonArray[i]["Name"].ToString().Split(".");
+                    var thumbName = jsonArray[i]["Id"] + "_" + thumbArray[0];
+                    var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                    foreach (var thumb in middleThumbArray)
                     {
-                        JArray imageEntities = JArray.Parse(entity.ImageEntities);
-
-                        if (imageEntities != null)
-                        {
-                            // Delete Images
-                            for (int i = 0; i < imageEntities.Count; i++)
-                            {
-                                var fileName = imageEntities[i]["Id"] + "_" + imageEntities[i]["Name"];
-
-                                var thumbArray = imageEntities[i]["Name"].ToString().Split(".");
-                                var thumbName = imageEntities[i]["Id"] + "_" + thumbArray[0];
-                                var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
-                                foreach (var thumb in middleThumbArray)
-                                {
-                                    thumbName += "." + thumb;
-                                }
-                                thumbName += "_thumb.jpg";
-
-                                var fileBlob = blobContainerClient.GetBlobClient(fileName);
-                                var thumnBlob = blobContainerClient.GetBlobClient(thumbName);
-                                await fileBlob.DeleteIfExistsAsync();
-                                await thumnBlob.DeleteIfExistsAsync();
-                            }
-                        }
-
-                        // Delete Draft
-                        var tableEntity = new Draft
-                        {
-                            PartitionKey = DraftPartitionKey,
-                            RowKey = entity.RowKey,
-                            ETag = "*"
-                        };
-
-                        TableOperation deleteOperation = TableOperation.Delete(tableEntity);
-                        await table.ExecuteAsync(deleteOperation);
+                        thumbName += "." + thumb;
                     }
+                    thumbName += "_thumb.jpg";
+
+                    var fileBlob = blobContainerClient.GetBlobClient(fileName);
+                    var thumbBlob = blobContainerClient.GetBlobClient(thumbName);
+                    await fileBlob.DeleteIfExistsAsync();
+                    await thumbBlob.DeleteIfExistsAsync();
                 }
+
+                // Delete Draft
+                var tableEntity = new Draft
+                {
+                    PartitionKey = DraftPartitionKey,
+                    RowKey = rowkey,
+                    ETag = "*"
+                };
+
+                TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+                await table.ExecuteAsync(deleteOperation);
 
                 return Json(new
                 {
