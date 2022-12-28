@@ -133,7 +133,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
                 foreach (string json in jsonArray)
                 {
-                    additionalFields += Regex.Replace(json, @"\t|\n|\r", "");
+                    additionalFields += Regex.Replace(json, @"\t|\n|\r", "", RegexOptions.None, TimeSpan.FromSeconds(3));
                 }
 
                 //create new object to serialize to json
