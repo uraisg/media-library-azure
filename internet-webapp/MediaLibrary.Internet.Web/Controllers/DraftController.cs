@@ -953,7 +953,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             string width = appSettings.ThumbWidth;
             string height = appSettings.ThumbHeight;
 
-            string uriBase = endpoint + "/vision/v3.0/generateThumbnail";
+            string uriBase = endpoint + "/vision/v3.2/generateThumbnail";
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
@@ -993,7 +993,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 Endpoint = endpoint
             };
 
-            List<VisualFeatureTypes> features = new List<VisualFeatureTypes>()
+            List<VisualFeatureTypes?> features = new List<VisualFeatureTypes?>()
                 { VisualFeatureTypes.Tags, VisualFeatureTypes.Description};
 
             ImageAnalysis results = await client.AnalyzeImageInStreamAsync(image, features);
