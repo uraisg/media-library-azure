@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.7.2",
-    "bootstrap": "^4.6.1",
+    "bootstrap": "^5.2.3",
     "date-fns": "^2.29.3",
     "jquery": "^3.6.1",
     "jquery-validation": "^1.19.5",
