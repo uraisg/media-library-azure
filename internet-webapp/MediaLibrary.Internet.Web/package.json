@@ -39,7 +39,7 @@
     "filepond-plugin-file-validate-type": "^1.2.8",
     "filepond-plugin-image-exif-orientation": "^1.0.11",
     "filepond-plugin-image-preview": "^4.6.11",
-    "jquery": "^3.6.1",
+    "jquery": "^3.6.3",
     "prop-types": "^15.8.1",
     "rc-steps": "^5.0.0",
     "react": "^18.2.0",
