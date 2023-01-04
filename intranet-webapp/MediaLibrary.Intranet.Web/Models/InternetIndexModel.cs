@@ -22,6 +22,7 @@ namespace MediaLibrary.Intranet.Web.Models
         public string rowKey { get; set; }
         public DateTime timestamp { get; set; }
         public string eTag { get; set; }
+        public string additionalField { get; set; }
     }
 
     public class ImageURLItem

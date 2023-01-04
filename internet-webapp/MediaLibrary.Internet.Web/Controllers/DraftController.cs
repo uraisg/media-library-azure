@@ -347,8 +347,16 @@ namespace MediaLibrary.Internet.Web.Controllers
                         }
                         catch (Exception e) { };
 
+                        ImageEntity newImageEntity = jsonArray[i].ToObject<ImageEntity>();
+                        newImageEntity.Tag = updateImageEntity.Tag;
+                        newImageEntity.Caption = updateImageEntity.Caption;
+                        newImageEntity.Project = updateImageEntity.Project;
+                        newImageEntity.LocationName = updateImageEntity.LocationName;
+                        newImageEntity.Copyright = updateImageEntity.Copyright;
+                        newImageEntity.AdditionalField = updateImageEntity.AdditionalField;
+
                         jsonArray.RemoveAt(i);
-                        jsonArray.Add(JToken.FromObject(updateImageEntity));
+                        jsonArray.Add(JToken.FromObject(newImageEntity));
 
                         break;
                     }
@@ -500,6 +508,94 @@ namespace MediaLibrary.Internet.Web.Controllers
                 CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
                 CloudTable table = tableClient.GetTableReference(tableName);
 
+                var tableEntity = new Draft
+                {
+                    PartitionKey = DraftPartitionKey,
+                    RowKey = rowkey,
+                    ETag = "*"
+                };
+
+                TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+                await table.ExecuteAsync(deleteOperation);
+
+                return Json(new
+                {
+                    success = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception while deleting a draft.");
+
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to delete draft. Please refresh the webpage."
+                });
+            }
+        }
+
+        // Delete everything in a draft
+        [HttpDelete("draft/all/{rowkey}")]
+        public async Task<JsonResult> DeleteDraftAll(string rowkey)
+        {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
+            {
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
+                });
+            }
+
+            try
+            {
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
+                string containerName = _appSettings.MediaStorageContainer;
+                string storageConnectionString = _appSettings.MediaStorageConnectionString;
+
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                //create a blob container client
+                BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
+
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
+
+                var result = await table.ExecuteAsync(retrieveOperation);
+
+                string resultJSON = JsonConvert.SerializeObject(result.Result);
+                JObject json = JObject.Parse(resultJSON);
+                JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
+
+                // Update value of image
+                for (int i = 0; i < jsonArray.Count; i++)
+                {
+                    var fileName = jsonArray[i]["Id"] + "_" + jsonArray[i]["Name"];
+
+                    var thumbArray = jsonArray[i]["Name"].ToString().Split(".");
+                    var thumbName = jsonArray[i]["Id"] + "_" + thumbArray[0];
+                    var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                    foreach (var thumb in middleThumbArray)
+                    {
+                        thumbName += "." + thumb;
+                    }
+                    thumbName += "_thumb.jpg";
+
+                    var fileBlob = blobContainerClient.GetBlobClient(fileName);
+                    var thumbBlob = blobContainerClient.GetBlobClient(thumbName);
+                    await fileBlob.DeleteIfExistsAsync();
+                    await thumbBlob.DeleteIfExistsAsync();
+                }
+
+                // Delete Draft
                 var tableEntity = new Draft
                 {
                     PartitionKey = DraftPartitionKey,

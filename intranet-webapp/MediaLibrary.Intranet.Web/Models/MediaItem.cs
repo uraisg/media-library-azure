@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using MediaLibrary.Intranet.Web.Common;
 using Microsoft.Azure.Search;
 using Microsoft.Spatial;
@@ -52,5 +53,7 @@ namespace MediaLibrary.Intranet.Web.Models
 
         [IsFilterable, IsSortable, IsFacetable]
         public string Copyright { get; set; }
+
+        public string AdditionalField { get; set; }
     }
 }
