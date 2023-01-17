@@ -28,6 +28,7 @@ const SearchResultsView = ({
   totalPages,
   onPageChange,
   gridView,
+  popupChecked,
 }) => {
   const [currentResults, setCurrentResults] = useState(results)
 
@@ -80,7 +81,7 @@ const SearchResultsView = ({
               marginPagesDisplayed={1}
             />
           </nav>
-          <MediaViewComponent results={currentResults} />
+          <MediaViewComponent results={currentResults} popupChecked={popupChecked} />
         </>
       )}
     </Container>
@@ -94,6 +95,7 @@ SearchResultsView.propTypes = {
   totalPages: PropTypes.number,
   onPageChange: PropTypes.func,
   gridView: PropTypes.bool,
+  popupChecked: PropTypes.bool,
 }
 
 export default SearchResultsView

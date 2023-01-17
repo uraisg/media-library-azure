@@ -25,7 +25,7 @@ TooltipOverlay.propTypes = {
 
 const LayoutTypeSwitch = ({ gridView, setGridView }) => {
   return (
-    <div>
+    <div className="d-inline-flex">
       <span className="mr-2">
         <small className="font-weight-bold">Layout</small>
       </span>
