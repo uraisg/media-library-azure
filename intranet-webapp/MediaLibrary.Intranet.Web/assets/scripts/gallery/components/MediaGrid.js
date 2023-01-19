@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import Gallery from 'react-grid-gallery'
-import Button from 'react-bootstrap/Button'
 import { styled } from '@linaria/react'
 
 const Image = styled.img`
@@ -101,7 +100,7 @@ const MediaGrid = ({ results }) => {
     setShowModal(true)
 
     let temTags = "";
-    for (var i = 0; i < results[index].tag.length; i++) {
+    for (let i = 0; i < results[index].tag.length; i++) {
       if (temTags != "") {
         temTags += ","
       }
