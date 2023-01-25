@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
 import Gallery from 'react-grid-gallery'
 import { styled } from '@linaria/react'
@@ -91,8 +91,19 @@ border-width: 0;
 color: black;
 `
 
-const TD = styled.td`
-max-width: 15vw;
+const TD1 = styled.td`
+width: 8vw;
+display: inline-block;
+padding-left: 10px;
+padding-right: 10px;
+word-wrap: break-word;
+`
+
+const TD2 = styled.td`
+width: 16vw;
+display: inline-block;
+padding-left: 10px;
+padding-right: 10px;
 word-wrap: break-word;
 `
 
@@ -101,8 +112,20 @@ const MediaGrid = ({ results }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [tags, setTags] = useState("")
+  const modalRef = useRef(null)
+  const imageRef = useRef(null)
+  const detailsRef = useRef(null)
+  const leftRef = useRef(null)
+  const rightRef = useRef(null)
 
   const onCurrentImageChange = (index) => {
+    if (index < 0) {
+      index = 0
+    }
+    else if (index > 24) {
+      index = 24
+    }
+
     setLoad(false)
     setCurrentIndex(index)
     setShowModal(true)
@@ -125,14 +148,37 @@ const MediaGrid = ({ results }) => {
 
   // Use name as caption in modal
   results = results.map((result) => {
-    const name = result.name
     return {
       ...result,
-      caption: name,
       thumbnailWidth: 320,
       thumbnailHeight: 240,
     }
   })
+
+  const handleUserKeyPress = useCallback(event => {
+    const { key, keyCode } = event;
+
+    if (keyCode === 37){
+      onCurrentImageChange(currentIndex - 1);
+    }
+    else if (keyCode === 39) {
+      onCurrentImageChange(currentIndex + 1);
+    }
+  }, [currentIndex]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleUserKeyPress);
+  }, [handleUserKeyPress]);
+
+  const handleUserClick = useCallback(event => {
+    if (modalRef.current.contains(event.target) && !imageRef.current.contains(event.target) && !leftRef.current.contains(event.target) && !rightRef.current.contains(event.target) && !detailsRef.current.contains(event.target)) {
+      setShowModal(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('click', handleUserClick)
+  }, [handleUserClick]);
 
   return (
     <div>
@@ -142,10 +188,10 @@ const MediaGrid = ({ results }) => {
         enableImageSelection={false}
       />
       {showModal &&
-        <Modal>
+        <Modal ref={modalRef}>
           <LeftButtonDiv>
             {currentIndex > 0 &&
-            <ScrollButton onClick={() => onCurrentImageChange(currentIndex - 1)}>
+            <ScrollButton ref={leftRef} onClick={() => onCurrentImageChange(currentIndex - 1)}>
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" className="bi bi-arrowleft" viewBox="0 0 24 24">
               <g clip-path="url(#clip0_429_11254)">
                 <path d="M14 7L9 12" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -156,7 +202,7 @@ const MediaGrid = ({ results }) => {
             }
           </LeftButtonDiv>
 
-          <ModalMain>
+        <ModalMain>
             <CenterDiv>
                 <AlignRightDiv>
                   <CloseButton onClick={() => setShowModal(false)}>
@@ -170,7 +216,7 @@ const MediaGrid = ({ results }) => {
                   {!loaded &&
                     <DelayedSpinner/>
                   }
-                  <Image src={results[currentIndex].src} alt={results[currentIndex].name} onLoad={() => setLoad(true)} style={loaded ? {} : { display: 'none' }} />
+              <Image ref={imageRef} src={results[currentIndex].src} alt={results[currentIndex].name} onLoad={() => setLoad(true)} style={loaded ? {} : { display: 'none' }} />
                 </ImageDiv>
 
                 <AlignRightDiv>
@@ -180,26 +226,26 @@ const MediaGrid = ({ results }) => {
 
             <DetailsDiv>
               <InformationDiv>
-              <table>
+              <table ref={detailsRef}>
                 <tbody>
                   <tr>
-                    <TD><b>Name</b></TD>
-                    <TD>{results[currentIndex].project}</TD>
+                    <TD1><b>Name</b></TD1>
+                    <TD2>{results[currentIndex].project}</TD2>
                   </tr>
 
                   <tr>
-                    <TD><b>Location</b></TD>
-                    <TD>{results[currentIndex].area}</TD>
+                    <TD1><b>Location</b></TD1>
+                    <TD2>{results[currentIndex].area}</TD2>
                   </tr>
 
                   <tr>
-                    <TD><b>Caption</b></TD>
-                    <TD>{results[currentIndex].caption}</TD>
+                    <TD1><b>Caption</b></TD1>
+                    <TD2>{results[currentIndex].caption}</TD2>
                   </tr>
 
                   <tr>
-                    <TD><b>Tags</b></TD>
-                    <TD>{tags}</TD>
+                    <TD1><b>Tags</b></TD1>
+                    <TD2>{tags}</TD2>
                     </tr>
                   </tbody>
               </table>
@@ -212,8 +258,8 @@ const MediaGrid = ({ results }) => {
           </ModalMain>
 
           <RightButtonDiv>
-            {currentIndex < 24 &&
-            <ScrollButton onClick={() => onCurrentImageChange(currentIndex + 1)}>
+          {currentIndex < 24 &&
+            <ScrollButton ref={rightRef} onClick={() => onCurrentImageChange(currentIndex + 1)}>
               <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" className="bi bi-arrowright" viewBox="0 0 24 24">
                 <g clip-path="url(#clip0_429_11254)">
                 <path d="M10 17L15 12" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
