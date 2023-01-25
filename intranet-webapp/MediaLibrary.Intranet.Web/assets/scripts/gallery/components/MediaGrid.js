@@ -168,6 +168,7 @@ const MediaGrid = ({ results }) => {
 
   useEffect(() => {
     window.addEventListener("keydown", handleUserKeyPress);
+    return () => window.removeEventListener("keydown", handleUserKeyPress);
   }, [handleUserKeyPress]);
 
   const handleUserClick = useCallback(event => {
@@ -177,7 +178,8 @@ const MediaGrid = ({ results }) => {
   }, [])
 
   useEffect(() => {
-    window.addEventListener('click', handleUserClick)
+    window.addEventListener("click", handleUserClick)
+    return () => window.removeEventListener("click", handleUserClick);
   }, [handleUserClick]);
 
   return (
