@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import Gallery from 'react-grid-gallery'
 import { styled } from '@linaria/react'
+import DelayedSpinner from '@/components/DelayedSpinner'
 
 const Image = styled.img`
 width: 100%;
@@ -90,12 +91,19 @@ border-width: 0;
 color: black;
 `
 
+const TD = styled.td`
+max-width: 15vw;
+word-wrap: break-word;
+`
+
 const MediaGrid = ({ results }) => {
+  const [loaded, setLoad] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [tags, setTags] = useState("")
 
   const onCurrentImageChange = (index) => {
+    setLoad(false)
     setCurrentIndex(index)
     setShowModal(true)
 
@@ -159,7 +167,10 @@ const MediaGrid = ({ results }) => {
                 </AlignRightDiv>
 
                 <ImageDiv>
-                  <Image src={results[currentIndex].src} alt={results[currentIndex].name} />
+                  {!loaded &&
+                    <DelayedSpinner/>
+                  }
+                  <Image src={results[currentIndex].src} alt={results[currentIndex].name} onLoad={() => setLoad(true)} style={loaded ? {} : { display: 'none' }} />
                 </ImageDiv>
 
                 <AlignRightDiv>
@@ -172,26 +183,26 @@ const MediaGrid = ({ results }) => {
               <table>
                 <tbody>
                   <tr>
-                    <td>Name:</td>
-                    <td>{results[currentIndex].project}</td>
+                    <TD><b>Name</b></TD>
+                    <TD>{results[currentIndex].project}</TD>
                   </tr>
 
                   <tr>
-                    <td>Location:</td>
-                    <td>{results[currentIndex].area}</td>
+                    <TD><b>Location</b></TD>
+                    <TD>{results[currentIndex].area}</TD>
                   </tr>
 
                   <tr>
-                    <td>Caption:</td>
-                    <td>{results[currentIndex].caption}</td>
+                    <TD><b>Caption</b></TD>
+                    <TD>{results[currentIndex].caption}</TD>
                   </tr>
 
                   <tr>
-                    <td>Tags:</td>
-                    <td>{tags}</td>
+                    <TD><b>Tags</b></TD>
+                    <TD>{tags}</TD>
                     </tr>
                   </tbody>
-                </table>
+              </table>
 
                 <hr style={{margin:0}}/>
 
