@@ -493,7 +493,11 @@ const BatchEdit = (props) => {
     setLoading(true)
 
     // Get Original Values
-    let response = await fetch(`draft/${props.draftKey}`);
+    let response = await fetch(`draft/${props.draftKey}`, {
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
+    });
     let responseJSON = await response.json();
 
     if (!responseJSON.success) {
