@@ -133,7 +133,7 @@ const MediaGrid = ({ results }) => {
     let temTags = "";
     for (let i = 0; i < results[index].tag.length; i++) {
       if (temTags != "") {
-        temTags += ","
+        temTags += ", "
       }
 
       temTags += results[index].tag[i]
