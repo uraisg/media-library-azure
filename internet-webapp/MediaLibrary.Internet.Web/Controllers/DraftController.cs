@@ -142,7 +142,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            string untrustedFileName = Path.GetFileName(file.FileName);
+            string untrustedFileName = Path.GetFileName(file.FileName).Replace("+", " ");
             string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
 
             _logger.LogInformation("Upload file name: {FileName}, size: {FileSize}", untrustedFileName, file.Length);
