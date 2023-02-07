@@ -87,6 +87,36 @@ async function renderMetadataSection(data) {
   const detailsForm = clone.querySelector('.metadata-details form')
   initFormValues(detailsForm, data)
 
+  const addField = clone.querySelector('.addField')
+  addField.addEventListener('click', (e) => {
+    const fragment = new DocumentFragment()
+    const template = document.querySelector('#additionalfields-row')
+
+    const newid = Math.random().toString(16).slice(2)
+    const clone = template.content.firstElementChild.cloneNode(true)
+    const dt = clone.querySelector('dt')
+    const dd = clone.querySelector('dd')
+    const dx = clone.querySelector('dx')
+    dt.innerHTML = '<input type="text" id="' + newid + '_Key" value="" class="form-control form-control-sm" required>'
+    dd.innerHTML = '<input type="text" id="' + newid + '_Value" value="" class="form-control form-control-sm" required>'
+    dx.innerHTML = '<svg id="' + newid + '" xmlns = "http://www.w3.org/2000/svg" width = "24" height = "24" viewBox = "0 0 24 24" fill = "none" stroke = "#FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+    fragment.append(dt, dd, dx)
+
+    dx.addEventListener('click', (e) => {
+      try {
+        document.getElementById(e.target.id + "_Key").parentNode.remove()
+        document.getElementById(e.target.id + "_Value").parentNode.remove()
+        document.getElementById(e.target.id).parentNode.remove()
+      }
+      catch (e) { }
+
+      dx.removeEventListener('click', (e))
+    })
+
+    const details = detailsForm.querySelector('.metadata-additionalfields dl')
+    details.appendChild(fragment)
+  })
+
   //populate tags in page
   const tagsContainer = clone.querySelector('.metadata-tags .tag-area')
   tagsContainer.appendChild(renderTagList(data['Tag']))
@@ -123,6 +153,38 @@ function getStaticMapUrl(coords, zoom) {
 function initFormValues(form, data) {
   const attribs = ['Project', 'LocationName', 'Copyright', 'Caption']
   attribs.forEach((attrib) => (form.elements[attrib].value = data[attrib]))
+
+  const fragment = new DocumentFragment()
+  const template = document.querySelector('#additionalfields-row')
+
+  if (data['AdditionalField']) {
+    const listAdditionalField = JSON.parse(data['AdditionalField']);
+
+    listAdditionalField.forEach(json => {
+      const clone = template.content.firstElementChild.cloneNode(true)
+      const dt = clone.querySelector('dt')
+      const dd = clone.querySelector('dd')
+      const dx = clone.querySelector('dx')
+      dt.innerHTML = '<input type="text" id="' + json["Id"] + '_Key" value="' + json["Key"] + '" class="form-control form-control-sm" required>'
+      dd.innerHTML = '<input type="text" id="' + json["Id"] + '_Value" value="' + json["Value"] + '" class="form-control form-control-sm" required>'
+      dx.innerHTML = '<svg id="' + json["Id"] + '" xmlns = "http://www.w3.org/2000/svg" width = "24" height = "24" viewBox = "0 0 24 24" fill = "none" stroke = "#FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+      fragment.append(dt, dd, dx)
+
+      dx.addEventListener('click', (e) => {
+        try {
+          document.getElementById(e.target.id + "_Key").parentNode.remove()
+          document.getElementById(e.target.id + "_Value").parentNode.remove()
+          document.getElementById(e.target.id).parentNode.remove()
+        }
+        catch (e) { }
+        
+        dx.removeEventListener('click', (e))
+      })
+    })
+  }
+
+  const details = form.querySelector('.metadata-additionalfields dl')
+  details.appendChild(fragment)
 }
 
 //Tags
@@ -224,6 +286,32 @@ function saveData(id) {
     return { ...obj, [attrib]: detailsForm.elements[attrib].value.trim() || null }
   }, {})
 
+  const additionalFieldsList = []
+  const additionalFields = detailsForm.querySelector('.metadata-additionalfields dl')
+  let currentField = {}
+
+  for (const i of additionalFields.children) {
+    for (const p of i.children) {
+      if ((currentField["Id"] == null) && (p.nodeName != "svg")) {
+        currentField["Id"] = p.id.slice(0, -4)
+
+        if (p.id.endsWith("_Key")) {
+          currentField["Key"] = p.value
+        }
+      }
+      else if (currentField["Id"] == p.id.slice(0, -6)) {
+        if (p.id.endsWith("_Value")) {
+          currentField["Value"] = p.value
+        }
+      }
+
+      if ((currentField["Id"] != null) && (currentField["Key"] != null) && (currentField["Value"] != null)) {
+        additionalFieldsList.push(currentField)
+        currentField = {}
+      }
+    }
+  }
+
   // Read new tag list
   const tagElems = document.querySelectorAll('.metadata-container .tag-area .tagger-tag')
   const tagList = Array.prototype.map.call(tagElems, (el) => el.firstChild.data)
@@ -235,6 +323,7 @@ function saveData(id) {
     Project: newValues['Project'],
     LocationName: newValues['LocationName'],
     Copyright: newValues['Copyright'],
+    AdditionalField: JSON.stringify(additionalFieldsList)
   })
     .then(() => {
       window.location = `/Gallery/Item/${id}`
