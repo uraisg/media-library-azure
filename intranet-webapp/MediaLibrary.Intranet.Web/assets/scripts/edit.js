@@ -97,21 +97,12 @@ async function renderMetadataSection(data) {
     const dt = clone.querySelector('dt')
     const dd = clone.querySelector('dd')
     const dx = clone.querySelector('dx')
-    dt.innerHTML = '<input type="text" id="' + newid + '_Key" value="" class="form-control form-control-sm" required>'
-    dd.innerHTML = '<input type="text" id="' + newid + '_Value" value="" class="form-control form-control-sm" required>'
-    dx.innerHTML = '<svg id="' + newid + '" xmlns = "http://www.w3.org/2000/svg" width = "24" height = "24" viewBox = "0 0 24 24" fill = "none" stroke = "#FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+    dt.innerHTML = '<input type="text" id="' + htmlEntities(newid) + '_Key" value="" class="form-control form-control-sm" required>'
+    dd.innerHTML = '<input type="text" id="' + htmlEntities(newid) + '_Value" value="" class="form-control form-control-sm" required>'
+    dx.innerHTML = '<svg id="' + htmlEntities(newid) + '" xmlns = "http://www.w3.org/2000/svg" width = "24" height = "24" viewBox = "0 0 24 24" fill = "none" stroke = "#FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
     fragment.append(dt, dd, dx)
 
-    dx.addEventListener('click', (e) => {
-      try {
-        document.getElementById(e.target.id + "_Key").parentNode.remove()
-        document.getElementById(e.target.id + "_Value").parentNode.remove()
-        document.getElementById(e.target.id).parentNode.remove()
-      }
-      catch (e) { }
-
-      dx.removeEventListener('click', (e))
-    })
+    additionalFieldEventListener(dx)
 
     const details = detailsForm.querySelector('.metadata-additionalfields dl')
     details.appendChild(fragment)
@@ -165,26 +156,35 @@ function initFormValues(form, data) {
       const dt = clone.querySelector('dt')
       const dd = clone.querySelector('dd')
       const dx = clone.querySelector('dx')
-      dt.innerHTML = '<input type="text" id="' + json["Id"] + '_Key" value="' + json["Key"] + '" class="form-control form-control-sm" required>'
-      dd.innerHTML = '<input type="text" id="' + json["Id"] + '_Value" value="' + json["Value"] + '" class="form-control form-control-sm" required>'
-      dx.innerHTML = '<svg id="' + json["Id"] + '" xmlns = "http://www.w3.org/2000/svg" width = "24" height = "24" viewBox = "0 0 24 24" fill = "none" stroke = "#FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+      dt.innerHTML = '<input type="text" id="' + htmlEntities(json["Id"]) + '_Key" value="' + htmlEntities(json["Key"]) + '" class="form-control form-control-sm" required>'
+      dd.innerHTML = '<input type="text" id="' + htmlEntities(json["Id"]) + '_Value" value="' + htmlEntities(json["Value"]) + '" class="form-control form-control-sm" required>'
+      dx.innerHTML = '<svg id="' + htmlEntities(json["Id"]) + '" xmlns = "http://www.w3.org/2000/svg" width = "24" height = "24" viewBox = "0 0 24 24" fill = "none" stroke = "#FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
       fragment.append(dt, dd, dx)
 
-      dx.addEventListener('click', (e) => {
-        try {
-          document.getElementById(e.target.id + "_Key").parentNode.remove()
-          document.getElementById(e.target.id + "_Value").parentNode.remove()
-          document.getElementById(e.target.id).parentNode.remove()
-        }
-        catch (e) { }
-        
-        dx.removeEventListener('click', (e))
-      })
+      additionalFieldEventListener(dx)
     })
   }
 
   const details = form.querySelector('.metadata-additionalfields dl')
   details.appendChild(fragment)
+}
+
+function htmlEntities(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Adding event listener to remove additional fields
+function additionalFieldEventListener(dx) {
+  dx.addEventListener('click', (e) => {
+    try {
+      document.getElementById(e.target.id + "_Key").parentNode.remove()
+      document.getElementById(e.target.id + "_Value").parentNode.remove()
+      document.getElementById(e.target.id).parentNode.remove()
+    }
+    catch (e) { }
+
+    dx.removeEventListener('click', (e))
+  })
 }
 
 //Tags
@@ -286,25 +286,28 @@ function saveData(id) {
     return { ...obj, [attrib]: detailsForm.elements[attrib].value.trim() || null }
   }, {})
 
+  // Convert additional fields in HTML to a dictionary inside a list
   const additionalFieldsList = []
   const additionalFields = detailsForm.querySelector('.metadata-additionalfields dl')
   let currentField = {}
 
   for (const i of additionalFields.children) {
     for (const p of i.children) {
-      if ((currentField["Id"] == null) && (p.nodeName != "svg")) {
+      // Set Id as the id of the field and set the key
+      if ((currentField["Id"] == null) && (p.nodeName != "svg") && (p.id.endsWith("_Key"))) {
         currentField["Id"] = p.id.slice(0, -4)
-
-        if (p.id.endsWith("_Key")) {
-          currentField["Key"] = p.value
-        }
+        currentField["Key"] = p.value
       }
-      else if (currentField["Id"] == p.id.slice(0, -6)) {
-        if (p.id.endsWith("_Value")) {
-          currentField["Value"] = p.value
-        }
+      // Set the value
+      else if ((currentField["Id"] == p.id.slice(0, -6)) && p.id.endsWith("_Value")) {
+        currentField["Value"] = p.value
+      }
+      // If something went wrong, do a reset
+      else {
+        currentField = {}
       }
 
+      // Add the dictionary into the list
       if ((currentField["Id"] != null) && (currentField["Key"] != null) && (currentField["Value"] != null)) {
         additionalFieldsList.push(currentField)
         currentField = {}
