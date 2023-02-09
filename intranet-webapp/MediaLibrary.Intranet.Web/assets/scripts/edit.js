@@ -169,6 +169,7 @@ function initFormValues(form, data) {
   details.appendChild(fragment)
 }
 
+// Convert characters to safe forms
 function htmlEntities(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
