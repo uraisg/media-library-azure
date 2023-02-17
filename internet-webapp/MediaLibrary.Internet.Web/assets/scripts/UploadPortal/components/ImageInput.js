@@ -33,7 +33,7 @@ const FileInput = () => {
 
   return (
     <div className="mb-3">
-      <p>Select up to {MAX_FILES} images to upload</p>
+      <p>Select up to {MAX_FILES} images to upload. Each image should be less than 40 MB.</p>
       <FilePond
         name="files"
         files={formContext.files}
