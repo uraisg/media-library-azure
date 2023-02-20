@@ -16,8 +16,6 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Azure.Storage.Sas;
 using MediaLibrary.Internet.Web.Common;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
@@ -68,7 +66,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                 });
             }
 
-            try {
+            try
+            {
                 Draft newDraft = new Draft()
                 {
                     UploadDate = DateTime.UtcNow.AddHours(8),
@@ -109,7 +108,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         // Adding images to a draft
         [HttpPost("draft/{rowkey}/addImage")]
         [RequestSizeLimit(42_000_000)]
-        public async Task<JsonResult> AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
+        public async Task<JsonResult> AddImage([FromForm] AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowKey, true) == false)
             {
@@ -345,7 +344,10 @@ namespace MediaLibrary.Internet.Web.Controllers
                                 updateImageEntity.Tag = updateImageEntity.Tag.Substring(1);
                             }
                         }
-                        catch (Exception e) { };
+                        catch (Exception)
+                        {
+                            // No additional fields set
+                        }
 
                         ImageEntity newImageEntity = jsonArray[i].ToObject<ImageEntity>();
                         newImageEntity.Tag = updateImageEntity.Tag;
