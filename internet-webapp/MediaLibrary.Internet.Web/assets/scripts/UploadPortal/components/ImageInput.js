@@ -33,7 +33,10 @@ const FileInput = () => {
 
   return (
     <div className="mb-3">
-      <p>Select up to {MAX_FILES} images to upload</p>
+      <p>
+        Select up to {MAX_FILES} images to upload. Each image should be less than 40 MB. Supported
+        file types: {ACCEPTED_FILE_TYPES.map((_) => _.substring(_.indexOf('/') + 1)).join(', ')}
+      </p>
       <FilePond
         name="files"
         files={formContext.files}
@@ -46,10 +49,6 @@ const FileInput = () => {
         maxFileSize={MAX_FILE_SIZE}
         labelIdle='Drag images here or <span class="filepond--label-action">browse</span>'
       />
-      <small className="form-text text-secondary">
-        Each image should be less than 40 MB. Supported file types:{' '}
-        {ACCEPTED_FILE_TYPES.map((_) => _.substring(_.indexOf('/') + 1)).join(', ')}
-      </small>
     </div>
   )
 }
