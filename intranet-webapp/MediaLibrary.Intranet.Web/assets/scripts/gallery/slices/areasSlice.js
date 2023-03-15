@@ -15,7 +15,8 @@ export const fetchAreas = createAsyncThunk('areas/fetchAreas', async () => {
     throw new TypeError("Oops, we haven't got JSON!")
   }
 
-  return response.json()
+  const json = await response.json()
+  return json.Data
 })
 
 const areasSlice = createSlice({

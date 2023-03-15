@@ -216,7 +216,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpGet("/api/areas", Name = nameof(GetAreas))]
         public IActionResult GetAreas()
         {
-            return Ok(_geoSearchHelper.GetRegions());
+            return Ok(new { Data = _geoSearchHelper.GetRegions() });
         }
 
         [HttpGet("/api/account", Name = nameof(GetDisplayName))]
