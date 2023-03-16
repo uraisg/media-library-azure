@@ -43,7 +43,8 @@ public class ValidateOriginAttribute : Attribute, IAuthorizationFilter
         }
 
         // Compare the source against the expected target origin in Host header
-        if (!context.HttpContext.Request.Host.Equals(HostString.FromUriComponent(sourceUri)))
+        if (string.Equals(context.HttpContext.Request.Host.Host, sourceUri.Host, StringComparison.OrdinalIgnoreCase) &&
+            (context.HttpContext.Request.Host.Port != null && context.HttpContext.Request.Host.Port != sourceUri.Port))
         {
             // Origins are not matching so we block the request
             context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
