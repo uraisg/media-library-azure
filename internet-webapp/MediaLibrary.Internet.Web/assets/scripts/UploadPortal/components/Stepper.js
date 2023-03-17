@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { styled } from '@linaria/react'
 import Steps from 'rc-steps'
 import { Button, Modal } from 'react-bootstrap'
@@ -10,10 +10,11 @@ import { useForm, useBtnDisabled } from '@/components/AllContext'
 
 import 'rc-steps/assets/index.css'
 
+const fileSizeLimit = 40000000;
+
 const steps = [
   { title: 'Upload Images' },
-  { title: 'Preview & Update' },
-  { title: 'Confirm & Finish' },
+  { title: 'Preview & Confirm' },
 ]
 const stepsIcons = {
   finish: <Check2 aria-label="finish" />,
@@ -36,20 +37,32 @@ const StepperForm = () => {
   const [errMsg1Text, setErrMsg1Text] = useState("")
   const [draftKey, setDraftKey] = useState("")
   const [cancelModal, setCancelModal] = useState(false);
+  const [disabledBtn, setDisabledBtn] = useState(false);
 
   const closeModal = () => setCancelModal(false);
   const openModal = () => setCancelModal(true);
 
+  useEffect(() => {
+    let disable = false;
+
+    for (const file of formContext.files) {
+      if (file.file.size > fileSizeLimit) {
+        disable = true;
+        break;
+      }
+    }
+
+    setDisabledBtn(disable);
+  }, [formContext.files])
+
   const handleNext = () => {
     if (activeStep == 0) {
       if (validateInput()) {
-        setCompletePercentage(100 / formContext.files.length / 2)
         uploadStep1()
-        setErrMsg(false)
       }
     }
-    else if (activeStep == 2) {
-      uploadStep3()
+    else if (activeStep == 1) {
+      uploadStep2()
     }
     else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -66,12 +79,22 @@ const StepperForm = () => {
   }
 
   const handleBack = () => {
+    fetch(`draft/all/${draftKey}`, {
+      method: 'DELETE',
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
+    })
+
     window.scrollTo(0, 0)
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   };
 
-  const uploadStep1 = async() => {
-    setProgressBar(true)
+  const uploadStep1 = async () => {
+    let completedPer = 0;
+    setCompletePercentage(completedPer);
+    setProgressBar(true);
+    setErrMsg(false);
     setErrMsg1(false);
 
     const name = formContext.validInput.Name.trim()
@@ -94,6 +117,10 @@ const StepperForm = () => {
       setProgressBar(false);
       return;
     }
+
+    // Make the percentage bar 10% when Draft is created
+    completedPer = 10;
+    setCompletePercentage(completedPer);
 
     const rowKey = responseData.rowKey;
     setDraftKey(rowKey);
@@ -128,9 +155,17 @@ const StepperForm = () => {
         setProgressBar(false);
         return;
       }
+
+      const addPercentage = (100 - 20) / formContext.files.length;
+      completedPer += addPercentage
+      setCompletePercentage(completedPer);
     }
 
-    fetch(`draft/${rowKey}`)
+    fetch(`draft/${rowKey}`, {
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
+    })
       .then((response) => response.json())
       .then((response) => {
         if (!response.success) {
@@ -144,6 +179,7 @@ const StepperForm = () => {
           const imageEntities = JSON.parse(response.result["imageEntities"])
           formContext.setRetrievedFile(imageEntities)
 
+          setCompletePercentage(100);
           setProgressBar(false)
           setActiveStep((prevActiveStep) => prevActiveStep + 1)
           window.scrollTo(0, 0)
@@ -157,7 +193,7 @@ const StepperForm = () => {
       })
   }
 
-  const uploadStep3 = () => {
+  const uploadStep2 = () => {
     setProgressBar(true)
     setCompletePercentage(20)
 
@@ -230,11 +266,6 @@ const StepperForm = () => {
             Cancel
           </Button>
         )}
-        {activeStep >= 2 && (
-          <Button variant="secondary" onClick={handleBack}>
-            Back
-          </Button>
-        )}
 
         <div className="ml-auto d-flex align-items-center">
           {activeStep === 1 && (
@@ -245,7 +276,11 @@ const StepperForm = () => {
           <Button
             variant="primary"
             onClick={handleNext}
-            disabled={activeStep === 0 ? stepCompleteContext.btnDisabled : false}
+            disabled={disabledBtn ? true :
+              activeStep === 0 ?
+                stepCompleteContext.btnDisabled :
+                false
+            }
           >
             {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
           </Button>

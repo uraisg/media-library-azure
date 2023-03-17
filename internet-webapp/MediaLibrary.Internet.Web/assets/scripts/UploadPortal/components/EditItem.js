@@ -82,7 +82,7 @@ const SingleEdit = (props) => {
         'Content-Type': 'application/json',
         RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
       },
-      body: JSON.stringify({ Name: fileArr.FileURL, RowKey: props.draftKey })
+      body: JSON.stringify({ Name: fileArr.FileURL, RowKey: props.draftKey, Thumbnail: false })
     })
       .then((res) => res.json())
       .then((res) => setCurImageURL(res));
@@ -493,7 +493,11 @@ const BatchEdit = (props) => {
     setLoading(true)
 
     // Get Original Values
-    let response = await fetch(`draft/${props.draftKey}`);
+    let response = await fetch(`draft/${props.draftKey}`, {
+      headers: {
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+      }
+    });
     let responseJSON = await response.json();
 
     if (!responseJSON.success) {

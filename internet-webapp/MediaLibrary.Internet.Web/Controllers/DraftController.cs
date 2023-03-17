@@ -16,8 +16,6 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Azure.Storage.Sas;
 using MediaLibrary.Internet.Web.Common;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
@@ -68,7 +66,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                 });
             }
 
-            try {
+            try
+            {
                 Draft newDraft = new Draft()
                 {
                     UploadDate = DateTime.UtcNow.AddHours(8),
@@ -109,7 +108,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         // Adding images to a draft
         [HttpPost("draft/{rowkey}/addImage")]
         [RequestSizeLimit(42_000_000)]
-        public async Task<JsonResult> AddImage([FromForm]AddImageModel req, string rowKey, CancellationToken cancellationToken)
+        public async Task<JsonResult> AddImage([FromForm] AddImageModel req, string rowKey, CancellationToken cancellationToken)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowKey, true) == false)
             {
@@ -142,7 +141,7 @@ namespace MediaLibrary.Internet.Web.Controllers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            string untrustedFileName = Path.GetFileName(file.FileName);
+            string untrustedFileName = Path.GetFileName(file.FileName).Replace("+", " ");
             string encodedFileName = HttpUtility.HtmlEncode(untrustedFileName);
 
             _logger.LogInformation("Upload file name: {FileName}, size: {FileSize}", untrustedFileName, file.Length);
@@ -345,10 +344,21 @@ namespace MediaLibrary.Internet.Web.Controllers
                                 updateImageEntity.Tag = updateImageEntity.Tag.Substring(1);
                             }
                         }
-                        catch (Exception e) { };
+                        catch (Exception)
+                        {
+                            // No additional fields set
+                        }
+
+                        ImageEntity newImageEntity = jsonArray[i].ToObject<ImageEntity>();
+                        newImageEntity.Tag = updateImageEntity.Tag;
+                        newImageEntity.Caption = updateImageEntity.Caption;
+                        newImageEntity.Project = updateImageEntity.Project;
+                        newImageEntity.LocationName = updateImageEntity.LocationName;
+                        newImageEntity.Copyright = updateImageEntity.Copyright;
+                        newImageEntity.AdditionalField = updateImageEntity.AdditionalField;
 
                         jsonArray.RemoveAt(i);
-                        jsonArray.Add(JToken.FromObject(updateImageEntity));
+                        jsonArray.Add(JToken.FromObject(newImageEntity));
 
                         break;
                     }
@@ -527,9 +537,9 @@ namespace MediaLibrary.Internet.Web.Controllers
             }
         }
 
-        // Get data inside a draft
-        [HttpGet("draft/{rowkey}")]
-        public async Task<JsonResult> GetDraft(string rowkey)
+        // Delete everything in a draft
+        [HttpDelete("draft/all/{rowkey}")]
+        public async Task<JsonResult> DeleteDraftAll(string rowkey)
         {
             if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
             {
@@ -538,6 +548,99 @@ namespace MediaLibrary.Internet.Web.Controllers
                     success = false,
                     errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
                 });
+            }
+
+            try
+            {
+                string tableConnectionString = _appSettings.TableConnectionString;
+                string tableName = _appSettings.TableName;
+                string containerName = _appSettings.MediaStorageContainer;
+                string storageConnectionString = _appSettings.MediaStorageConnectionString;
+
+                //initialize table client
+                CloudStorageAccount storageAccount;
+                storageAccount = CloudStorageAccount.Parse(tableConnectionString);
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                //create a blob container client
+                BlobContainerClient blobContainerClient = new BlobContainerClient(storageConnectionString, containerName);
+
+                TableOperation retrieveOperation = TableOperation.Retrieve<Draft>(
+                    partitionKey: DraftPartitionKey,
+                    rowkey: rowkey
+                );
+
+                var result = await table.ExecuteAsync(retrieveOperation);
+
+                string resultJSON = JsonConvert.SerializeObject(result.Result);
+                JObject json = JObject.Parse(resultJSON);
+                JArray jsonArray = JArray.Parse(json["ImageEntities"].ToString());
+
+                // Update value of image
+                for (int i = 0; i < jsonArray.Count; i++)
+                {
+                    var fileName = jsonArray[i]["Id"] + "_" + jsonArray[i]["Name"];
+
+                    var thumbArray = jsonArray[i]["Name"].ToString().Split(".");
+                    var thumbName = jsonArray[i]["Id"] + "_" + thumbArray[0];
+                    var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                    foreach (var thumb in middleThumbArray)
+                    {
+                        thumbName += "." + thumb;
+                    }
+                    thumbName += "_thumb.jpg";
+
+                    var fileBlob = blobContainerClient.GetBlobClient(fileName);
+                    var thumbBlob = blobContainerClient.GetBlobClient(thumbName);
+                    await fileBlob.DeleteIfExistsAsync();
+                    await thumbBlob.DeleteIfExistsAsync();
+                }
+
+                // Delete Draft
+                var tableEntity = new Draft
+                {
+                    PartitionKey = DraftPartitionKey,
+                    RowKey = rowkey,
+                    ETag = "*"
+                };
+
+                TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+                await table.ExecuteAsync(deleteOperation);
+
+                return Json(new
+                {
+                    success = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception while deleting a draft.");
+
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Failed to delete draft. Please refresh the webpage."
+                });
+            }
+        }
+
+        // Get data inside a draft
+        [ValidateAntiForgeryToken]
+        [HttpGet("draft/{rowkey}")]
+        public async Task<JsonResult> GetDraft(string rowkey)
+        {
+            if (await CheckIfDraftIsEmpty_N_UserMatchDraft(rowkey, true) == false)
+            {
+                JsonResult jsonResult = Json(new
+                {
+                    success = false,
+                    errorMessage = "The draft does not exist or the user logged in does not match the draft's author."
+                });
+
+                jsonResult.StatusCode = 400;
+
+                return jsonResult;
             }
 
             try
@@ -581,7 +684,17 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             string encodedFileName = Path.GetFileName(name.Name);
             encodedFileName = Uri.UnescapeDataString(encodedFileName);
-            encodedFileName = "/api/assets/" + name.RowKey + "/" + encodedFileName;
+
+            if (name.Thumbnail)
+            {
+                string encodedFileNameWithoutExtension = Path.GetFileNameWithoutExtension(encodedFileName);
+                encodedFileName = "/api/assets/" + name.RowKey + "/" + encodedFileNameWithoutExtension + "_thumb.jpg";
+            }
+            else
+            {
+                encodedFileName = "/api/assets/" + name.RowKey + "/" + encodedFileName;
+            }
+
             return encodedFileName;
         }
 
@@ -621,7 +734,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     string encodedFileName = Path.GetFileName(jsonArray[i]["FileURL"].ToString());
                     encodedFileName = Uri.UnescapeDataString(encodedFileName);
 
-                    if (encodedFileName == name)
+                    if ((encodedFileName == name) || ((Path.GetFileNameWithoutExtension(encodedFileName) + "_thumb.jpg") == name))
                     {
                         found = true;
                         break;
@@ -938,7 +1051,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             string width = appSettings.ThumbWidth;
             string height = appSettings.ThumbHeight;
 
-            string uriBase = endpoint + "/vision/v3.0/generateThumbnail";
+            string uriBase = endpoint + "/vision/v3.2/generateThumbnail";
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
@@ -978,7 +1091,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 Endpoint = endpoint
             };
 
-            List<VisualFeatureTypes> features = new List<VisualFeatureTypes>()
+            List<VisualFeatureTypes?> features = new List<VisualFeatureTypes?>()
                 { VisualFeatureTypes.Tags, VisualFeatureTypes.Description};
 
             ImageAnalysis results = await client.AnalyzeImageInStreamAsync(image, features);
@@ -1118,6 +1231,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         {
             public string Name { get; set; }
             public string RowKey { get; set; }
+            public bool Thumbnail { get; set; }
         }
     }
 }

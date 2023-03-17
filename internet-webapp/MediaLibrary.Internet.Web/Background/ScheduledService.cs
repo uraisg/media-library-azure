@@ -104,26 +104,33 @@ namespace MediaLibrary.Internet.Web.Background
                 {
                     if (entity.Timestamp < DateTime.Now.AddDays(-timeBetweenRun))
                     {
-                        JArray imageEntities = JArray.Parse(entity.ImageEntities);
-
-                        // Delete Images
-                        for (int i = 0; i < imageEntities.Count; i++)
+                        try
                         {
-                            var fileName = imageEntities[i]["Id"] + "_" + imageEntities[i]["Name"];
+                            JArray imageEntities = JArray.Parse(entity.ImageEntities);
 
-                            var thumbArray = imageEntities[i]["Name"].ToString().Split(".");
-                            var thumbName = imageEntities[i]["Id"] + "_" + thumbArray[0];
-                            var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
-                            foreach (var thumb in middleThumbArray)
+                            // Delete Images
+                            for (int i = 0; i < imageEntities.Count; i++)
                             {
-                                thumbName += "." + thumb;
-                            }
-                            thumbName += "_thumb.jpg";
+                                var fileName = imageEntities[i]["Id"] + "_" + imageEntities[i]["Name"];
 
-                            var fileBlob = blobContainerClient.GetBlobClient(fileName);
-                            var thumnBlob = blobContainerClient.GetBlobClient(thumbName);
-                            await fileBlob.DeleteIfExistsAsync();
-                            await thumnBlob.DeleteIfExistsAsync();
+                                var thumbArray = imageEntities[i]["Name"].ToString().Split(".");
+                                var thumbName = imageEntities[i]["Id"] + "_" + thumbArray[0];
+                                var middleThumbArray = thumbArray.Skip(1).Take(thumbArray.Length - 2);
+                                foreach (var thumb in middleThumbArray)
+                                {
+                                    thumbName += "." + thumb;
+                                }
+                                thumbName += "_thumb.jpg";
+
+                                var fileBlob = blobContainerClient.GetBlobClient(fileName);
+                                var thumnBlob = blobContainerClient.GetBlobClient(thumbName);
+                                await fileBlob.DeleteIfExistsAsync();
+                                await thumnBlob.DeleteIfExistsAsync();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogInformation("Empty Draft");
                         }
 
                         // Delete Draft

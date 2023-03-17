@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 
-import FileInput from '@/components/ImageInput'
 import { useForm, useBtnDisabled } from '@/components/AllContext'
+import ImageInput from '@/components/ImageInput'
 
 const Step1 = (props) => {
   const formContext = useForm()
@@ -22,25 +22,24 @@ const Step1 = (props) => {
   })
 
   return (
-    <React.Fragment>
-      <p>Up to 40 MB of images is accepted</p>
-      <FileInput />
+    <>
+      <ImageInput />
 
       <p>Provide more information to make your images easier to find</p>
-      <div className="form-check">
-        <label htmlFor="Name">Name<span className="text-danger">*</span></label>
+      <div>
+        <label className="required" htmlFor="Name">Name</label>
         <input type="text" className="form-control" id="Name" onKeyUp={checkValid} defaultValue={formContext.validInput.Name} />
-        <small className="text-secondary">Give a brief title for the images, e.g., project or event name</small>
+        <small className="form-text text-secondary">Give a brief title for the images, e.g., project or event name</small>
       </div>
-      <div className="mt-2 form-check">
-        <label htmlFor="Location">Location<span className="text-danger">*</span></label>
+      <div className="mt-2">
+        <label className="required" htmlFor="Location">Location</label>
         <input type="text" className="form-control" id="Location" onKeyUp={checkValid} defaultValue={formContext.validInput.Location} />
-        <small className="text-secondary">Describe the landmark or road where the images were taken, e.g., Gardens By The Bay, Kampong Glam, Stamford Road</small>
+        <small className="form-text text-secondary">Describe the landmark or road where the images were taken, e.g., Gardens By The Bay, Kampong Glam, Stamford Road</small>
       </div>
-      <div className="mt-2 form-check">
+      <div className="mt-2">
         <label htmlFor="Copyright">Copyright Owner</label>
         <input type="text" className="form-control" onKeyUp={checkValid} defaultValue={formContext.validInput.Copyright} id="Copyright" />
-        <small className="text-secondary">Enter the copyright owner's name (Works you create in the course of employment are automatically owned by your employer)</small>
+        <small className="form-text text-secondary">Enter the copyright owner's name (Works you create in the course of employment are automatically owned by your employer)</small>
       </div>
 
       {props.errMsg &&
@@ -50,7 +49,7 @@ const Step1 = (props) => {
       {props.errMsg1 &&
         <p className="text-danger">{props.errMsg1Text}</p>
       }
-    </React.Fragment >
+    </>
    )
 }
 

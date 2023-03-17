@@ -18,6 +18,7 @@ using NetTopologySuite.Geometries;
 namespace MediaLibrary.Intranet.Web.Controllers
 {
     [ApiController]
+    [ValidateOrigin]
     public class WebApiController : ControllerBase
     {
         private readonly AppSettings _appSettings;
@@ -109,7 +110,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         public async Task<IActionResult> UpdateMediaItem(string id, [FromBody] MediaItem mediaItem)
         {
             _logger.LogInformation("{UserName} called UpdateMediaItem action for id {id}", User.GetUserGraphDisplayName(), id);
-            
+
             MediaItem itemToUpdate = await _itemService.GetItemAsync(id);
             if (itemToUpdate == null)
             {
@@ -272,7 +273,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpGet("/api/areas", Name = nameof(GetAreas))]
         public IActionResult GetAreas()
         {
-            return Ok(_geoSearchHelper.GetRegions());
+            return Ok(new { Data = _geoSearchHelper.GetRegions() });
         }
 
         [HttpGet("/api/account", Name = nameof(GetDisplayName))]
