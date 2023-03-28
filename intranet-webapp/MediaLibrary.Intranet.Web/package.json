@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "development": "mix",
+    "build": "mix build",
     "watch": "mix watch",
+    "watch-poll": "mix watch -- --watch-options-poll=1000",
+    "hot": "mix watch --hot",
     "production": "mix --production"
   },
   "keywords": [],
@@ -35,20 +38,25 @@
   "dependencies": {
     "@reduxjs/toolkit": "^1.7.2",
     "bootstrap": "^4.6.1",
-    "date-fns": "^2.29.3",
-    "jquery": "^3.6.1",
-    "jquery-validation": "^1.19.5",
-    "jquery-validation-unobtrusive": "^4.0.0",
-    "leaflet": "^1.9.2",
+    "chart.js": "^3.8.2",
+    "date-fns": "^2.28.0",
+    "faker": "^6.6.6",
+    "jquery": "^3.6.0",
+    "jquery-validation": "^1.19.4",
+    "jquery-validation-unobtrusive": "^3.2.12",
+    "leaflet": "^1.7.1",
     "prop-types": "^15.8.1",
     "react": "^17.0.2",
-    "react-bootstrap": "^1.6.4",
+    "react-bootstrap": "^1.6.5",
+    "react-bootstrap-icons": "^1.8.4",
+    "react-chartjs-2": "^4.3.1",
     "react-dom": "^17.0.2",
     "react-grid-gallery": "^0.5.5",
     "react-paginate": "^7.1.5",
     "react-redux": "^7.2.6",
     "react-router-dom": "^5.3.0",
-    "redux": "^4.1.2"
+    "redux": "^4.1.2",
+    "styled-components": "^5.3.6"
   },
   "engines": {
     "node": ">=16.0.0"

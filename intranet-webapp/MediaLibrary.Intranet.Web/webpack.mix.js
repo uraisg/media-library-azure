@@ -42,5 +42,10 @@ mix
   .js('assets/scripts/edit.js', 'scripts')
   .sass('assets/styles/site.scss', 'styles')
 mix
-  .js('assets/scripts/gallery/main.js', 'scripts/gallery.js')
-  .react({ extractStyles: true })
+    .js('assets/scripts/gallery/main.js', 'scripts/gallery.js')
+    .react({ extractStyles: true })
+mix.js('assets/scripts/admin/dashboard/main.js', 'scripts/dashboard.js').react()
+mix.js('assets/scripts/admin/activityreport/main.js', 'scripts/activityreport.js').react()
+mix.js('assets/scripts/admin/filereport/main.js', 'scripts/filereport.js').react()
+mix.js('assets/scripts/admin/staff/main.js', 'scripts/staff.js').react()
+mix.js('assets/scripts/admin/staffactivity/main.js', 'scripts/staffactivity.js').react()
