@@ -122,7 +122,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
             var results = await _mediaSearchService.GetAllMediaItemsAsync();
             foreach (var result in results)
             {
-                System.Diagnostics.Debug.WriteLine("Test");
                 await _dashboardActivityService.AddActivityForUpload(result.Items);
                 await _fileDetailsService.AddDetailsForUpload(result.Items);
             }

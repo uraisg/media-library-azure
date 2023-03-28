@@ -52,6 +52,13 @@ async function renderMetadataSection(data, fileId) {
     url.search = new URLSearchParams(params)
 
     fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+        RequestVerificationToken: document.getElementById(
+          'RequestVerificationToken'
+        ).value,
+      },
       mode: 'same-origin',
       credentials: 'same-origin',
     })

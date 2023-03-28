@@ -21,6 +21,7 @@ const ActivityReport = () => {
           <a
             href={item.Link}
             target="_blank"
+            Add rel="noopener"
           >
             <Image src={item.Image} />
           </a>

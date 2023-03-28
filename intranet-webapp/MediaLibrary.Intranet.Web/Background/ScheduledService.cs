@@ -22,7 +22,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
 using NCrontab;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Index.HPRtree;
 using Newtonsoft.Json;
+using NPOI.HSSF.Record;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
@@ -127,6 +130,10 @@ namespace MediaLibrary.Intranet.Web.Background
                 string fileName = HttpUtility.UrlDecode(encodedFileName);
                 await ImageUploadToBlob(imageBlobContainerClient, imageContent, fileName);
 
+                //get file size
+                BlobProperties blobProperties = await imageBlobContainerClient.GetBlobClient(fileName).GetPropertiesAsync();
+                decimal fileSize = (decimal)blobProperties.ContentLength / 1048576;
+
                 //retrieve thumbnail
                 HttpContent thumbnailContent = await GetImageByURL(item.thumbnailURL);
                 string encodedThumbnailFileName = Path.GetFileName(item.thumbnailURL);
@@ -165,6 +172,8 @@ namespace MediaLibrary.Intranet.Web.Background
                 string indexFileName = item.id + ".json";
                 await IndexUploadToBlob(indexBlobContainerClient, mediaItem, indexFileName);
 
+                await RecordUploadActivity(mediaItem, fileSize);
+
                 // Remove item from transfers list
                 await DeleteInternetTableItem(item);
 
@@ -172,6 +181,43 @@ namespace MediaLibrary.Intranet.Web.Background
             }
 
             _logger.LogInformation("Finished background processing");
+        }
+        //new recorduploadacitivty method
+        private async Task RecordUploadActivity(MediaItem mediaItem, decimal fileSize)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var dashboardActivityContext = scope.ServiceProvider.GetRequiredService<DashboardActivityService>();
+                var fileDetailsContext = scope.ServiceProvider.GetRequiredService<FileDetailsService>();
+
+                FileDetails fileDetails = new FileDetails();
+                DashboardActivity dashboardActivity = new DashboardActivity();
+                //Add into FileDetails table
+                fileDetails.FDetailsId = Guid.NewGuid();
+                fileDetails.FileId = mediaItem.Id;
+                fileDetails.FileSize = Math.Round(fileSize, 2);
+                if (mediaItem.Location != null) //Check if there are any geotag location
+                {
+                    Point point = new Point(mediaItem.Location.Longitude, mediaItem.Location.Latitude) { SRID = 4326 };
+                    fileDetails.AreaPoint = point;
+                }
+                fileDetails.ThumbnailURL = mediaItem.ThumbnailURL;
+                if (await fileDetailsContext.AddDetailsAsync(fileDetails))
+                {
+                    _logger.LogInformation("Added {FileId} into FileDetails", fileDetails.FileId);
+                }
+
+                //Add into DashboardActivity Table
+                dashboardActivity.DActivityId = Guid.NewGuid();
+                dashboardActivity.FileId = mediaItem.Id;
+                dashboardActivity.Email = mediaItem.Author;
+                dashboardActivity.ActivityDateTime = DateTime.Now;
+                dashboardActivity.Activity = 2;
+                if (await dashboardActivityContext.AddActivityAsync(dashboardActivity))
+                {
+                    _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
+                }
+            }
         }
 
         private async Task DeleteInternetTableItem(InternetTableItems item)
@@ -201,60 +247,11 @@ namespace MediaLibrary.Intranet.Web.Background
             client.BaseAddress = new Uri(_appSettings.ApiDomain);
             client.DefaultRequestHeaders.Add("X-Api-Key", _appSettings.ApiKey);
             var response = await client.SendAsync(request);
-
+            
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadAsStringAsync();
                 var items = JsonConvert.DeserializeObject<List<InternetTableItems>>(result);
-
-                //Adding into database
-                using (var scope = _serviceScopeFactory.CreateScope())
-                {
-                    var dashboardActivityContext = scope.ServiceProvider.GetRequiredService<DashboardActivityService>();
-                    var fileDetailsContext = scope.ServiceProvider.GetRequiredService<FileDetailsService>();
-                    foreach (InternetTableItems item in new List<InternetTableItems>(items))
-                    {
-                        //Get filesize
-                        HttpContent thumbnailContent = await GetImageByURL(item.thumbnailURL);
-                        var stream = await thumbnailContent.ReadAsStreamAsync();
-                        decimal fileSize = (decimal)stream.Length / 1048576;
-                        //Get the location
-                        var itemLocation = JsonConvert.DeserializeObject<GeographyPoint>(item.location, new GeographyPointJsonConverter());
-                        //Get file name
-                        string encodedThumbnailFileName = Path.GetFileName(item.thumbnailURL);
-
-                        FileDetails fileDetails = new FileDetails();
-                        DashboardActivity dashboardActivity = new DashboardActivity();
-
-                        //Add into FileDetails table
-                        fileDetails.FDetailsId = Guid.NewGuid();
-                        fileDetails.FileId = item.id;
-                        fileDetails.FileSize = Math.Round(fileSize, 2);
-                        if (itemLocation != null) //Check if there are any geotag location
-                        {
-                            Point point = new Point(itemLocation.Longitude, itemLocation.Latitude) { SRID = 4326 };
-                            fileDetails.AreaPoint = point;
-                        }
-                        fileDetails.ThumbnailURL = "/api/assets/" + encodedThumbnailFileName;
-                        if (await fileDetailsContext.AddDetailsAsync(fileDetails))
-                        {
-                            _logger.LogInformation("Added {FileId} into FileDetails", fileDetails.FileId);
-                        }
-
-                        //Add into DashboardActivity Table
-                        dashboardActivity.DActivityId = Guid.NewGuid();
-                        dashboardActivity.FileId = item.id;
-                        dashboardActivity.Email = item.author;
-                        dashboardActivity.ActivityDateTime = DateTime.Now;
-                        dashboardActivity.Activity = 2;
-                        if (await dashboardActivityContext.AddActivityAsync(dashboardActivity))
-                        {
-                            _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
-                        }
-
-                    }
-                }
-
                 return items;
             }
             else

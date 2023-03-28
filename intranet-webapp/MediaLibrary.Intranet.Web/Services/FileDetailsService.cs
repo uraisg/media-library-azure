@@ -71,8 +71,7 @@ namespace MediaLibrary.Intranet.Web.Services
             }
             catch (DbUpdateException e)
             {
-                System.Diagnostics.Debug.WriteLine("Error adding into database: " + e);
-                _logger.LogError("Error adding {FileId} into FileDetails", details.FileId);
+                _logger.LogError(e, "Error adding {FileId} into FileDetails", details.FileId);
                 return false;
             }
             return true;
@@ -92,7 +91,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 }
                 catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
                 {
-                    System.Diagnostics.Debug.WriteLine("Error encountered: ", ex);
+                    _logger.LogError(ex, "File {fileName} not found.", fileName);
                 }
                 if (!FileExist(item.Id))
                 {

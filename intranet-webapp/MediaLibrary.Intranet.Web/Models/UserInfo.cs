@@ -10,7 +10,7 @@ namespace MediaLibrary.Intranet.Web.Models
         public string Mail { get; set; }
         public string DisplayName { get; set; }
 
-        //To Be Remove
+        // TODO: temporary field, to be removed
         public string Department { get; set; }
     }
 }

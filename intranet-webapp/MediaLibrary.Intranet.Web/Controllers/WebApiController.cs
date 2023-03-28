@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Index.HPRtree;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -125,19 +126,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
             if (isAdmin || isAuthor)
             {
                 //Add edit activity into database
-                DashboardActivity dashboardActivity = new DashboardActivity()
-                {
-                    DActivityId = Guid.NewGuid(),
-                    FileId = id,
-                    Email = User.GetUserGraphEmail(),
-                    ActivityDateTime = DateTime.Now,
-                    Activity = (int)DBActivity.Edit
-                };
-                if (await _dashboardActivityService.AddActivityAsync(dashboardActivity))
-                {
-                    _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
-                }
 
+                await _dashboardActivityService.AddEditActivityAsync(id, User.GetUserGraphEmail());
+            
                 itemToUpdate.Tag = mediaItem.Tag;
                 itemToUpdate.Caption = mediaItem.Caption;
                 itemToUpdate.Project = mediaItem.Project;
@@ -284,7 +275,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return Ok(userInfo);
         }
 
-        [HttpGet("/api/activity/update", Name = nameof(UpdateDashboardActivity))]
+        [HttpPost("/api/activity/update", Name = nameof(UpdateDashboardActivity))]
         public async Task<IActionResult> UpdateDashboardActivity([FromQuery] ActivityCount activityCount)
         {
             DashboardActivity dashboardActivity = new DashboardActivity()

@@ -293,7 +293,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return result;
         }
 
-        [HttpGet("/api/database/add", Name = nameof(GetDatabaseData))]
+        // TODO: item
+        [HttpPost("/api/database/add", Name = nameof(GetDatabaseData))]
         public async Task<IActionResult> GetDatabaseData()
         {
             var results = await _mediaSearchService.GetAllMediaItemsAsync();

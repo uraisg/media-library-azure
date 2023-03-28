@@ -6,6 +6,8 @@ using MediaLibrary.Intranet.Web.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Index.HPRtree;
+using NPOI.SS.Formula.Eval;
 using NPOI.SS.Formula.Functions;
 
 namespace MediaLibrary.Intranet.Web.Services
@@ -55,15 +57,14 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public async Task<bool> AddActivityAsync(DashboardActivity activity)
         {
-            await _mediaLibraryContext.AddAsync(activity);
+             _mediaLibraryContext.Add(activity);
             try
             {
                 await _mediaLibraryContext.SaveChangesAsync();
             }
             catch (DbUpdateException e)
             {
-                System.Diagnostics.Debug.WriteLine("Error adding into database: " + e);
-                _logger.LogError("Error adding {FileId} into DashboardActivity", activity.FileId);
+                _logger.LogError(e,"Error adding {FileId} into DashboardActivity", activity.FileId);
                 return false;
             }
             return true;
@@ -75,19 +76,42 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 if (!UploadActivityExist(item.Id))
                 {
-                    DashboardActivity dashboardActivity = new DashboardActivity
-                    {
-                        DActivityId = Guid.NewGuid(),
-                        FileId = item.Id,
-                        Email = item.Author,
-                        ActivityDateTime = item.UploadDate,
-                        Activity = (int)DBActivity.Upload
-                    };
-                    if (await AddActivityAsync(dashboardActivity))
-                    {
-                        _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
-                    }
+                    await AddUploadActivityAsync(item.Id, item.Author, item.UploadDate);
                 }
+            }
+        }
+
+        public async Task AddUploadActivityAsync(string fileId, string userEmail, DateTime activitydatetime)
+        {
+            DashboardActivity dashboardActivity = new DashboardActivity
+            {
+                DActivityId = Guid.NewGuid(),
+                FileId = fileId,
+                Email = userEmail,
+                ActivityDateTime = activitydatetime,
+                Activity = (int)DBActivity.Upload
+            };
+
+            if (await AddActivityAsync(dashboardActivity))
+            {
+                _logger.LogInformation("Added {FileId} into DashboardActivity", dashboardActivity.FileId);
+            }
+        }
+        
+        public async Task AddEditActivityAsync(string fileId, string userEmail)
+        {
+            DashboardActivity dashboardActivity = new DashboardActivity
+            {
+                DActivityId = Guid.NewGuid(),
+                FileId = fileId,
+                Email = userEmail,
+                ActivityDateTime = DateTime.Now,
+                Activity = (int)DBActivity.Edit
+            };
+
+            if (await AddActivityAsync(dashboardActivity))
+            {
+                _logger.LogInformation("Edited {FileId} into DashboardActivity", dashboardActivity.FileId);
             }
         }
 
@@ -131,8 +155,7 @@ namespace MediaLibrary.Intranet.Web.Services
             }
             catch (DbUpdateException e)
             {
-                System.Diagnostics.Debug.WriteLine("Error deleteing from database: " + e);
-                _logger.LogError("Error with deleting {FileId} from DashboardActivity", fileId);
+                _logger.LogError(e,"Error with deleting {FileId} from DashboardActivity", fileId);
                 return false;
             }
             return true;
