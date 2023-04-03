@@ -2,10 +2,9 @@
 import Form from 'react-bootstrap/Form';
 import { Button, Dropdown  } from 'react-bootstrap'
 import { useState } from 'react'
-import PropTypes from 'prop-types'
 import { styled } from '@linaria/react'
+import DatePickerRange from './@/../../../ucm/components/DatePickerRange'
 
-//import { useFilter } from './@/../../../ucm/components/Context'
 
 const TopDiv = styled.div`
   display: relative;
@@ -31,7 +30,6 @@ const RightDiv = styled.div`
       margin-top: 1em;
   }
 `
-
 const SearchUser = () => {
   
   //const filterContext = useFilter()
@@ -41,7 +39,12 @@ const SearchUser = () => {
     setSearch(e.target.value)
   }
 
- 
+  const [isShown, setIsShown] = useState(false);
+
+  const handleClick = event => {
+    // 👇️ toggle shown state
+    setIsShown(current => !current);
+  };
 
   return (
 
@@ -81,45 +84,100 @@ const SearchUser = () => {
         />
         <Button
           size="sm"
-          className="btn-light mr-4"
+          className="btn-primary mr-4"
           variant=""
-          //onClick={() => handleSearchBtn()}
-  
+        //onClick={() => handleSearchBtn()}
         >
           Search
         </Button>
 
+          <Button onClick={handleClick}
+          size="sm"
+          variant="outline-primary"
+          className=" mr-4" >
+          Filter
+          </Button>
 
 
-        <Dropdown>
-          <Dropdown.Toggle
-            id="dropdown-date-filter"
-            size="sm"
-            variant="outline-primary"
-             className=" mr-4"
-          >
-            Filter By:
-          </Dropdown.Toggle>
-
-
-          <Dropdown.Menu>
-       
-            <Dropdown.Item
-              className="sortDropDown ">
-              Department
-            </Dropdown.Item>
-            <Dropdown.Item>
-              Status
-            </Dropdown.Item>
-            <Dropdown.Item>
-              Last Login Date
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
       </RightDiv>
-
+      {isShown ? (
+        <div className="shadow bg-white rounded mt-4">
   
-      </TopDiv>
+          <table className=" table table-borderless table-responsive-lg table-sm">
+            <tbody>
+          
+            <tr>
+                <th className="col-md-2" >Department</th>
+                <td>   <Dropdown>
+                  <Dropdown.Toggle
+                    id="dropdown-date-filter"
+                    size="sm"
+                    variant="outline-primary"
+                    className=" ml-4"
+                  >
+                    Filter By:
+                  </Dropdown.Toggle>
+
+                  <Dropdown.Menu>
+                    <Dropdown.Item
+                      className="sortDropDown ">
+                      ISGG1
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      ISGG2
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      ISGG3
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown></td>
+          
+            </tr>
+
+
+              <tr>
+                <th className="col-md-2" >Status</th>
+                <td >   <Dropdown>
+              <Dropdown.Toggle
+                id="dropdown-date-filter"
+                size="sm"
+                variant="outline-primary"
+                className=" ml-4"
+              >
+                Filter By:
+              </Dropdown.Toggle>
+
+
+              <Dropdown.Menu>
+                <Dropdown.Item
+                  className="sortDropDown ">
+                  Active
+                </Dropdown.Item>
+                <Dropdown.Item>
+                  Inactive
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown></td>
+              </tr>
+
+              <tr>
+                <th className="col-md-2">Last Login Date</th>
+                <td className="col-12 col-md-8">
+                  <DatePickerRange /> </td>
+                <td>
+                  <Button size="s"
+                    className="btn btn-primary ">
+                  Search
+                </Button></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+  
+    </TopDiv>
+
   )
 }
 

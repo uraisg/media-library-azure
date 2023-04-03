@@ -1,6 +1,6 @@
 import React from "react";
 import SearchUser from './@/../../../ucm/components/searchuser'
-import { Button, Dropdown } from 'react-bootstrap'
+
 
 const Users = [
   {
@@ -10,7 +10,7 @@ const Users = [
     email: "userone@april.biz",
     Department: "ISGG",
     Status: "active",
-    LastLoginDate: "demarco.info",
+    LastLoginDate: "03/28/2023",
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ const Users = [
     email: "userone1@melissa.tv",
     Department: "ISGG",
     Status: "active",
-    LastLoginDate: "demarco.info",
+    LastLoginDate: "03/28/2023",
   },
   {
     id: 3,
@@ -28,7 +28,7 @@ const Users = [
     email: "Nathan@yesenia.net",
     Department: "ISGG",
     Status: "inactive",
-    LastLoginDate: "demarco.info",
+    LastLoginDate: "03/28/2022",
   },
   {
     id: 4,
@@ -37,7 +37,7 @@ const Users = [
     email: "Julianne.OConner@kory.org",
     Department: "ISGG",
     Status: "inactive",
-    LastLoginDate: "demarco.info",
+    LastLoginDate: "03/28/2022",
   },
   {
     id: 5,
@@ -46,7 +46,7 @@ const Users = [
     email: "Lucio_Hettinger@annie.ca",
     Department: "ISGG",
     Status: "inactive",
-    LastLoginDate: "demarco.info",
+    LastLoginDate: "03/28/2022",
   },
 ];
 
@@ -96,20 +96,14 @@ class SelectTableComponent extends React.Component {
     });
   }
 
-  // Event to get selected rows(Optional)
-  getSelectedRows() {
-    this.setState({
-      SelectedList: this.state.List.filter((e) => e.selected),
-    });
-  }
 
   render() {
     return (
+      
       <div>
         <SearchUser />
       <div
-        className="shadow bg-white rounded mt-4"
-      >
+        className="shadow bg-white rounded mt-4">
       
             <table className=" table table-striped table-borderless table-responsive-lg table-sm"
           width="100%">
@@ -126,14 +120,7 @@ class SelectTableComponent extends React.Component {
                   </th>
                   <th scope="col">Name</th>
                   <th scope="col">Email</th>
-                <th scope="col ">Department
-
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
-                      <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z" />
-                    </svg>
-                
-                  
-                </th>
+                <th scope="col ">Department </th>
 
                   <th scope="col">Status</th>
                   <th scope="col">Last Login Date</th>

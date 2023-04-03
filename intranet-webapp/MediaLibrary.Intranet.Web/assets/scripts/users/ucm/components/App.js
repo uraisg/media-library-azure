@@ -1,20 +1,25 @@
 import React from 'react'
 import User from './@/../../../ucm/components/users'
-//import { FilterProvider } from './@/../../../ucm/components/Context'
-import SearchUser from './@/../../../ucm/components/searchuser'
 import { Container } from 'react-bootstrap'
+import styled from "styled-components";
 
-
+const Style = styled.div`
+    background-color: #f6f6f6;
+    display: flex;
+    min-height: 100vh;
+    height: 100%;
+  `
 
 const App = () => {
   return (
-    
-    <Container className="mt-4">
-   
-      <User />
+    <Style>
+    <Container className="mt-3">
+
+  
+        <User />
    
       </Container>
-  
+    </Style>
   );
 }
 export default App
