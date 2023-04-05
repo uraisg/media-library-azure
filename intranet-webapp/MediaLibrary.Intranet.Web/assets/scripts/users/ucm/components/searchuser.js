@@ -101,7 +101,7 @@ const SearchUser = () => {
 
       </RightDiv>
       {isShown ? (
-        <div className="shadow bg-white rounded mt-4">
+        <div className="shadow bg-white rounded mt-4 p-3  ">
   
           <table className=" table table-borderless table-responsive-lg table-sm">
             <tbody>

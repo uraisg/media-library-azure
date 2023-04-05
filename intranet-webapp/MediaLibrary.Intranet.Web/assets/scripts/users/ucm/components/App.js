@@ -1,6 +1,7 @@
 import React from 'react'
 import User from './@/../../../ucm/components/users'
 import { Container } from 'react-bootstrap'
+import SearchUser from './@/../../../ucm/components/searchuser'
 import styled from "styled-components";
 
 const Style = styled.div`
@@ -14,10 +15,8 @@ const App = () => {
   return (
     <Style>
     <Container className="mt-3">
-
-  
+        <SearchUser />
         <User />
-   
       </Container>
     </Style>
   );
