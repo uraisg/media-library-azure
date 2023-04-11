@@ -1,5 +1,7 @@
 import { React } from "react";
 import { useState, useEffect } from "react";
+import { useFilter } from './@/../../../ucm/components/context'
+
 
 const getColor = (user) => {
   if (user === "Active") return 'green';
@@ -7,62 +9,17 @@ const getColor = (user) => {
   return '';
 };
 
-const Users = [
-  {
-    id:"1",
-    name: "User1",
-   email: "userone@april.biz",
-   Department: "ISGG",
-   Status: "Active",
-    LastLoginDate: "03/28/2023",
-  },
-  {
-    id: "2",
-    name: "usertwo ",
-   email: "userone@april.biz",
-   Department: "ISGG",
-   Status: "Active",
-    LastLoginDate: "03/28/2023",
-  },
-  {
-    id: "3",
-    name: "Clementine ",
-    email: "Clementine@april.biz",
-    Department: "ISGG",
-    Status: "Inactive",
-    LastLoginDate: "03/28/2022",
-  },
-  {
-    id: "4",
-    name: "Patricia ",
-    email: "Patricia@april.biz",
-  Department: "ISGG",
-    Status: "Inactive",
-    LastLoginDate: "03/28/2022",
-  },
-  {
-    id: "5",
-    name: "Chelsey ",
-    email: "Chelsey@april.biz",
-    Department: "ISGG",
-    Status: "Inactive",
-    LastLoginDate: "03/28/2022",
-  },
-];
-
 
 const SelectTableComponent = () => {
+  const filtercontext = useFilter()
+
   const [isCheckAll, setIsCheckAll] = useState(false);
   const [isCheck, setIsCheck] = useState([]);
-  const [list, setList] = useState([]);
 
-  useEffect(() => {
-    setList(Users);
-  }, [list]);
 
   const handleSelectAll = e => {
     setIsCheckAll(!isCheckAll);
-    setIsCheck(list.map(li => li.id));
+    setIsCheck(filtercontext.result.map(li => li.id));
     if (isCheckAll) {
       setIsCheck([]);
     }
@@ -70,20 +27,16 @@ const SelectTableComponent = () => {
 
   const handleClick = e => {
     const { id, checked } = e.target;
+    console.log(id)
     setIsCheck([...isCheck, id]);
     if (!checked) {
       setIsCheck(isCheck.filter(item => item !== id));
     }
   };
 
-
-
-  console.log(isCheck);
-
   return (
    
-      <div
-        className="shadow bg-white rounded mt-4">
+    <div className="shadow bg-white rounded mt-4">
 
       <table className=" table table-striped table-borderless table-responsive-lg table-lg"
         width="100%" >
@@ -96,7 +49,9 @@ const SelectTableComponent = () => {
                   checked={isCheckAll}
                 />
               </th>
-              <th scope="col">Name</th>
+            <th scope="col">
+              Name
+            </th>
               <th scope="col">Email</th>
               <th scope="col ">Department </th>
               <th scope="col">Status</th>
@@ -107,7 +62,7 @@ const SelectTableComponent = () => {
 
           <tbody>
 
-            {list.map((item, index) => (
+          {filtercontext.result.map((item, index) => (
               <tr key={index}>
                 <td>
                   <input
@@ -127,10 +82,12 @@ const SelectTableComponent = () => {
 
             ))}
         
-          </tbody>
+        </tbody>
       </table>
 
-      </div>
+    </div>
+   
+       
    
   );
 
