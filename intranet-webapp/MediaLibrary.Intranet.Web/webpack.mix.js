@@ -44,4 +44,5 @@ mix
 mix
   .js('assets/scripts/gallery/main.js', 'scripts/gallery.js')
   .js('assets/scripts/users/ucm/main.js', 'scripts/users.js')
+  .js('assets/scripts/role/ucm/main.js', 'scripts/role.js')
   .react({ extractStyles: true })

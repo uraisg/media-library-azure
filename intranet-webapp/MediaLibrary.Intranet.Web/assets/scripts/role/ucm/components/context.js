@@ -14,10 +14,14 @@ export const FilterProvider = ({ children }) => {
     StartDate: "",
     EndDate: "",
     filterbydepartment: [],
-    filterbystatus : []
+    filterbygroup: [],
+    filterbyrole: [],
+    filterbypermission: []
   })
+
   const [result, setResult] = useState([])
- const [page, setPage] = useState({ CurrentPage: 1, TotalPage: 1 })
+  const [page, setPage] = useState({ CurrentPage: 1, TotalPage: 1 })
+
  /*
   useEffect(() => {
     setResult([{
@@ -46,8 +50,6 @@ export const FilterProvider = ({ children }) => {
     },
 
     ])
-
-
   }, [active])
   */
   useEffect(() => {
@@ -56,53 +58,51 @@ export const FilterProvider = ({ children }) => {
       name: "User1",
       email: "userone@april.biz",
       Department: "ISGG",
-      group: "Group1",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
+      Group: "Group1",
+      role: "User",
+      permission :"Restricted",
+      LastLoginDate: "03/28/2023",
     },
     {
       id: "2",
       name: "usertwo ",
       email: "userone@april.biz",
       Department: "ISGG",
-      group: "Group2",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
+      Group: "Group1",
+      role: "SystemAdmin",
+      permission :"Regular",
+      LastLoginDate: "03/28/2023",
     },
     {
       id: "3",
       name: "Clementine ",
       email: "Clementine@april.biz",
       Department: "ISGG",
-      group: "Group3",
-      Status: "Suspend",
-      LastLoginDate: "28/03/2022",
-      DisableDate: "10/03/2023",
+      Group: "Group1",
+      role: "RoleAdmin",
+      permission :"Regular",
+      LastLoginDate: "03/28/2022",
     },
     {
       id: "4",
       name: "Patricia ",
       email: "Patricia@april.biz",
       Department: "ISGG",
-      group: "Group3",
-      Status: "Inactive",
-      LastLoginDate: "28/03/2022",
-      DisableDate: "",
-    },
+      Group: "Group1",
+      role: "User",
+      permission :"Restricted",
+      LastLoginDate: "03/28/2022",
+      },
     {
       id: "5",
       name: "Chelsey ",
       email: "Chelsey@april.biz",
       Department: "ISGG",
-      group: "Group3",
-      Status: "Inactive",
-      LastLoginDate: "28/03/2022",
-      DisableDate: "",
+      Group: "Group1",
+      role: "User",
+      permission :"Restricted",
+      LastLoginDate: "03/28/2022",
       },])
-
-
   }, [])
 
   const callapi = () => {
@@ -111,20 +111,20 @@ export const FilterProvider = ({ children }) => {
       name: "User1",
       email: "userone@april.biz",
       Department: "ISGG",
-      group: "Group3",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
+      Group: "Group1",
+      role: "User",
+      permission:"Restricted",
+      LastLoginDate: "03/28/2023",
     },
     {
       id: "2",
       name: "usertwo ",
       email: "userone@april.biz",
       Department: "ISGG",
-      group: "Group3",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
+      Group: "Group1",
+      role: "System Admin",
+      permission:"Regular",
+      LastLoginDate: "03/28/2023",
     },
 
     ])

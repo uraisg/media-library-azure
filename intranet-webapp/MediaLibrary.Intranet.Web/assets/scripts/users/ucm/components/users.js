@@ -1,11 +1,12 @@
 import { React } from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useFilter } from './@/../../../ucm/components/context'
 
 
 const getColor = (user) => {
   if (user === "Active") return 'green';
-  if (user === "Inactive") return 'red';
+  if (user === "Inactive") return 'orange';
+  if (user === "Suspend") return "red";
   return '';
 };
 
@@ -53,9 +54,11 @@ const SelectTableComponent = () => {
               Name
             </th>
               <th scope="col">Email</th>
-              <th scope="col ">Department </th>
+            <th scope="col ">Department </th>
+            <th scope="col ">Group </th>
               <th scope="col">Status</th>
-              <th scope="col">Last Login Date</th>
+            <th scope="col">Last Login Date</th>
+            <th scope="col">Disable Date</th>
             </tr>
           </thead>
 
@@ -72,12 +75,14 @@ const SelectTableComponent = () => {
                     checked={isCheck.includes(item.id)}
                   />
                 </td>
-                  <td>{item.name}</td>
+                <td>{item.name}</td>
                 <td>{item.email}</td>
                 <td>{item.Department}</td>
+                <td>{item.group}</td>
                 <td style={{ color: getColor(item.Status) }}>{item.Status}</td>
                 <td>{item.LastLoginDate}</td>
-          
+              <td>{item.DisableDate}</td>
+
               </tr>
 
             ))}

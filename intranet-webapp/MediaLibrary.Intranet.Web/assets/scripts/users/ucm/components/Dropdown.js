@@ -58,7 +58,19 @@ const Styles = styled.div`
    const [startDate, setStartDate] = useState(null);
    const [endDate, setEndDate] = useState(null);
 
+   const [Group, setgroup] = useState([])
 
+   const handlegroup = val => {
+     const grouparray = val.split(',');
+     setgroup(grouparray)
+     console.log(statusarrary)
+   }
+
+   const groupoption = [
+     { label: ' Group1', value: 'Group1' },
+     { label: 'Group2', value: 'Group2' },
+     { label: 'Group3', value: 'Group3' },
+   ]
 
    const handleClear = () => {
      filterContext.setResult([])
@@ -126,15 +138,68 @@ const Styles = styled.div`
             </td>
           </tr>
 
+             <tr>
+               <th className="col-md-2" >Group</th>
+               <td >
+
+                 <div >
+                   <div className="preview-values">
+                     {Group}
+                   </div>
+
+                   <MultiSelect
+                     onChange={handlegroup}
+                     options={groupoption}
+                   />
+                 </div>
+               </td>
+         
+             </tr>
+
+             <tr>
+               <th className="col-md-2">Disable Date</th>
+               <td className="col-12 col-md-8">
+                 <Styles>
+                   <div style={{ display: "flex" }}>
+                     <DatePicker
+                       isClearable
+                       filterDate={d => {
+                         return new Date() > d;
+                       }}
+                       placeholderText="Select Start Date"
+                       selected={startDate}
+                       selectsStart
+                       startDate={startDate}
+                       endDate={endDate}
+                       onChange={date => setStartDate(date)}
+                     />
+                     <p className="ml-2 mr-2">  to: </p>
+                     <DatePicker
+                       isClearable
+                       filterDate={d => {
+                         return new Date() > d;
+                       }}
+                       placeholderText="Select End Date"
+                       selected={endDate}
+                       selectsEnd
+                       startDate={startDate}
+                       endDate={endDate}
+                       minDate={startDate}
+                       onChange={date => setEndDate(date)}
+                     />
+                   </div>
+                 </Styles> </td>
+             </tr>
+
           <tr>
             <th className="col-md-2">Last Login Date</th>
             <td className="col-12 col-md-8">
               <Styles>
                 <div style={{ display: "flex" }}>
-                  <DatePicker
-                    isClearable
+                     <DatePicker
+                     isClearable
                     filterDate={d => {
-                      return new Date() > d;
+                    return new Date() > d;
                     }}
                     placeholderText="Select Start Date"
                     selected={startDate}
@@ -142,20 +207,23 @@ const Styles = styled.div`
                     startDate={startDate}
                     endDate={endDate}
                     onChange={date => setStartDate(date)}
+                    dateFormat="dd/MM/yyyy"  
+                       
                   />
                   <p className="ml-2 mr-2">  to: </p>
-                  <DatePicker
+                     <DatePicker
                     isClearable
                     filterDate={d => {
                       return new Date() > d;
                     }}
-                    placeholderText="Select End Date"
+                       placeholderText="Select End Date"
                     selected={endDate}
                     selectsEnd
                     startDate={startDate}
                     endDate={endDate}
                     minDate={startDate}
-                    onChange={date => setEndDate(date)}
+                       onChange={date => setEndDate(date)}
+                       dateFormat="dd/MM/yyyy"  
                   />
                 </div>
               </Styles> </td>
