@@ -55,5 +55,7 @@ namespace MediaLibrary.Intranet.Web.Models
         public string Copyright { get; set; }
 
         public string AdditionalField { get; set; }
+
+        public bool DeclarationCheckbox { get; set; }
     }
 }

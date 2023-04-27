@@ -16,11 +16,17 @@ export function useBtnDisabled() {
 export function FormProvider({ children }) {
   const [files, setFiles] = useState([])
   const [validInput, setValidInput] = useState({ "Name": "", "Location": "", "Copyright": "URA" })
+
+  const [declarationcheckbox, setdeclarationcheckbox] = useState(false)
+ 
   const [retrievedFile, setRetrievedFile] = useState([])
   const [alertActive, setAlertActive] = useState(false)
 
   return (
-    <FormContext.Provider value={{ files: files, setFiles: setFiles, validInput: validInput, setValidInput: setValidInput, retrievedFile: retrievedFile, setRetrievedFile: setRetrievedFile, alertActive: alertActive, setAlertActive: setAlertActive }}>
+    <FormContext.Provider value={{
+      files: files, setFiles: setFiles, validInput: validInput, setValidInput: setValidInput, retrievedFile: retrievedFile, setRetrievedFile: setRetrievedFile, alertActive: alertActive, setAlertActive: setAlertActive,
+      declarationcheckbox, setdeclarationcheckbox
+    }}>
       {alertActive &&
         <Alert variant={'success'} style={{ width: '90%', margin: '2% auto' }}>
         Your items have been uploaded successfully, and will be copied to intranet in 10 minutes.

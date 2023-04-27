@@ -39,6 +39,12 @@ const StepperForm = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [disabledBtn, setDisabledBtn] = useState(false);
 
+  //try declarationmodal
+  const [declarationModal, setDeclarationModal] = useState(false);
+  const closeDeclarationModal = () => setDeclarationModal(false);
+  const openDeclarationModal = () => setDeclarationModal(true);
+
+
   const closeModal = () => setCancelModal(false);
   const openModal = () => setCancelModal(true);
 
@@ -62,7 +68,13 @@ const StepperForm = () => {
       }
     }
     else if (activeStep == 1) {
-      uploadStep2()
+      if (formContext.declarationcheckbox) {
+        uploadStep2()
+      }
+      else {
+        uploadStep2()
+        openDeclarationModal()
+      }
     }
     else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -193,38 +205,53 @@ const StepperForm = () => {
       })
   }
 
+
   const uploadStep2 = () => {
     setProgressBar(true)
     setCompletePercentage(20)
 
-    //Call api here
-    fetch(`FileUpload/${draftKey}`, {
-      method: 'POST',
-      headers: {
-        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
-      }
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        if (!response.success) {
-          setErrMsg1Text(response.errorMessage);
-          setErrMsg1(true);
-          setProgressBar(false);
-          return;
-        }
-
-        setCompletePercentage(100)
-
-        setProgressBar(false)
-        formContext.setFiles([])
-        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
-        setActiveStep(0)
-        window.scrollTo(0, 0)
-
-        // Shows alert for "Uploading to intranet in 10 minutes"
-        formContext.setAlertActive(true)
-        setTimeout(() => { formContext.setAlertActive(false) }, 5000)
+    const declarationdetails = formContext.declarationcheckbox
+    console.log(declarationdetails)
+      //Call api here
+      fetch(`FileUpload/${draftKey}`, {
+        method: 'POST',
+        headers: {
+         
+          'Content-Type': 'application/json',
+          RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
+        },
+        body: JSON.stringify({ "declarationbox": declarationdetails })
       })
+
+
+       
+        .then((response) => response.json())
+        
+        .then((response) => {
+          if (!response.success) {
+            setErrMsg1Text(response.errorMessage);
+            setErrMsg1(true);
+            setProgressBar(false);
+            console.log("byee")
+            console.log(response)
+            return;
+          }
+
+          console.log("hiii")
+          setCompletePercentage(100)
+
+          setProgressBar(false)
+          formContext.setFiles([])
+          formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
+          setActiveStep(0)
+          window.scrollTo(0, 0)
+
+          console.log(formContext.declarationcheckbox)
+          // Shows alert for "Uploading to intranet in 10 minutes"
+          formContext.setAlertActive(true)
+          setTimeout(() => { formContext.setAlertActive(false) }, 5000)
+        })
+       
   }
 
   return (
@@ -301,6 +328,24 @@ const StepperForm = () => {
             <Button variant="primary" onClick={() => {
               handleBack();
               closeModal();
+            }}>
+              Confirm
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </React.Fragment>
+
+      <React.Fragment>
+        <Modal show={declarationModal}>
+          <Modal.Header>
+            <Modal.Title> Error !</Modal.Title>
+            <Modal.Title className="float-right"><X size={35} onClick={closeDeclarationModal} /></Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-danger"> You have not done your declaration. </Modal.Body>
+          <Modal.Footer>
+       
+            <Button variant="primary" onClick={() => {
+              closeDeclarationModal();
             }}>
               Confirm
             </Button>

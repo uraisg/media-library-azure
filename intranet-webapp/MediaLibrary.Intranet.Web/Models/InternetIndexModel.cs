@@ -23,6 +23,8 @@ namespace MediaLibrary.Intranet.Web.Models
         public DateTime timestamp { get; set; }
         public string eTag { get; set; }
         public string additionalField { get; set; }
+
+        public string declarationCheckbox { get; set; }
     }
 
     public class ImageURLItem

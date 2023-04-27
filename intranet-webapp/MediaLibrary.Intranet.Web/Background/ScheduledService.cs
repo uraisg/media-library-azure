@@ -130,7 +130,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
                 string additionalFields = "";
                 JsonArray jsonArray = new JsonArray(item.additionalField);
-
+              //  _logger.LogInformation("{declarationcheckbox}", item.declarationCheckbox);
                 foreach (string json in jsonArray)
                 {
                     additionalFields += Regex.Replace(json, @"\t|\n|\r", "", RegexOptions.None, TimeSpan.FromSeconds(3));
@@ -153,8 +153,12 @@ namespace MediaLibrary.Intranet.Web.Background
                     Event = item.@event,
                     LocationName = item.locationName,
                     Copyright = item.copyright,
-                    AdditionalField = additionalFields
+                    AdditionalField = additionalFields,
+                    //new
+                    DeclarationCheckbox = bool.Parse(item.declarationCheckbox)
                 };
+
+                // _logger.LogInformation("{declarationcheckbox}", item.declarationCheckbox);
 
                 //upload to indexer blob
                 string indexFileName = item.id + ".json";
@@ -200,6 +204,7 @@ namespace MediaLibrary.Intranet.Web.Background
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadAsStringAsync();
+              
                 var items = JsonConvert.DeserializeObject<List<InternetTableItems>>(result);
                 return items;
             }

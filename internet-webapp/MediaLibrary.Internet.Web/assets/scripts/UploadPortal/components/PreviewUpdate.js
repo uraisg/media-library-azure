@@ -46,6 +46,7 @@ const Step2 = (props) => {
   const [errMsg2, setErrMsg2] = useState(false)
   const [errMsg2Text, setErrMsg2Text] = useState("")
 
+ 
   const renderRefresh = () => {
     setErrMsg2(false)
     setErrMsg2Text("")
@@ -86,7 +87,7 @@ const Step2 = (props) => {
         setRefresh(false)
       })
   }
-
+ 
   const setCheckValue = (e) => {
     if (e.target.checked) {
       $(`#${e.target.id.replace("ChkBox", "Div")}`).addClass("border bg-light")
@@ -184,6 +185,8 @@ const Step2 = (props) => {
   const closeModal = () => setDeleteModal(false);
   const openModal = () => setDeleteModal(true);
 
+  
+
   const deleteItem = async () => {
     setErrMsg2(false);
 
@@ -209,6 +212,20 @@ const Step2 = (props) => {
     closeModal()
     renderRefresh();
   }
+  //try
+
+  const declarationcheck = (e) => {
+    console.log(formContext.declarationcheckbox);
+    if (e.target.checked) {
+      formContext.setdeclarationcheckbox(true);
+
+    }
+    if (!e.target.checked) { 
+      formContext.setdeclarationcheckbox(false);
+    }
+    console.log(formContext.declarationcheckbox);
+  }
+  console.log(formContext.declarationcheckbox);
 
   return (
     <React.Fragment>
@@ -243,11 +260,18 @@ const Step2 = (props) => {
         </Modal.Footer>
       </Modal>
 
-      <p>Confirm uploads and update information as needed</p>
-      <div className="d-flex align-items-center" role="toolbar">
-        <Checkbox onClick={setAllCheck} id="all-chkbox" title="Select" />
+
+      <p className="ml-2">Confirm uploads and update information as needed</p>
+      <div className="d-flex align-items-center shadow-sm p-3 mb-4 rounded" style={{ backgroundColor: "#f5f5f5", width: "1100px", height: "50px" }}>
+        <Checkbox title="Select" className="mr-2 ml-1 mt-2" onClick={declarationcheck} />
+       I declare that I have uploaded images classified as ‘Restricted \ Sensitive Normal’ or below. <span className="text-danger">*</span>
+      </div>
+
+      <div className="d-flex align-items-center " role="toolbar">
+        <Checkbox className="ml-3" onClick={setAllCheck} id="all-chkbox" title="Select" />
 
         <Separator />
+
 
         <ToolbarButton variant="light" className="ml-1" onClick={renderRefresh} disabled={refresh} title="Refresh">
           {refresh ? (
