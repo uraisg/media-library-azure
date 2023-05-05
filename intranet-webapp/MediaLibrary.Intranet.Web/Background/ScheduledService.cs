@@ -130,7 +130,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
                 string additionalFields = "";
                 JsonArray jsonArray = new JsonArray(item.additionalField);
-              //  _logger.LogInformation("{declarationcheckbox}", item.declarationCheckbox);
+      
                 foreach (string json in jsonArray)
                 {
                     additionalFields += Regex.Replace(json, @"\t|\n|\r", "", RegexOptions.None, TimeSpan.FromSeconds(3));
@@ -154,11 +154,8 @@ namespace MediaLibrary.Intranet.Web.Background
                     LocationName = item.locationName,
                     Copyright = item.copyright,
                     AdditionalField = additionalFields,
-                    //new
                     DeclarationCheckbox = bool.Parse(item.declarationCheckbox)
                 };
-
-                // _logger.LogInformation("{declarationcheckbox}", item.declarationCheckbox);
 
                 //upload to indexer blob
                 string indexFileName = item.id + ".json";

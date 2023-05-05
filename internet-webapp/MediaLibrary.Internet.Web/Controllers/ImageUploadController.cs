@@ -39,7 +39,7 @@ namespace MediaLibrary.Internet.Web.Controllers
         [HttpPost("FileUpload/{rowkey}")]
         public async Task<JsonResult> Index(string rowkey, [FromBody] CheckDeclaration checkdeclaration)
         {
-           // _logger.LogInformation("{declarationbox} not check", checkdeclaration.declarationbox);
+        
             if (!checkdeclaration.declarationbox)
             {
                 _logger.LogError("Declaration has not been checked");
@@ -185,8 +185,6 @@ namespace MediaLibrary.Internet.Web.Controllers
 
         private static async Task IndexUploadToTable (ImageEntity json, AppSettings appSettings)
         {
-            //logger.LogInformation("{declarationbox}",json.DeclarationCheckbox);
-
 
             string tableName = appSettings.TableName;
             string tableConnectionString = appSettings.TableConnectionString;
@@ -228,8 +226,6 @@ namespace MediaLibrary.Internet.Web.Controllers
                 DeclarationCheckbox = json.DeclarationCheckbox.ToString()
             };
 
-            
-           // logger.LogInformation("{declarationbox}", transferEntity.DeclarationCheckbox);
             TableOperation insertOperation = TableOperation.Insert(transferEntity);
             await table.ExecuteAsync(insertOperation);
         }
