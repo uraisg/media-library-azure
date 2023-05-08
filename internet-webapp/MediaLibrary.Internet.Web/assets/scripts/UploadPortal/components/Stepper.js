@@ -59,10 +59,10 @@ const StepperForm = () => {
     setDisabledBtn(disable);
   }, [formContext.files])
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (activeStep == 0) {
       if (validateInput()) {
-        uploadStep1()
+       await uploadStep1()
       }
     }
     else if (activeStep == 1) {
@@ -77,7 +77,7 @@ const StepperForm = () => {
       setActiveStep((prevActiveStep) => prevActiveStep + 1)
       window.scrollTo(0, 0)
     }
-  };
+  }
 
   const validateInput = () => {
     if (!formContext.validInput.Name || !formContext.validInput.Location || formContext.files.length == 0) {
@@ -91,17 +91,17 @@ const StepperForm = () => {
     fetch(`draft/all/${draftKey}`, {
       method: 'DELETE',
       headers: {
-        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
-      }
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content,
+      },
     })
-
-    window.scrollTo(0, 0)
-    setActiveStep((prevActiveStep) => prevActiveStep - 1)
-    .catch((error) => {
-      console.error(error)
-    })
-
-  };
+      .then(() => {
+        window.scrollTo(0, 0)
+        setActiveStep((prevActiveStep) => prevActiveStep - 1)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  }
 
   const uploadStep1 = async () => {
     let completedPer = 0;
