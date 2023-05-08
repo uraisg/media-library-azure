@@ -34,6 +34,6 @@ namespace MediaLibrary.Internet.Web.Models
         public string Copyright { get; set; }
         public List<object> AdditionalField { get; set; }
 
-        public bool DeclarationCheckbox { get; set; }
+        public bool DeclaredClassification { get; set; }
     }
 }

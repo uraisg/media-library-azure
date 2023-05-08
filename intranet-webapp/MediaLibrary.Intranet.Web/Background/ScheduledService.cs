@@ -154,7 +154,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     LocationName = item.locationName,
                     Copyright = item.copyright,
                     AdditionalField = additionalFields,
-                    DeclarationCheckbox = bool.Parse(item.declarationCheckbox)
+                    DeclaredClassification = item.declaredclassification
                 };
 
                 //upload to indexer blob

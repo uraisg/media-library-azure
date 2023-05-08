@@ -212,20 +212,15 @@ const Step2 = (props) => {
     closeModal()
     renderRefresh();
   }
-  //try
 
   const declarationcheck = (e) => {
-    console.log(formContext.declarationcheckbox);
     if (e.target.checked) {
       formContext.setdeclarationcheckbox(true);
-
     }
     if (!e.target.checked) { 
       formContext.setdeclarationcheckbox(false);
     }
-    console.log(formContext.declarationcheckbox);
   }
-  console.log(formContext.declarationcheckbox);
 
   return (
     <React.Fragment>

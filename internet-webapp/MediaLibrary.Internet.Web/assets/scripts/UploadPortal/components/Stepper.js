@@ -39,7 +39,6 @@ const StepperForm = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [disabledBtn, setDisabledBtn] = useState(false);
 
-  //try declarationmodal
   const [declarationModal, setDeclarationModal] = useState(false);
   const closeDeclarationModal = () => setDeclarationModal(false);
   const openDeclarationModal = () => setDeclarationModal(true);
@@ -72,7 +71,7 @@ const StepperForm = () => {
         uploadStep2()
       }
       else {
-        uploadStep2()
+     
         openDeclarationModal()
       }
     }
@@ -211,7 +210,7 @@ const StepperForm = () => {
     setCompletePercentage(20)
 
     const declarationdetails = formContext.declarationcheckbox
-    console.log(declarationdetails)
+ 
       //Call api here
       fetch(`FileUpload/${draftKey}`, {
         method: 'POST',
@@ -222,8 +221,6 @@ const StepperForm = () => {
         },
         body: JSON.stringify({ "declarationbox": declarationdetails })
       })
-
-
        
         .then((response) => response.json())
         
@@ -232,12 +229,9 @@ const StepperForm = () => {
             setErrMsg1Text(response.errorMessage);
             setErrMsg1(true);
             setProgressBar(false);
-            console.log("byee")
-            console.log(response)
             return;
           }
 
-          console.log("hiii")
           setCompletePercentage(100)
 
           setProgressBar(false)
@@ -246,7 +240,6 @@ const StepperForm = () => {
           setActiveStep(0)
           window.scrollTo(0, 0)
 
-          console.log(formContext.declarationcheckbox)
           // Shows alert for "Uploading to intranet in 10 minutes"
           formContext.setAlertActive(true)
           setTimeout(() => { formContext.setAlertActive(false) }, 5000)

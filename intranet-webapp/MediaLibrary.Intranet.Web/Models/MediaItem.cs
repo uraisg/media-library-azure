@@ -56,6 +56,6 @@ namespace MediaLibrary.Intranet.Web.Models
 
         public string AdditionalField { get; set; }
 
-        public bool DeclarationCheckbox { get; set; }
+        public bool DeclaredClassification { get; set; }
     }
 }

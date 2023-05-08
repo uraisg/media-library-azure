@@ -24,7 +24,7 @@ namespace MediaLibrary.Intranet.Web.Models
         public string eTag { get; set; }
         public string additionalField { get; set; }
 
-        public string declarationCheckbox { get; set; }
+        public bool declaredclassification { get; set; }
     }
 
     public class ImageURLItem

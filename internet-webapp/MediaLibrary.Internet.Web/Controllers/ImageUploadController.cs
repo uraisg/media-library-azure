@@ -109,9 +109,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                     json.LocationName = image["LocationName"].ToString();
                     json.Copyright = image["Copyright"].ToString();
                     json.AdditionalField = JsonConvert.DeserializeObject<List<object>>(image["AdditionalField"].ToString());
-                    json.DeclarationCheckbox = checkdeclaration.declarationbox;
+                    json.DeclaredClassification = checkdeclaration.declarationbox;
 
-                    //the logger here also need to remove
                     await IndexUploadToTable(json, _appSettings);
                 }
 
@@ -183,9 +182,8 @@ namespace MediaLibrary.Internet.Web.Controllers
             return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerSecond));
         }
 
-        private static async Task IndexUploadToTable (ImageEntity json, AppSettings appSettings)
+        private static async Task IndexUploadToTable(ImageEntity json, AppSettings appSettings)
         {
-
             string tableName = appSettings.TableName;
             string tableConnectionString = appSettings.TableConnectionString;
 
@@ -223,7 +221,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 LocationName = json.LocationName,
                 Copyright = json.Copyright,
                 AdditionalField = jsonArray.ToString(),
-                DeclarationCheckbox = json.DeclarationCheckbox.ToString()
+                DeclaredClassification = json.DeclaredClassification
             };
 
             TableOperation insertOperation = TableOperation.Insert(transferEntity);
@@ -253,7 +251,7 @@ namespace MediaLibrary.Internet.Web.Controllers
             public string Copyright { get; set; }
             public string AdditionalField { get; set; }
 
-            public string DeclarationCheckbox { get; set; }
+            public bool DeclaredClassification { get; set; }
         }
     }
 
