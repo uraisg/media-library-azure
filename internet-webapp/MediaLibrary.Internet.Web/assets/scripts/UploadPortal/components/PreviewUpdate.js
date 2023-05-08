@@ -46,7 +46,7 @@ const Step2 = (props) => {
   const [errMsg2, setErrMsg2] = useState(false)
   const [errMsg2Text, setErrMsg2Text] = useState("")
 
- 
+
   const renderRefresh = () => {
     setErrMsg2(false)
     setErrMsg2Text("")
@@ -86,8 +86,11 @@ const Step2 = (props) => {
         $('.item-list').removeClass("border bg-light")
         setRefresh(false)
       })
+      .catch((error) => {
+        console.error(error)
+      })
   }
- 
+
   const setCheckValue = (e) => {
     if (e.target.checked) {
       $(`#${e.target.id.replace("ChkBox", "Div")}`).addClass("border bg-light")
@@ -133,15 +136,19 @@ const Step2 = (props) => {
     }
 
     if (formContext.retrievedFile.length === 0) {
-      deleteDraft().then((result) => {
-        if (!result) {
-          return;
-        }
+      deleteDraft()
+        .then((result) => {
+          if (!result) {
+            return
+          }
 
-        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
-        formContext.setFiles([])
-        props.setActiveStep(0)
-      })
+          formContext.setValidInput({ Name: '', Location: '', Copyright: 'URA' })
+          formContext.setFiles([])
+          props.setActiveStep(0)
+        })
+        .catch((error) => {
+          console.error(error)
+        })
     }
   }, [formContext.retrievedFile])
 
@@ -184,8 +191,6 @@ const Step2 = (props) => {
 
   const closeModal = () => setDeleteModal(false);
   const openModal = () => setDeleteModal(true);
-
-  
 
   const deleteItem = async () => {
     setErrMsg2(false);

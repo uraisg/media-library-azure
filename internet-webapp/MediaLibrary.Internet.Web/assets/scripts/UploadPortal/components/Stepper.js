@@ -34,16 +34,15 @@ const StepperForm = () => {
   const [completePercentage, setCompletePercentage] = useState(0)
   const [errMsg, setErrMsg] = useState(false)
   const [errMsg1, setErrMsg1] = useState(false)
-  const [errMsg1Text, setErrMsg1Text] = useState("")
-  const [draftKey, setDraftKey] = useState("")
-  const [cancelModal, setCancelModal] = useState(false);
-  const [disabledBtn, setDisabledBtn] = useState(false);
+  const [errMsg1Text, setErrMsg1Text] = useState('')
+  const [draftKey, setDraftKey] = useState('')
+  const [disabledBtn, setDisabledBtn] = useState(false)
 
-  const [declarationModal, setDeclarationModal] = useState(false);
-  const closeDeclarationModal = () => setDeclarationModal(false);
-  const openDeclarationModal = () => setDeclarationModal(true);
+  const [declarationModal, setDeclarationModal] = useState(false)
+  const closeDeclarationModal = () => setDeclarationModal(false)
+  const openDeclarationModal = () => setDeclarationModal(true)
 
-
+  const [cancelModal, setCancelModal] = useState(false)
   const closeModal = () => setCancelModal(false);
   const openModal = () => setCancelModal(true);
 
@@ -71,7 +70,6 @@ const StepperForm = () => {
         uploadStep2()
       }
       else {
-     
         openDeclarationModal()
       }
     }
@@ -99,6 +97,10 @@ const StepperForm = () => {
 
     window.scrollTo(0, 0)
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
+    .catch((error) => {
+      console.error(error)
+    })
+
   };
 
   const uploadStep1 = async () => {
@@ -202,6 +204,9 @@ const StepperForm = () => {
           setProgressBar(false);
         }
       })
+      .catch((error) => {
+        console.error(error)
+      })
   }
 
 
@@ -210,41 +215,40 @@ const StepperForm = () => {
     setCompletePercentage(20)
 
     const declarationdetails = formContext.declarationcheckbox
- 
-      //Call api here
-      fetch(`FileUpload/${draftKey}`, {
-        method: 'POST',
-        headers: {
-         
-          'Content-Type': 'application/json',
-          RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
-        },
-        body: JSON.stringify({ "declarationbox": declarationdetails })
-      })
-       
-        .then((response) => response.json())
-        
-        .then((response) => {
-          if (!response.success) {
-            setErrMsg1Text(response.errorMessage);
-            setErrMsg1(true);
-            setProgressBar(false);
-            return;
-          }
 
-          setCompletePercentage(100)
-
+    //Call api here
+    fetch(`FileUpload/${draftKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content,
+      },
+      body: JSON.stringify({ declarationbox: declarationdetails }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        if (!response.success) {
+          setErrMsg1Text(response.errorMessage)
+          setErrMsg1(true)
           setProgressBar(false)
-          formContext.setFiles([])
-          formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
-          setActiveStep(0)
-          window.scrollTo(0, 0)
+          return
+        }
 
-          // Shows alert for "Uploading to intranet in 10 minutes"
-          formContext.setAlertActive(true)
-          setTimeout(() => { formContext.setAlertActive(false) }, 5000)
-        })
-       
+        setCompletePercentage(100)
+
+        setProgressBar(false)
+        formContext.setFiles([])
+        formContext.setValidInput({ Name: '', Location: '', Copyright: 'URA' })
+        setActiveStep(0)
+        window.scrollTo(0, 0)
+
+        // Shows alert for "Uploading to intranet in 10 minutes"
+        formContext.setAlertActive(true)
+        setTimeout(() => formContext.setAlertActive(false), 5000)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
   }
 
   return (
@@ -336,10 +340,7 @@ const StepperForm = () => {
           </Modal.Header>
           <Modal.Body className="text-danger"> You have not done your declaration. </Modal.Body>
           <Modal.Footer>
-       
-            <Button variant="primary" onClick={() => {
-              closeDeclarationModal();
-            }}>
+            <Button variant="primary" onClick={closeDeclarationModal}>
               Confirm
             </Button>
           </Modal.Footer>
