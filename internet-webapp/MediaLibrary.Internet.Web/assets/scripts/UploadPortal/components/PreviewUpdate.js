@@ -220,10 +220,10 @@ const Step2 = (props) => {
 
   const declarationcheck = (e) => {
     if (e.target.checked) {
-      formContext.setdeclarationcheckbox(true);
+      formContext.setDeclarationCheckbox(true);
     }
     if (!e.target.checked) { 
-      formContext.setdeclarationcheckbox(false);
+      formContext.setDeclarationCheckbox(false);
     }
   }
 
@@ -262,7 +262,7 @@ const Step2 = (props) => {
 
 
       <p className="ml-2">Confirm uploads and update information as needed</p>
-      <div className="d-flex align-items-center shadow-sm p-3 mb-4 rounded" style={{ backgroundColor: "#f5f5f5", width: "1100px", height: "50px" }}>
+      <div className="d-flex align-items-center shadow-sm p-3 mb-4 rounded" style={{ backgroundColor: "#f5f5f5" }}>
         <Checkbox title="Select" className="mr-2 ml-1 mt-2" onClick={declarationcheck} />
        I declare that I have uploaded images classified as ‘Restricted \ Sensitive Normal’ or below. <span className="text-danger">*</span>
       </div>

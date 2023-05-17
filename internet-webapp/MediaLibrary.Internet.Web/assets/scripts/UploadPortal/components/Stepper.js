@@ -66,7 +66,7 @@ const StepperForm = () => {
       }
     }
     else if (activeStep == 1) {
-      if (formContext.declarationcheckbox) {
+      if (formContext.declarationCheckbox) {
         uploadStep2()
       }
       else {
@@ -209,12 +209,11 @@ const StepperForm = () => {
       })
   }
 
-
   const uploadStep2 = () => {
     setProgressBar(true)
     setCompletePercentage(20)
 
-    const declarationdetails = formContext.declarationcheckbox
+    const declarationdetails = formContext.declarationCheckbox
 
     //Call api here
     fetch(`FileUpload/${draftKey}`, {

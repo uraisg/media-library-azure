@@ -17,7 +17,7 @@ export function FormProvider({ children }) {
   const [files, setFiles] = useState([])
   const [validInput, setValidInput] = useState({ "Name": "", "Location": "", "Copyright": "URA" })
 
-  const [declarationcheckbox, setdeclarationcheckbox] = useState(false)
+  const [declarationCheckbox, setDeclarationCheckbox] = useState(false)
  
   const [retrievedFile, setRetrievedFile] = useState([])
   const [alertActive, setAlertActive] = useState(false)
@@ -25,7 +25,7 @@ export function FormProvider({ children }) {
   return (
     <FormContext.Provider value={{
       files: files, setFiles: setFiles, validInput: validInput, setValidInput: setValidInput, retrievedFile: retrievedFile, setRetrievedFile: setRetrievedFile, alertActive: alertActive, setAlertActive: setAlertActive,
-      declarationcheckbox, setdeclarationcheckbox
+      declarationCheckbox, setDeclarationCheckbox
     }}>
       {alertActive &&
         <Alert variant={'success'} style={{ width: '90%', margin: '2% auto' }}>
