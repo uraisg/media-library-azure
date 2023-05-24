@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using MediaLibrary.Intranet.Web.Common;
-using MediaLibrary.Intranet.Web.Models;
+using MediaLibrary.Api.Web.Models;
+using MediaLibrary.Internet.Api;
+using MediaLibrary.Internet.Web.Common;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Options;
 
-namespace MediaLibrary.Intranet.Web.Configuration
+namespace MediaLibrary.Internet.Web.Configuration
 {
     /// <summary>
     /// UserRoleClaimsTransformation checks if the ClaimsPrincipal represents a normal or an admin
@@ -17,9 +18,10 @@ namespace MediaLibrary.Intranet.Web.Configuration
     /// </summary>
     class UserRoleClaimsTransformation : IClaimsTransformation
     {
-        private readonly IEnumerable<string> _adminUsers;
         private bool _hasTransformed = false;
-
+        
+        private readonly IEnumerable<string> _adminUsers;
+ 
         public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings)
         {
             var adminUsersStr = appSettings.Value.AdminUsers;
@@ -32,17 +34,17 @@ namespace MediaLibrary.Intranet.Web.Configuration
             if (!_hasTransformed)
             {
                 _hasTransformed = true;
-
                 // Check if user's email address is in list of admins
-             //   if (!principal.GetUserGraphEmail().ToLower().Contains("from.") || (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
-               // {
+
+                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
+                    {
                     string role = _adminUsers.Contains(principal.GetUserGraphEmail())
                     ? UserRole.Admin
                     : UserRole.User;
                     var ci = new ClaimsIdentity();
                     ci.AddClaim(new Claim(ClaimTypes.Role, role));
                     principal.AddIdentity(ci);
-             //   }
+                }
             }
 
             return Task.FromResult(principal);

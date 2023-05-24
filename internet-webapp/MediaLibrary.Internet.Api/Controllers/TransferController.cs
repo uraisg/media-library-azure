@@ -11,12 +11,13 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
+using MediaLibrary.Api.Web.Models;
 
 namespace MediaLibrary.Internet.Api.Controllers
 {
     [Route("/api/v1/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = UserRole.User)]
     public class TransferController : ControllerBase
     {
         private static readonly string TransferPartitionKey = "transfer";

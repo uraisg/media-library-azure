@@ -11,5 +11,6 @@
         public string ThumbHeight { get; set; }
         public string ThumbWidth { get; set; }
         public string UploadTimeZone { get; set; }
+        public string AdminUsers { get; set; }
     }
 }

@@ -25,9 +25,12 @@ using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Newtonsoft.Json.Linq;
 using Azure;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
+    [Authorize(Roles = UserRole.User)]
     public class DraftController : Controller
     {
         private static readonly string DraftPartitionKey = "draft";

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.AspNetCore.Authentication;
 
 namespace MediaLibrary.Internet.Web
 {
@@ -42,6 +43,7 @@ namespace MediaLibrary.Internet.Web
             });
             services.AddCustomMvcConfig();
 
+            services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHostedService<ScheduledService>();
         }

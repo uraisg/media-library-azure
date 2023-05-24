@@ -83,11 +83,21 @@
     </div>
 </div>
 }
+else if (User.IsInRole(UserRole.Admin) || User.IsInRole(UserRole.User))
+	
+{
+	
+<meta name="RequestVerificationToken" content="@requestToken">
+	<div id="root"></div>
+}
+
 else
 {
-<meta name="RequestVerificationToken" content="@requestToken">
-<div id="root"></div>
+	<h1>Access denied</h1>
+	<p>You do not have access to this resource</p>
 }
+
+
 
 
 @section Scripts {

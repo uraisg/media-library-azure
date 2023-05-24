@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
+    [Authorize(Roles = UserRole.User)]
     public class HomeController : Controller
     {
         [AllowAnonymous]

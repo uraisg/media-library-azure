@@ -7,5 +7,6 @@
         public string TableConnectionString { get; set; }
         public string TableName { get; set; }
         public string ApiKey { get; set; }
+        public string AdminUsers { get; set; }
     }
 }
