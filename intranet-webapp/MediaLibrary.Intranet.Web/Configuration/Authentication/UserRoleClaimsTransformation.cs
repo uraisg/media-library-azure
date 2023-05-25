@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Options;
 
 namespace MediaLibrary.Intranet.Web.Configuration
@@ -33,12 +31,13 @@ namespace MediaLibrary.Intranet.Web.Configuration
             {
                 _hasTransformed = true;
 
-                // Check if user's email address is in list of admins
+                // Skip adding roles if user's email address format is unexpected
                 if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
                 {
+                    // Check if user's email address is in list of admins
                     string role = _adminUsers.Contains(principal.GetUserGraphEmail())
-                    ? UserRole.Admin
-                    : UserRole.User;
+                        ? UserRole.Admin
+                        : UserRole.User;
                     var ci = new ClaimsIdentity();
                     ci.AddClaim(new Claim(ClaimTypes.Role, role));
                     principal.AddIdentity(ci);
