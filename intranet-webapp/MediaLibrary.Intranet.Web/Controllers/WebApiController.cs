@@ -8,6 +8,7 @@ using Azure.Storage.Blobs.Models;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
 {
     [ApiController]
     [ValidateOrigin]
+    [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
     public class WebApiController : ControllerBase
     {
         private readonly AppSettings _appSettings;

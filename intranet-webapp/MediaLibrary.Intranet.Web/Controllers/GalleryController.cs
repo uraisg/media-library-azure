@@ -3,12 +3,14 @@ using System.Threading.Tasks;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
+    [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
     public class GalleryController : Controller
     {
         private readonly ILogger<GalleryController> _logger;

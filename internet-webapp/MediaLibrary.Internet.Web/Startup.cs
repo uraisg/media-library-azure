@@ -1,5 +1,6 @@
-﻿using MediaLibrary.Internet.Web.Configuration;
-using MediaLibrary.Internet.Web.Background;
+﻿using MediaLibrary.Internet.Web.Background;
+using MediaLibrary.Internet.Web.Configuration;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -42,6 +43,7 @@ namespace MediaLibrary.Internet.Web
             });
             services.AddCustomMvcConfig();
 
+            services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHostedService<ScheduledService>();
         }
