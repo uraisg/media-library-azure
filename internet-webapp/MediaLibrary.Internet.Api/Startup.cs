@@ -1,5 +1,4 @@
 ﻿using AspNetCore.Authentication.ApiKey;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -46,7 +45,6 @@ namespace MediaLibrary.Internet.Api
                 c.OperationFilter<ApiKeyOperationFilter>();
             });
 
-            services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
         }
 
