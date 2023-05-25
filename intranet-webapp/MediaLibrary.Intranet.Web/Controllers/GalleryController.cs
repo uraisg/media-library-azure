@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
-
     [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
     public class GalleryController : Controller
     {
