@@ -83,25 +83,20 @@
     </div>
 </div>
 }
-else if (User.IsInRole(UserRole.Admin) || User.IsInRole(UserRole.User))
-	
+else if (User.IsInRole(UserRole.User))
 {
-	
 <meta name="RequestVerificationToken" content="@requestToken">
-	<div id="root"></div>
+<div id="root"></div>
 }
-
 else
 {
-	<h1>Access denied</h1>
-	<p>You do not have access to this resource</p>
+<h1>Access denied</h1>
+<p>You do not have access to this resource</p>
 }
-
-
 
 
 @section Scripts {
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity.IsAuthenticated && User.IsInRole(UserRole.User))
 {
     <script src="~/scripts/upload_portal.js"></script>
 }

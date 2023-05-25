@@ -10,8 +10,7 @@ using Microsoft.Extensions.Options;
 namespace MediaLibrary.Intranet.Web.Configuration
 {
     /// <summary>
-    /// UserRoleClaimsTransformation checks if the ClaimsPrincipal represents a normal or an admin
-    /// user and adds it as a Role claim. 
+    /// UserRoleClaimsTransformation validates the ClaimsPrincipal and adds the appropriate Role claim. 
     /// </summary>
     class UserRoleClaimsTransformation : IClaimsTransformation
     {
