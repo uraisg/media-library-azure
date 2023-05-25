@@ -20,8 +20,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
 {
     [ApiController]
     [ValidateOrigin]
-    [Authorize(Roles = UserRole.User) ]
-    [Authorize(Roles = UserRole.Admin)]
+    [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
     public class WebApiController : ControllerBase
     {
         private readonly AppSettings _appSettings;

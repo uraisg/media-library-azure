@@ -8,7 +8,9 @@ using MediaLibrary.Intranet.Web.Common;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
-    [Authorize(Roles = UserRole.Admin)]
+
+    [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

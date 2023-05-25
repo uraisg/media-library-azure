@@ -34,15 +34,15 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 _hasTransformed = true;
 
                 // Check if user's email address is in list of admins
-             //   if (!principal.GetUserGraphEmail().ToLower().Contains("from.") || (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
-               // {
+                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
+                {
                     string role = _adminUsers.Contains(principal.GetUserGraphEmail())
                     ? UserRole.Admin
                     : UserRole.User;
                     var ci = new ClaimsIdentity();
                     ci.AddClaim(new Claim(ClaimTypes.Role, role));
                     principal.AddIdentity(ci);
-             //   }
+                }
             }
 
             return Task.FromResult(principal);

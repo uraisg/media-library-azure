@@ -11,8 +11,8 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
-    [Authorize(Roles = UserRole.User)]
-    [Authorize(Roles = UserRole.Admin)]
+
+    [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
     public class GalleryController : Controller
     {
         private readonly ILogger<GalleryController> _logger;
