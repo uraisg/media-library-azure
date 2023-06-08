@@ -2,7 +2,6 @@ import { React } from "react";
 import { useState } from "react";
 import { useFilter } from './@/../../../ucm/components/context'
 import { Button } from 'react-bootstrap'
-import { Editbutton } from './@/../../../ucm/components/searchuser'
 import { styled } from '@linaria/react'
 
 const TopDiv = styled.div`
@@ -15,7 +14,7 @@ const TopDiv = styled.div`
 const LeftDiv = styled.div`
   display: inline-block;
   width: 60%;
-  margin-top:1em;
+  margin-top:2.5em;
  
 `
 
@@ -36,17 +35,16 @@ const SelectTableComponent = () => {
     const { id, checked } = e.target;
     console.log(id)
     setIsCheck([...isCheck, id]);
-    setIsShown(current => !current);
     if (!checked) {
       setIsCheck(isCheck.filter(item => item !== id));
     }
   };
 
-  const [show, setIsShown] = useState(false);
 
   // Initial states
   const [isEdit, setEdit] = useState(false);
   const [disable, setDisable] = useState(true);
+  
 
   const handleEdit = (i) => {
     setEdit(!isEdit);
@@ -62,9 +60,6 @@ const SelectTableComponent = () => {
     setDisable(false);
     const { name, value } = e.target;
     const list = [...filtercontext.result];
-    console.log(name)
-    console.log(value)
-    console.log(index)
     list[index][name] = value;
     filtercontext.setResult(list);
   };
@@ -79,39 +74,54 @@ const SelectTableComponent = () => {
       
       <TopDiv>
         <LeftDiv>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div>
+      
               {isEdit ? (
                 <div>
                   {filtercontext.result.length !== 0 && (
                     <div>
                       {disable ? (
-                        <Button disabled align="right" size="sm" variant="outline-primary" onClick={handleSave}>
+                        <>
+                        <Button disabled align="right" size="sm" variant="outline-primary mr-2" onClick={handleSave}>
+                          Save
+                        </Button>
 
-                          SAVE
+                        <Button size="sm" onClick={canceledit}>
+                              Cancel
                         </Button>
+
+                        </>
+
                       ) : (
-                          <Button align="right" size="sm" variant="outline-primary"  onClick={handleSave}>
-                          SAVE
-                        </Button>
+                        <>
+                          <Button align="right" size="sm" variant="outline-primary mr-2"  onClick={handleSave}>
+                            Save
+                          </Button>
+
+                          <Button size="sm" onClick={canceledit}>
+                            Cancel
+                          </Button>
+
+                          </>
                       )}
                     </div>
                   )}
                 </div>
               ) : (
                 <div>
-                  <Button align="right" size="sm" className="mr-2"
-                    variant="outline-primary" onClick={handleEdit}>
-                    EDIT
-                  </Button>
-                    {isCheck.length > 1 ? (
-                      <Editbutton />
-                    ) : null}
-                  </div>
+                    <Button align="right" size="sm" className="mr-2 btn-success" onClick={handleEdit}>
+                    Assign Role
+                    </Button>
+                    {isCheck.length > 0 ? (
+                      <Button align="right" size="sm" className="mr-2 btn-danger">
+                      Revoke Role
+                      </Button>) :
 
+                      <Button disabled align="right" size="sm" className="mr-2 btn-danger" >
+                        Revoke Role
+                      </Button>}
+                  </div>
               )}
-            </div>
-          </div>
+           
         </LeftDiv>
       </TopDiv>
    
@@ -131,7 +141,6 @@ const SelectTableComponent = () => {
             <th scope="col ">Department </th>
             <th scope="col ">Group </th>
             <th scope="col">Role</th>
-            <th scope="col">Permission</th>
             <th scope="col">Last Login Date</th>
             </tr>
           </thead>
@@ -139,14 +148,14 @@ const SelectTableComponent = () => {
           <tbody>
           {filtercontext.result.map((item, index) => (
             <tr key={index}>
-                <td>
+              <td>
                   <input
                     type="checkbox"
                     id={item.id}
                     onChange={handleClick}
                     checked={isCheck.includes(item.id)}
                   />
-                </td>
+              </td>
 
               <td >{item.name}</td>
               <td >{item.email}</td>
@@ -155,7 +164,7 @@ const SelectTableComponent = () => {
               {isEdit ? (
                 <td padding="none">
                   <select
-                    style={{ width: "100px" }}
+                    style={{ width: "80%" }}
                     name="role"
                     value={item.role}
                     onChange={(e) => handleInputChange(e, index)}
@@ -168,30 +177,8 @@ const SelectTableComponent = () => {
                 </td>) : (
                 <td>{item.role}</td>
               )}
-              {isEdit ? (
-                <td padding="none">
-                  <select
-                    style={{ width: "100px" }}
-                    name="permission"
-                    value={item.permission}
-                    onChange={(e) => handleInputChange(e, index)}
-                  >
-                    <option value=""></option>
-                    <option value="Regular">Regular</option>
-                    <option value="Restricted">Restricted</option>
-                  </select>
-                </td>) : (
-                <td>{item.permission}</td>
-              )}
+  
               <td>{item.LastLoginDate}</td>
-              <td>
-                {isEdit ? (
-                  <Button size="sm" onClick={canceledit}>
-                  Cancel
-                </Button>
-              ) : null}
-                 </td>
-          
               </tr>
             ))}
         </tbody>

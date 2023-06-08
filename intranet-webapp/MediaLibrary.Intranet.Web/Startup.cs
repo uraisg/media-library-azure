@@ -53,6 +53,7 @@ namespace MediaLibrary.Intranet.Web
             services.AddSingleton<MediaSearchService>();
             services.AddSingleton<ItemService>();
             services.AddTransient<GraphService>();
+            services.AddTransient<UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

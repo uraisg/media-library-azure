@@ -16,42 +16,11 @@ export const FilterProvider = ({ children }) => {
     filterbydepartment: [],
     filterbygroup: [],
     filterbyrole: [],
-    filterbypermission: []
   })
 
   const [result, setResult] = useState([])
   const [page, setPage] = useState({ CurrentPage: 1, TotalPage: 1 })
 
- /*
-  useEffect(() => {
-    setResult([{
-      id: "1",
-      name: "User1",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Status: "Active",
-      LastLoginDate: "03/28/2023",
-    },
-    {
-      id: "2",
-      name: "usertwo ",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Status: "Active",
-      LastLoginDate: "03/28/2023",
-    },
-    {
-      id: "3",
-      name: "Clementine ",
-      email: "Clementine@april.biz",
-      Department: "ISGG",
-      Status: "Inactive",
-      LastLoginDate: "03/28/2022",
-    },
-
-    ])
-  }, [active])
-  */
   useEffect(() => {
     setResult([{
       id: "1",
@@ -60,7 +29,6 @@ export const FilterProvider = ({ children }) => {
       Department: "ISGG",
       Group: "Group1",
       role: "User",
-      permission :"Restricted",
       LastLoginDate: "03/28/2023",
     },
     {
@@ -70,7 +38,6 @@ export const FilterProvider = ({ children }) => {
       Department: "ISGG",
       Group: "Group1",
       role: "SystemAdmin",
-      permission :"Regular",
       LastLoginDate: "03/28/2023",
     },
     {
@@ -80,7 +47,6 @@ export const FilterProvider = ({ children }) => {
       Department: "ISGG",
       Group: "Group1",
       role: "RoleAdmin",
-      permission :"Regular",
       LastLoginDate: "03/28/2022",
     },
     {
@@ -90,7 +56,6 @@ export const FilterProvider = ({ children }) => {
       Department: "ISGG",
       Group: "Group1",
       role: "User",
-      permission :"Restricted",
       LastLoginDate: "03/28/2022",
       },
     {
@@ -100,7 +65,6 @@ export const FilterProvider = ({ children }) => {
       Department: "ISGG",
       Group: "Group1",
       role: "User",
-      permission :"Restricted",
       LastLoginDate: "03/28/2022",
       },])
   }, [])
@@ -113,7 +77,6 @@ export const FilterProvider = ({ children }) => {
       Department: "ISGG",
       Group: "Group1",
       role: "User",
-      permission:"Restricted",
       LastLoginDate: "03/28/2023",
     },
     {
@@ -123,7 +86,6 @@ export const FilterProvider = ({ children }) => {
       Department: "ISGG",
       Group: "Group1",
       role: "System Admin",
-      permission:"Regular",
       LastLoginDate: "03/28/2023",
     },
 

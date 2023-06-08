@@ -5,10 +5,7 @@ export const convertSort = (option) => {
       return " Group Ascending"
     case "GroupDSC":
       return " Group Descending"
-    case "PermissionASC":
-      return "Permission Ascending"
-    case "permissionDSC":
-      return "Permission Descending"
+   
     case "dateDSC":
       return "Latest login Date"
     case "dateASC":

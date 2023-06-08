@@ -2,7 +2,7 @@
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
-    public class Users : Controller
+    public class RoleController : Controller
     {
         public IActionResult Index()
         {

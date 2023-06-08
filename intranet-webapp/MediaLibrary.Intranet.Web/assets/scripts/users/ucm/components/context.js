@@ -9,133 +9,26 @@ export const useFilter = () => {
 export const FilterProvider = ({ children }) => {
   const [active, setActive] = useState({
     Page: 1,
+    pagelimit : 10,
+    currPageCount: 0,
     SearchQuery: "",
     SortOption: "dateDSC",
     StartDate: "",
     EndDate: "",
+    SuspendStartDate : "",
+    SuspendEndDate : "",
     filterbydepartment: [],
-    filterbystatus : []
+    filterbystatus: [],
+    filterbygroup:[]
   })
   const [result, setResult] = useState([])
- const [page, setPage] = useState({ CurrentPage: 1, TotalPage: 1 })
- /*
-  useEffect(() => {
-    setResult([{
-      id: "1",
-      name: "User1",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Status: "Active",
-      LastLoginDate: "03/28/2023",
-    },
-    {
-      id: "2",
-      name: "usertwo ",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Status: "Active",
-      LastLoginDate: "03/28/2023",
-    },
-    {
-      id: "3",
-      name: "Clementine ",
-      email: "Clementine@april.biz",
-      Department: "ISGG",
-      Status: "Inactive",
-      LastLoginDate: "03/28/2022",
-    },
+  const [page, setPage] = useState({ CurrentPage: 1, TotalPage: 1 })
 
-    ])
-
-
-  }, [active])
-  */
-  useEffect(() => {
-    setResult([{
-      id: "1",
-      name: "User1",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      group: "Group1",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
-    },
-    {
-      id: "2",
-      name: "usertwo ",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      group: "Group2",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
-    },
-    {
-      id: "3",
-      name: "Clementine ",
-      email: "Clementine@april.biz",
-      Department: "ISGG",
-      group: "Group3",
-      Status: "Suspend",
-      LastLoginDate: "28/03/2022",
-      DisableDate: "10/03/2023",
-    },
-    {
-      id: "4",
-      name: "Patricia ",
-      email: "Patricia@april.biz",
-      Department: "ISGG",
-      group: "Group3",
-      Status: "Inactive",
-      LastLoginDate: "28/03/2022",
-      DisableDate: "",
-    },
-    {
-      id: "5",
-      name: "Chelsey ",
-      email: "Chelsey@april.biz",
-      Department: "ISGG",
-      group: "Group3",
-      Status: "Inactive",
-      LastLoginDate: "28/03/2022",
-      DisableDate: "",
-      },])
-
-
-  }, [])
-
-  const callapi = () => {
-    setResult([{
-      id: "1",
-      name: "User1",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      group: "Group3",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
-    },
-    {
-      id: "2",
-      name: "usertwo ",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      group: "Group3",
-      Status: "Active",
-      LastLoginDate: "28/03/2023",
-      DisableDate: "",
-    },
-
-    ])
-  }
-
-  /*
+  //Getting the result
   useEffect(() => {
     const baseLocation = location
-    let url = new URL('/api/staff', baseLocation)
+    let url = new URL('/api/acm/users', baseLocation)
     url.search = new URLSearchParams(active)
-
     fetch(url, {
       mode: 'same-origin',
       credentials: 'same-origin',
@@ -152,19 +45,22 @@ export const FilterProvider = ({ children }) => {
       })
       .then((result) => {
         handleResult(result.Item1)
-        handlePage(result.Item2, result.Item3)
+        handlePage(result.Item2)
       })
 
     const handleResult = (data) => {
       let allResult = []
       data.forEach((item) => {
+       
         const resultItem = {
-          StaffName: item.StaffName,
-          Email: item.Email,
-          Department: item.Department,
-          Group: "(Group)",
-          UploadCount: item.UploadCount,
-          DownloadCount: item.DownloadCount
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        Department: item.Department,
+        group: item.group,
+        Status: item.Status,
+        LastLoginDate: item.LastLoginDate,
+        DisableDate: item.DisableDate,
         }
 
         allResult.push(resultItem)
@@ -172,15 +68,14 @@ export const FilterProvider = ({ children }) => {
 
       setResult(allResult)
     }
-
-    const handlePage = (totalPage, currentPage) => {
-      setPage({ CurrentPage: currentPage, TotalPage: totalPage })
+    
+    const handlePage = (totalPage) => {
+      setPage({ TotalPage: totalPage })
     }
 
-  }, [active])*/
-
+  }, [active]) 
   return (
-    <FilterContext.Provider value={{ active: active, setActive: setActive, result: result, setResult: setResult, page: page, setPage: setPage,callapi:callapi }}>
+    <FilterContext.Provider value={{ active: active, setActive: setActive, result: result, setResult: setResult, page: page, setPage: setPage}}>
       {children}
     </FilterContext.Provider>
   )

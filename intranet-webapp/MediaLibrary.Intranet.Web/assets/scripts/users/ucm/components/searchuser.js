@@ -1,4 +1,3 @@
-
 import { Button ,Dropdown } from 'react-bootstrap'
 import { useState } from 'react'
 import { styled } from '@linaria/react'
@@ -18,7 +17,6 @@ const TopDiv = styled.div`
 const LeftDiv = styled.div`
   display: inline-block;
   width: 60%;
- 
 `
 
 const RightDiv = styled.div`
@@ -26,25 +24,25 @@ const RightDiv = styled.div`
   margin-top: 0.2em;
   right: 0;
   position: absolute;
-   margin-right:4.2em;
+  margin-right:4.2em;
 
   @media only screen and (max-width: 799px) {
       left: 0;
       position: static;
       margin-top: 1em;
+      display: inline;
   }
 `
 const SearchUser = () => {
-  
   const filterContext = useFilter()
   const [search, setSearch] = useState("")
-  const sortOption = [, "Statusinactive", "statusactive", "statussuspend","dateDSC", "dateASC", "departmentDSC", "departmentASC"]
+  const sortOption = ["dateDSC", "dateASC", "SuspendedDateASC", "SuspendedDateDSC", "groupASC", "groupDSC", "departmentASC", "departmentDSC"]
+  const [isShown, setIsShown] = useState(false);
 
   const handleSort = (option) => {
     filterContext.setResult([])
     const temp = { ...filterContext.active, "SortOption": option }
     filterContext.setActive(temp)
-    filterContext.callapi()
   }
 
   const handleSearch = (e) => {
@@ -61,41 +59,42 @@ const SearchUser = () => {
   const handleSearchBtn = () => {
     const temp = { ...filterContext.active, "SearchQuery": search }
     filterContext.setActive(temp)
-    filterContext.callapi()
   }
 
-  const [isShown, setIsShown] = useState(false);
-
   const handleClick = event => {
-    // 👇️ toggle shown state
     setIsShown(current => !current);
-
   };
 
+  const downloaduserreport = () => {
+    const baseLocation = location
+    let url = new URL('/api/acm/generateUserReport', baseLocation)
+    url.search = new URLSearchParams(filterContext.active)
+   
+    fetch(url, {
+      mode: 'same-origin',
+      credentials: 'same-origin',
+    }) 
+      .then(response => response.blob())
+      .then(blob => {
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = 'ML_UserReport';  
+
+        // Simulate a click on the download link
+        downloadLink.click();
+
+        // Clean up
+        URL.revokeObjectURL(downloadLink.href);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
   return (
 
-    <TopDiv> <h3>Users </h3>
-
-
-      <LeftDiv>
-      
-        <Button
-          size="sm"
-          className="btn-danger sm"
-          variant=""
-        >
-          Suspend User
-        </Button>
-
-        <Button
-          size="sm"
-          className="btn-success ml-3 "
-          variant=""
-        >
-          Activate User
-        </Button>
-      </LeftDiv>
-
+    <TopDiv> <h3>Users List</h3>
+      <LeftDiv></LeftDiv>
       <RightDiv>
         <InputGroup className="mr-2">
           <Form.Control
@@ -141,11 +140,10 @@ const SearchUser = () => {
           Filter
         </Button>
 
-        <Button
-          size="sm"
-          variant="outline-primary"
-          className="mr-2" >
-          Download
+        <Button size="sm" variant="outline-primary" className="mr-2"
+          onClick={downloaduserreport}
+        >
+            Download
         </Button>
 
       </RightDiv>

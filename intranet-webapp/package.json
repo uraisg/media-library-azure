@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bootstrap": "^5.2.3",
     "react-datepicker": "^4.11.0",
     "styled-components": "^5.3.9"
   }

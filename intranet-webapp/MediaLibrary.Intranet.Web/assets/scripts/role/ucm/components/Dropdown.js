@@ -31,7 +31,7 @@ export const Filteruser = () => {
   console.log(val) }
 
   const options = [
-       { label: ' ISGG1', value: '1ISGG1' },
+       { label: ' ISGG1', value: 'ISGG1' },
        { label: 'ISGG2', value: 'ISGG2' },
        { label: 'ISGG3', value: 'ISGG3' },
        { label: 'ISGG4', value: 'ISGG4' },
@@ -64,18 +64,6 @@ export const Filteruser = () => {
      { label: 'Role Admin', value: 'Role Admin' },
    ]
 
-   const [permission, setpermission] = useState([])
-
-   const handlepermission = val => {
-     const permissionarray = val.split(',');
-     setpermission(permissionarray)
-   }
-
-   const permissionoptions = [
-     { label: 'Restricted', value: 'Restricted' },
-     { label: 'Regular', value: 'Regular' },
-  ]
-
    const [startDate, setStartDate] = useState(null);
    const [endDate, setEndDate] = useState(null);
 
@@ -88,12 +76,12 @@ export const Filteruser = () => {
      if ((startDate != null && endDate != null) || Group != "" || department != "" || role != "" || department != "") {
        const temp = {
          ...filterContext.active, "filterbydepartment": department, "filterbygroup": Group, "StartDate": startDate, "EndDate": endDate,
-         "filterbyrole": role, "filterbypermission": permission
+         "filterbyrole": role
        }
        filterContext.setActive(temp)
 
        //test 
-       filterContext.callapi()
+      // filterContext.callapi()
      }
      else {
        console.log("All of the fields are not selected")
@@ -102,7 +90,7 @@ export const Filteruser = () => {
 
    return (
    <>
-   <div className="shadow bg-white rounded mt-4 p-3  ">
+   <div className="shadow bg-white rounded mt-5 p-3  ">
        {startDate == null && endDate != null &&
            <p className="text-danger">Please select starting date</p>
          }
@@ -116,7 +104,7 @@ export const Filteruser = () => {
           <tr>
             <th className="col-md-2" >Department</th>
             <td>
-              <div className="app">
+              
                    <div className="preview-values">
                      {department}
                 </div>
@@ -125,9 +113,11 @@ export const Filteruser = () => {
                   onChange={handleOnchange}
                   options={options}
                 />
-              </div>
+                 
                </td>
-               <td className="pr-5"><b>Group</b></td>
+             </tr>
+             <tr>
+               <th className="pr-5">Group</th>
                <td className="pr-5">
 
                  <div >
@@ -142,7 +132,7 @@ export const Filteruser = () => {
                  </div>
                </td>
 
-          </tr>
+             </tr>
 
              <tr>
                <th className="col-md-2" >Role</th>
@@ -159,20 +149,7 @@ export const Filteruser = () => {
                    />
                  </div>
                </td>
-               <td className="pr-5"><b>Permission</b></td>
-               <td className="pr-5">
 
-                 <div>
-                   <div className="preview-values">
-                     {permission}
-                   </div>
-
-                   <MultiSelect
-                     onChange={handlepermission}
-                     options={permissionoptions}
-                   />
-                 </div>
-               </td>
              </tr>
 
           <tr>
@@ -211,7 +188,7 @@ export const Filteruser = () => {
           </tr>
 
              <tr>
-               <td colSpan={4} style={{ textAlign: "end" }}>
+               <td colSpan={2} style={{ textAlign: "end" }}>
 
                  <Button size="s"
                    className="btn btn-primary " onClick={handleFilterBtn} >

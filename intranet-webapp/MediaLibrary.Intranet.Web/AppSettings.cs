@@ -15,5 +15,8 @@
         public string ApiDomain { get; set; }
         public string ApiKey { get; set; }
         public string AdminUsers { get; set; }
+        public string AzureSQLConnectionString { get; set; }
+        public string SMTPSenderEmail { get; set; }
+        public string SMTPPW { get; set; }   
     }
 }

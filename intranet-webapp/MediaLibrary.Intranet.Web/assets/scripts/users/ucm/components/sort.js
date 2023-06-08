@@ -1,20 +1,24 @@
 export const convertSort = (option) => {
   switch (option) {
 
-    case "Statusinactive":
-      return "Inactive Status"
-    case "statusactive":
-      return "Active Status"
-    case "statussuspend":
-      return "Suspend Status"
+    case "groupASC":
+      return "Ascending by Group"
+    case "groupDSC":
+      return "Descending by Group "
     case "dateDSC":
-      return "Latest login Date"
+      return "Newest login Date"
     case "dateASC":
-      return "Older login Date"
+      return "Oldest login Date"
+    case "SuspendedDateDSC":
+      return "Newest Suspended Date"
+    case "SuspendedDateASC":
+      return "Oldest Suspended Date"
     case "departmentASC":
-      return " Department Ascending "
+      return " Ascending by Department "
     case "departmentDSC":
-      return "Department Descending"
+      return " Descending by Department "
+
+
 
 
   }
