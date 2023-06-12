@@ -55,7 +55,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     DateTime SuspendedStartDate = Convert.ToDateTime(user.SuspendStartDate);
                     DateTime SuspendedEndDate = Convert.ToDateTime(user.SuspendEndDate);
-                    string newsql = string.Format(" DisabledDate >= '{0}' and DisabledDate <= '{1}'", SuspendedStartDate.ToString(dateFormat), SuspendedEndDate.ToString(dateFormat));
+                    string newsql = string.Format(" Suspendeddate >= '{0}' and Suspendeddate <= '{1}'", SuspendedStartDate.ToString(dateFormat), SuspendedEndDate.ToString(dateFormat));
                     filterConditions.Add(newsql);
                 }
 
@@ -178,22 +178,22 @@ namespace MediaLibrary.Intranet.Web.Services
                         case AllSortOption.SuspendedDateASC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by disableddate OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by Suspendeddate OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by disableddate OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by Suspendeddate OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.SuspendedDateDSC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by disableddate desc OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by Suspendeddate desc OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by disableddate desc OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by Suspendeddate desc OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
                     }
@@ -270,11 +270,11 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 conn.Open();
                 string sql = ACMQueries.Queries.UpdateStatus;
-                string sql2 = ACMQueries.Queries.UpdateStatus2;
+                
                 string dateFormat = "yyyy/MM/dd";
-                using SqlCommand cmd2 = new SqlCommand(sql2, conn);
+        
                 using SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@status", status);
+               
 
                     if (status == "Active")
                     {
@@ -287,14 +287,24 @@ namespace MediaLibrary.Intranet.Web.Services
 
                 cmd.Parameters.AddWithValue("@userid", userid);
                 cmd.Parameters.AddWithValue("@lastupdated", lastupdatedby);
-                cmd2.Parameters.AddWithValue("@userid", userid);
-                cmd2.Parameters.AddWithValue("@status", status);
+                cmd.Parameters.AddWithValue("@status", status);
 
                 using SqlDataReader reader = cmd.ExecuteReader();
+                conn.Close();
+
+                conn.Open();
+                string sql2 = ACMQueries.Queries.UpdateStatus2;
+               
+                using SqlCommand cmd2 = new SqlCommand(sql2, conn);
+              
+                cmd2.Parameters.AddWithValue("@userid", userid);
+              
+                cmd2.Parameters.AddWithValue("@status", status);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
+                conn.Close();
                 UpdateAuditLog(email, status, DateTime.Now);
 
-                conn.Close();
+
             }
             catch (Exception ex)
             {
@@ -331,6 +341,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 cmd.Parameters.AddWithValue("@createddate", date);
 
                 using SqlDataReader reader = cmd.ExecuteReader();
+                conn.Close();
             }
             catch (Exception ex)
             {
@@ -353,8 +364,9 @@ namespace MediaLibrary.Intranet.Web.Services
                     userid = reader.GetString(0);
                     return userid;
                 }
-
+                conn.Close();
             }
+           
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in getting the user ID");
@@ -386,6 +398,9 @@ namespace MediaLibrary.Intranet.Web.Services
                     string getoptions = reader.GetString(0);
                     options.Add(getoptions);
                 }
+                conn.Close();
+
+                conn.Open();
                 string sql2 = String.Format("Select groupname from ACMGroupMaster ");
                 using SqlCommand cmd2 = new SqlCommand(sql2, conn);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
@@ -394,6 +409,8 @@ namespace MediaLibrary.Intranet.Web.Services
                     string GetGroupOptions = reader2.GetString(0);
                     groupOptions.Add(GetGroupOptions);
                 }
+
+                conn.Close();
                  return Tuple.Create(options,groupOptions); 
 
             }
@@ -448,7 +465,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     DateTime SuspendedStartDate = Convert.ToDateTime(user.SuspendStartDate);
                     DateTime SuspendedEndDate = Convert.ToDateTime(user.SuspendEndDate);
-                    string newsql = string.Format(" DisabledDate >= '{0}' and DisabledDate <= '{1}'", SuspendedStartDate.ToString(dateFormat), SuspendedEndDate.ToString(dateFormat));
+                    string newsql = string.Format(" Suspendeddate >= '{0}' and Suspendeddate <= '{1}'", SuspendedStartDate.ToString(dateFormat), SuspendedEndDate.ToString(dateFormat));
                     filterConditions.Add(newsql);
                 }
 

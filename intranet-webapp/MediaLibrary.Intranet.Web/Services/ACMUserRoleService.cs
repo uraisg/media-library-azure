@@ -224,7 +224,9 @@ namespace MediaLibrary.Intranet.Web.Services
                         ACMStaffRoleResults.Add(staffRoleResult);
                     }
                 }
+                conn.Close();
 
+                conn.Open();
                 using (SqlCommand cmd2 = new SqlCommand(sql2, conn))
                 {
                     int totalCounts = (int)cmd2.ExecuteScalar();
@@ -266,16 +268,21 @@ namespace MediaLibrary.Intranet.Web.Services
                     string getoptions = reader.GetString(0);
                     options.Add(getoptions);
                 }
+
+                conn.Close();
+                conn.Open();
                 string sql2 = String.Format("Select groupname from ACMGroupMaster ");
                 using SqlCommand cmd2 = new SqlCommand(sql2, conn);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
 
+                
                 while (reader2.Read())
                 {
                     string GetGroupOptions = reader2.GetString(0);
                     groupOptions.Add(GetGroupOptions);
                 }
-
+                conn.Close();
+                conn.Open();
                 string sql3 = "select rolename from ACMRoleMaster";
                 using SqlCommand cmd3 = new SqlCommand(sql3, conn);
                 using SqlDataReader reader3 = cmd3.ExecuteReader();
@@ -284,7 +291,7 @@ namespace MediaLibrary.Intranet.Web.Services
                     string GetRoleOptions = reader3.GetString(0);
                     roleOptions.Add(GetRoleOptions);
                 }
-
+                conn.Close();
                 return Tuple.Create(options, groupOptions,roleOptions);
 
             }
@@ -459,6 +466,8 @@ namespace MediaLibrary.Intranet.Web.Services
                      allUserRole = ACMGetRoleID(UserIDsrole);
                 }
 
+                conn.Close();
+
                 if (allUserRole == userroleid || changeRoleID == userroleid)
                 {
                     _logger.LogInformation("Same user role has been choosen,cannot assign");
@@ -467,6 +476,7 @@ namespace MediaLibrary.Intranet.Web.Services
 
                 else
                 {
+                    conn.Open();
                     string queryStr = ACMQueries.Queries.UpdateUserRole;
 
 
@@ -477,11 +487,13 @@ namespace MediaLibrary.Intranet.Web.Services
                     cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
                     cmd.Parameters.AddWithValue("@userroleid", userroleid);
 
-                    string useraction = "Assign";
 
-                    UpdateAuditLog(lastupdatedby, useraction, DateTime.Now);
+
+                    string useraction = "Assign";
                     using SqlDataReader reader = cmd.ExecuteReader();
                     conn.Close();
+                    UpdateAuditLog(lastupdatedby, useraction, DateTime.Now);
+          
                 }
             }
             catch (Exception ex)

@@ -8,17 +8,15 @@ namespace MediaLibrary.Intranet.Web.Common
     public class ACMQueries
     {
         public static class Queries
-        { /* public const string GetStatus = "SELECT status FROM acmstafflogin sp left join acmstaffinfo si ON sp.userid = si.userid WHERE staffemail ='test'";
-           public const string GetLastLogin = "SELECT lastlogin FROM acmsession s left join acmstaffinfo si ON s.userid = si.userid WHERE staffemail = 'max_wong@ura.gov.sg'";
-            public const string GetRemindersSent = "SELECT firstremindersent, secondremindersent, thirdremindersent FROM acmstafflogin sp left join acmstaffinfo si ON sp.userid = si.userid where staffemail = 'max_wong@ura.gov.sg'";*/
+        { 
             public const string GetStaffInfo = "SELECT staffEmail, status, firstReminderSent, secondReminderSent, thirdReminderSent, lastLogin FROM acmStaffInfo si left join acmstafflogin sp ON si.userid = sp.userid left join acmSession ss ON si.userid = ss.userid";
             public const string UpdateReminderSent1 = "UPDATE acmstafflogin SET FirstReminderSent = 'Yes' FROM acmstafflogin sp left join acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
             public const string UpdateReminderSent2 = "UPDATE acmstafflogin SET SecondReminderSent = 'Yes' FROM acmstafflogin sp left join acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
             public const string UpdateReminderSent3 = "UPDATE acmstafflogin SET ThirdReminderSent = 'Yes' FROM acmstafflogin sp left join acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
-            public const string DisableUser = "UPDATE acmstafflogin SET Status = 'Disabled', DisabledDate = @todayDate, LastUpdatedBy = 'system' FROM acmstafflogin sp left join acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
-            public const string GetAllUsers = "select si.userid, staffname, staffemail, deptname, groupname, status, lastlogin, disableddate from ACMStaffInfo si\r\ninner join ACMStaffLogin sl on si.UserID = sl.UserID\r\ninner join ACMSession ses on si.UserID = ses.UserID\r\ninner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID";
-            public const string UpdateStatus = "UPDATE acmstafflogin SET   DisabledDate = @disableDate,LastUpdatedBy = @lastupdated  WHERE UserID = @userid";
-            public const string UpdateStatus2 = "UPDATE ACMStaffInfo SET status =@status  WHERE UserID = @userid";
+            public const string DisableUser = "UPDATE acmstafflogin SET Status = 'Suspended', suspendeddate = @todayDate, LastUpdatedBy = 'system' FROM acmstafflogin sp left join acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
+            public const string GetAllUsers = "select si.userid, staffname, staffemail, deptname, groupname, status, lastlogin, suspendeddate from ACMStaffInfo si\r\ninner join ACMStaffLogin sl on si.UserID = sl.UserID\r\ninner join ACMSession ses on si.UserID = ses.UserID\r\ninner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID";
+            public const string UpdateStatus = "UPDATE acmstafflogin SET suspendeddate = @disableDate,LastUpdatedBy = @lastupdated WHERE UserID = @userid";
+            public const string UpdateStatus2 = "UPDATE ACMStaffInfo SET status = @status WHERE UserID = @userid";
             public const string UpdateAuditLog = "Insert into ACMAuditlog values (@userid,@userlastaction, @createdby , @createddate)";
             public const string GetUserRole = "select si.userid, staffname, staffemail, deptname, groupname,rolename, lastlogin from ACMStaffInfo si\r\ninner join ACMStaffLogin sl on si.UserID = sl.UserID\r\ninner join ACMSession ses on si.UserID = ses.UserID\r\ninner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID\r\ninner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
             public const string UpdateUserRole= "UPDATE ACMRoleUser SET rolemstrid = @rolemstrid,createdby = @createdby ,createddate = @createddate WHERE UserID = @userid and rolemstrid = @userroleid ";
@@ -26,21 +24,6 @@ namespace MediaLibrary.Intranet.Web.Common
 			public const string GetRole = "select rolename from ACMStaffInfo si inner join ACMStaffLogin sl on si.UserID = sl.UserID inner join ACMSession ses on si.UserID = ses.UserID inner join ACMGroupMaster gm on si.GroupID = gm.GroupID inner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = @userid";
 
 		}
-
-        /*        public string GetStatus()
-                {
-                    return Queries.GetStatus;
-                }
-
-                public string GetLastLogin()
-                {
-                    return Queries.GetLastLogin;
-                }
-
-                public string getRemindersSent()
-                {
-                    return Queries.GetRemindersSent;
-                }*/
 
         public string GetStaffInfo()
         {

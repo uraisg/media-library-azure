@@ -109,7 +109,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
             headerRow.CreateCell(3).SetCellValue("Group");
             headerRow.CreateCell(4).SetCellValue("Status");
             headerRow.CreateCell(5).SetCellValue("LastLoginDate");
-            headerRow.CreateCell(6).SetCellValue("DisabledDate");
+            headerRow.CreateCell(6).SetCellValue("SuspendedDate");
             int index = 4;
             StyleHeaderRow(headerRow);
 
