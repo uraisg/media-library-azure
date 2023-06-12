@@ -33,13 +33,12 @@ const RightDiv = styled.div`
 export const SearchUser = () => {
   const filterContext = useFilter()
   const [search, setSearch] = useState("")
-  const sortOption = ["dateDSC", "dateASC","RoleASC","RoleDSC","GroupASC", "GroupDSC", "departmentDSC", "departmentASC"]
+  const sortOption = ["dateDSC", "dateASC","RoleASC","RoleDSC","groupASC", "groupDSC", "departmentDSC", "departmentASC"]
 
   const handleSort = (option) => {
     filterContext.setResult([])
     const temp = { ...filterContext.active, "SortOption": option }
     filterContext.setActive(temp)
-   // filterContext.callapi()
   }
 
   const handleSearch = (e) => {
@@ -56,16 +55,40 @@ export const SearchUser = () => {
   const handleSearchBtn = () => {
     const temp = { ...filterContext.active, "SearchQuery": search }
     filterContext.setActive(temp)
-  //  filterContext.callapi()
   }
 
   const [isShown, setIsShown] = useState(false);
 
   const handleClick = event => {
-    // 👇️ toggle shown state
     setIsShown(current => !current);
   };
 
+  const downloadUserRolesReport = () => {
+    const baseLocation = location
+    let url = new URL('/api/acm/generateUserRoleReport', baseLocation)
+    url.search = new URLSearchParams(filterContext.active)
+
+    fetch(url, {
+      mode: 'same-origin',
+      credentials: 'same-origin',
+    })
+      .then(response => response.blob())
+      .then(blob => {
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = 'ML_UserRoleReport';
+
+        // Simulate a click on the download link
+        downloadLink.click();
+
+        // Clean up
+        URL.revokeObjectURL(downloadLink.href);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
   return (
 
     <TopDiv>
@@ -115,17 +138,16 @@ export const SearchUser = () => {
           Filter
         </Button>
 
-        <Button 
-          size="sm"
-          variant="outline-primary"
-          className="mr-2" >
-          Download 
+        <Button size="sm" variant="outline-primary" className="mr-2"
+          onClick={downloadUserRolesReport}
+        >
+          Download
         </Button>
       </RightDiv>
       {isShown ? (
           <Filteruser />
       ) : null}
-  
+      
     </TopDiv>
   )
 }

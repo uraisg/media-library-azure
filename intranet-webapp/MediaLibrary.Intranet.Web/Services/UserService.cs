@@ -33,8 +33,8 @@ namespace MediaLibrary.Intranet.Web.Services
             List<ACMStaffInfoResult> staffInfoResults = new List<ACMStaffInfoResult>();
             string searchQuery = user.SearchQuery;
             string sortOption = user.SortOption;
-            string sql2 = "SELECT COUNT(*) AS total_count from acmstaffinfo si left join acmstafflogin sp on si.userid = sp.userid left join acmsession ss on si.userid = ss.userid left join acmgroupmaster gm on gm.groupid = si.groupid left join acmdeptmaster dm on gm.groupid = dm.groupid";
-
+            string sql2 = "SELECT COUNT(*) AS total_count from ACMStaffInfo si\r\ninner join ACMStaffLogin sl on si.UserID = sl.UserID\r\ninner join ACMSession ses on si.UserID = ses.UserID\r\ninner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID";
+            
             try
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
@@ -42,7 +42,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 string dateFormat = "yyyy/MM/dd";
                 string sql = ACMQueries.Queries.GetAllUsers;
                 List<string> filterConditions = new List<string>();
-
+ 
                 if (!string.IsNullOrEmpty(user.EndDate) && !string.IsNullOrEmpty(user.StartDate))
                 {
                     DateTime startDate = Convert.ToDateTime(user.StartDate);
@@ -91,9 +91,8 @@ namespace MediaLibrary.Intranet.Web.Services
                     string filteruser = "";
                     filteruser += String.Join(" and ", filterConditions);
                     sql = string.Format("{0} where {1} ", sql, filteruser);
-                    Debug.WriteLine("test");
-                    Debug.WriteLine(sql);
                     sql2 = string.Format("{0} where {1} ", sql2, filteruser);
+
                 }
 
                 //sorting
@@ -102,7 +101,7 @@ namespace MediaLibrary.Intranet.Web.Services
 
                 if (!checkSort)
                 {
-                    _logger.LogError("Error in sorting file report by {sort}", sortOption);
+                    _logger.LogError("Error in sorting Users report by {sort}", sortOption);
                 }
                 else
                 {
@@ -293,8 +292,6 @@ namespace MediaLibrary.Intranet.Web.Services
 
                 using SqlDataReader reader = cmd.ExecuteReader();
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
-                string actionuserid = ACMGetUserID(email);
-
                 UpdateAuditLog(email, status, DateTime.Now);
 
                 conn.Close();
@@ -540,5 +537,6 @@ namespace MediaLibrary.Intranet.Web.Services
             }
             return data;
         }
+
     }
 }

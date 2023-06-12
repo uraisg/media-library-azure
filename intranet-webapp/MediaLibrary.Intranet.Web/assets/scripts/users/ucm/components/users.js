@@ -41,6 +41,7 @@ const SelectTableComponent = () => {
     }
   };
 
+
   const [statusCheck, setStatusCheck] = useState("");
   const handleCheckboxChange = (itemId) => {
     const { id, checked } = itemId.target;
@@ -127,11 +128,24 @@ const SelectTableComponent = () => {
           <thead>
             <tr>
               <th scope="col">
-                <input
-                  type="checkbox"
-                  onChange={handleSelectAll}
-                  checked={isCheckAll}
-                />
+   
+                
+                  {( isCheck.length == 0 ) ? (
+                    <input
+                      type="checkbox"
+                      onChange={handleSelectAll}
+                      checked={isCheckAll}
+                      className="d-none"
+                    />
+
+                  )
+                    :
+                    <input
+                      type="checkbox"
+                      onChange={handleSelectAll}
+                      checked={isCheckAll}
+                    />
+                  }      
               </th>
             <th scope="col">
               Name
@@ -151,7 +165,7 @@ const SelectTableComponent = () => {
             <tr key={index}>
             
               <td>
-                {(item.Status == "Inactive" || isCheck.length >0 && item.Status != statusCheck) ? (
+                {(item.Status == "Inactive" || isCheck.length > 0 && item.Status != statusCheck) ? (
                     <input
                     type="checkbox"
                     id={item.id}

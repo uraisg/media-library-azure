@@ -7,15 +7,20 @@ const Page = () => {
   const filtercontext = useFilter()
 
   const onPageChange = (page) => {
-    const temp = { ...filtercontext.active, "page": page }
+    const selectedPage = page.selected + 1
+    const SkipPage = pageSize * page.selected
+    const temp = { ...filtercontext.active, "Page": selectedPage, "currPageCount": SkipPage, "pagelimit": pageSize }
     filtercontext.setActive(temp)
   };
 
-  const [pageSize, setPageSize] = useState(20);
-  const pageSizes = [20, 50, 150, 200];
+  const [pageSize, setPageSize] = useState(10);
+  const pageSizes = [10, 20, 50, 150, 200];
+
   const handlePageSizeChange = (event) => {
+    const pagesizeselected = event.target.value
     setPageSize(event.target.value);
-    setPage(1);
+    const temp = { ...filtercontext.active, "currPageCount": pagesizeselected, "pagelimit": pagesizeselected }
+    filtercontext.setActive(temp)
   };
 
   return (
@@ -41,14 +46,11 @@ const Page = () => {
           nextLinkClassName="page-link"
           activeClassName="active"
           onPageChange={onPageChange}
-          // forcePage={2}
-          pageCount={5}
+        pageCount={filtercontext.page.TotalPage}
           pageRangeDisplayed={5}
-          marginPagesDisplayed={1}
         />
     </div>
   );
-
 };
 
 export default Page;

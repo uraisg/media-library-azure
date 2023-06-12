@@ -1,190 +1,199 @@
-import React, { useState } from 'react'
-import MultiSelect from 'react-multiple-select-dropdown-lite'
+import React, { useState, useEffect } from 'react'
 import 'react-multiple-select-dropdown-lite/dist/index.css'
 import { useFilter } from './@/../../../ucm/components/context'
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import styled from "styled-components";
-import { Button } from 'react-bootstrap'
+import { Button , Form, InputGroup } from 'react-bootstrap'
+import Select from 'react-select'
 
-const Styles = styled.div`
- .react-datepicker-wrapper,
- .react-datepicker__input-container,
- .react-datepicker__input-container input {
-   width: 175px;
- }
+const customStyles = {
+  control: (provided) => ({
+    ...provided,
+    width: '300px',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    width: '300px',
+  }),
+};
 
- .react-datepicker__close-icon::before,
- .react-datepicker__close-icon::after {
-   background-color: grey;
- }
-`;
+export function formatDate(date) {
+  const SHORT_DATE_FORMAT = 'd/M/yyyy'
+  return format(new Date(date), SHORT_DATE_FORMAT)
+}
 
 export const Filteruser = () => {
   const filterContext = useFilter()
-  const [department, setdepartment] = useState([])
 
-  const handleOnchange = val => {
-  const departmentarray = val.split(',');
-  setdepartment(departmentarray)
-  console.log(departmentarray)
-  console.log(val) }
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const options = [
-       { label: ' ISGG1', value: 'ISGG1' },
-       { label: 'ISGG2', value: 'ISGG2' },
-       { label: 'ISGG3', value: 'ISGG3' },
-       { label: 'ISGG4', value: 'ISGG4' },
-  ]
+  const fetchData = () => {
+    const baseLocation = location
+    let url = new URL('/api/acmRole/dropdownoptions', baseLocation)
+    url.search = new URLSearchParams(filterContext.active)
 
-  const [Group, setvalue] = useState([])
+    fetch(url, {
+      mode: 'same-origin',
+      credentials: 'same-origin',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`)
+        }
+        const contentType = response.headers.get('content-type')
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new TypeError("Oops, we haven't got JSON!")
+        }
+        return response.json()
+      })
+      .then((result) => {
+        setdepartmentOptions(result.Item1)
+        setgroupoptions(result.Item2)
+        setRoleOptions(result.Item3)
+      })
+  };
 
-  const handlegroup= val => {
-    const grouparray = val.split(',');
-    setvalue(grouparray)
-    console.log(grouparray)
-  }
+  const [departmentOptions, setdepartmentOptions] = useState([]);
+  const [department, setdepartment] = useState([]);
+  const [GroupOptions, setgroupoptions] = useState([])
+  const [Group, setgroup] = useState([])
+  const [dropdownKey, setDropdownKey] = useState(0)
 
-  const groupoption = [
-     { label: ' Group1', value: 'Group1' },
-     { label: 'Group2', value: 'Group2' },
-     { label: 'Group3', value: 'Group3' },
-   ]
 
+  const handledepartnmentchange = (newSelectedOptions) => {
+    setdepartment(newSelectedOptions.map((o) => o.value));
+  };
+
+  const handleDropdownChange = (newSelectedOptions) => {
+    setgroup(newSelectedOptions.map((o) => o.value))
+  };
+
+  const [RoleOptions, setRoleOptions] = useState([])
   const [role, setrole] = useState([])
 
-  const handlerole = val => {
-     const rolearray = val.split(',');
-     setrole(rolearray)
-   }
+  const handlerole = (newSelectedOptions) => {
+    setrole(newSelectedOptions.map((o) => o.value))
+  };
 
-   const roleoptions = [
-     { label: 'User', value: 'User' },
-     { label: 'System Admin', value: 'System Admin' },
-     { label: 'Role Admin', value: 'Role Admin' },
-   ]
+  const [date, setDate] = useState({ "StartDate": "", "EndDate": "" })
 
-   const [startDate, setStartDate] = useState(null);
-   const [endDate, setEndDate] = useState(null);
+
+  const handleStartDate = (e) => {
+    const temp = { ...date, "StartDate": e.target.value }
+    setDate(temp)
+
+  }
+  const handleEndDate = (e) => {
+    const temp = { ...date, "EndDate": e.target.value }
+    setDate(temp)
+  }
 
    const handleClear = () => {
      filterContext.setResult([])
-     filterContext.setActive({ ...filterContext.active })
+     setDate({ "StartDate": "", "EndDate": "" })
+     setdepartment([]);
+     setgroup([])
+     setrole([])
+     setDropdownKey((prevKey) => prevKey + 1);
+
+     const temp = { ...filterContext.active, "StartDate": "", "EndDate": "", "filterbydepartment": [], "filterbygroup": [],"filterbyrole": [] }
+     filterContext.setActive(temp)
    }
 
    const handleFilterBtn = () => {
-     if ((startDate != null && endDate != null) || Group != "" || department != "" || role != "" || department != "") {
-       const temp = {
-         ...filterContext.active, "filterbydepartment": department, "filterbygroup": Group, "StartDate": startDate, "EndDate": endDate,
-         "filterbyrole": role
-       }
+     if ((date.StartDate != "" && date.EndDate != "")) {
+       filterContext.setResult([])
+       const temp = { ...filterContext.active, "filterbydepartment": department, "filterbygroup": Group, "filterbyrole": role, "StartDate": date.StartDate, "EndDate": date.EndDate }
        filterContext.setActive(temp)
-
-       //test 
-      // filterContext.callapi()
      }
      else {
-       console.log("All of the fields are not selected")
+       const temp = { ...filterContext.active, "filterbydepartment": department, "filterbygroup": Group, "filterbyrole": role }
+       filterContext.setActive(temp)
      }
    }
 
    return (
    <>
    <div className="shadow bg-white rounded mt-5 p-3  ">
-       {startDate == null && endDate != null &&
-           <p className="text-danger">Please select starting date</p>
+         {date.StartDate == "" && date.EndDate != "" &&
+           <p className="text-danger">Please select starting date for Last Login</p>
          }
 
-         {startDate != null && endDate == null &&
-           <p className="text-danger">Please select ending date</p>
+         {date.StartDate != "" && date.EndDate == "" &&
+           <p className="text-danger"> Please select ending date for Last Login</p>
          }
 
       <table className=" table table-borderless table-responsive-lg table-sm">
         <tbody>
-          <tr>
-            <th className="col-md-2" >Department</th>
-            <td>
-              
-                   <div className="preview-values">
-                     {department}
-                </div>
-
-                <MultiSelect
-                  onChange={handleOnchange}
-                  options={options}
-                />
-                 
+             <tr>
+               <th className="col-md-2" >Department</th>
+               <td>
+                 <Select styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
+                   isMulti
+                   options={departmentOptions.map((e1) => ({
+                     value: e1,
+                     label: e1,
+                   }))}
+                 />
                </td>
              </tr>
              <tr>
-               <th className="pr-5">Group</th>
-               <td className="pr-5">
-
-                 <div >
-                   <div className="preview-values">
-                     {Group}
-                   </div>
-
-                   <MultiSelect
-                     onChange={handlegroup}
-                     options={groupoption}
-                   />
-                 </div>
+               <th className="col-md-2" >Group</th>
+               <td>
+                 <Select styles={customStyles} key={dropdownKey} onChange={handleDropdownChange}
+                   isMulti
+                   options={GroupOptions.map((e1) => ({
+                     value: e1,
+                     label: e1,
+                   }))}
+                 />
                </td>
-
              </tr>
 
              <tr>
                <th className="col-md-2" >Role</th>
-               <td >
-
-                 <div >
-                   <div className="preview-values">
-                     {role}
-                   </div>
-
-                   <MultiSelect
-                     onChange={handlerole}
-                     options={roleoptions}
-                   />
-                 </div>
-               </td>
+             <td>
+                 <Select styles={customStyles} key={dropdownKey} onChange={handlerole}
+                 isMulti
+                   options={RoleOptions.map((e1) => ({
+                   value: e1,
+                   label: e1,
+                 }))}
+               />
+             </td>
 
              </tr>
 
           <tr>
             <th className="col-md-2">Last Login Date</th>
-            <td className="col-12 col-md-8">
-              <Styles>
-                <div style={{ display: "flex" }}>
-                  <DatePicker
-                    isClearable
-                    filterDate={d => {
-                    return new Date() > d;
-                    }}
-                    placeholderText="Select Start Date"
-                    selected={startDate}
-                    selectsStart
-                    startDate={startDate}
-                    endDate={endDate}
-                    onChange={date => setStartDate(date)}
-                  />
-                  <p className="ml-2 mr-2">  to: </p>
-                  <DatePicker
-                    isClearable
-                    filterDate={d => {
-                      return new Date() > d;
-                    }}
-                    placeholderText="Select End Date"
-                    selected={endDate}
-                    selectsEnd
-                    startDate={startDate}
-                    endDate={endDate}
-                    minDate={startDate}
-                    onChange={date => setEndDate(date)}
-                  />
-                </div>
-                 </Styles> </td>
+               <td className="col-12 col-md-8">
+
+                 <div style={{ display: "flex" }}>
+                   <Form.Group>
+                     <InputGroup>
+                       <InputGroup.Text className="filter-date-text">From</InputGroup.Text>
+                       <Form.Control
+                         type="date"
+                         value={date.StartDate}
+                         onChange={handleStartDate}
+                       />
+                     </InputGroup>
+                   </Form.Group>
+
+                   <Form.Group>
+                     <InputGroup>
+                       <InputGroup.Text className="filter-date-text">To</InputGroup.Text>
+                       <Form.Control
+                         type="date"
+                         value={date.EndDate}
+                         onChange={handleEndDate}
+
+                       />
+                     </InputGroup>
+                   </Form.Group>
+                 </div>
+               </td>
           </tr>
 
              <tr>

@@ -11,4 +11,12 @@ namespace MediaLibrary.Intranet.Web.Models
 
         public string UserStatus { get; set; }  
     }
+
+    public class AssignedAndRevokeUsers
+    {
+        public List<string> UserIds { get; set; }
+
+        public List<string> roles { get; set; }
+        public string roleChange { get; set; }
+    }
 }

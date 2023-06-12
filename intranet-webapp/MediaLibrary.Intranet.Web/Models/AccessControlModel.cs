@@ -56,13 +56,31 @@ namespace MediaLibrary.Intranet.Web.Models
         departmentASC,
         departmentDSC,
         SuspendedDateASC,
-        SuspendedDateDSC
+        SuspendedDateDSC,
+        RoleASC,
+        RoleDSC
+    }
+
+    public class UserRoleQuery
+    {
+        public int Page { get; set; }
+        public int pagelimit { get; set; }
+        public int currPageCount { get; set; }
+        public string SearchQuery { get; set; }
+        public string SortOption { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public List<string> filterbydepartment { get; set; }
+        public List<string> filterbyrole { get; set; }
+        public List<string> filterbygroup { get; set; }
+
     }
 
     public class dropdownoptions
     {
         public List<string> departmentoptions { get; set; }
         public List<string> groupoptions { get; set; }
+        public List<string> roleoptions { get;set; }
     }
 
     public class DownloadUserReport{
@@ -73,6 +91,17 @@ namespace MediaLibrary.Intranet.Web.Models
         public string Status { get; set; }
         public DateTime ?LastLoginDate { get; set; }
         public DateTime ?DisabledDate { get; set; }
+    }
+
+    public class DownloadUserRoleReport
+    {
+        public string id { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string Department { get; set; }
+        public string Group { get; set; }
+        public string Role { get; set; }
+        public DateTime? LastLoginDate { get; set; }
     }
 
     public class ACMAuditlog

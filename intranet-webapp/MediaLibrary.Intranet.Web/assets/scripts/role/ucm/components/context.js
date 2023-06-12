@@ -9,6 +9,8 @@ export const useFilter = () => {
 export const FilterProvider = ({ children }) => {
   const [active, setActive] = useState({
     Page: 1,
+    pagelimit: 10,
+    currPageCount: 0,
     SearchQuery: "",
     SortOption: "dateDSC",
     StartDate: "",
@@ -22,82 +24,9 @@ export const FilterProvider = ({ children }) => {
   const [page, setPage] = useState({ CurrentPage: 1, TotalPage: 1 })
 
   useEffect(() => {
-    setResult([{
-      id: "1",
-      name: "User1",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Group: "Group1",
-      role: "User",
-      LastLoginDate: "03/28/2023",
-    },
-    {
-      id: "2",
-      name: "usertwo ",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Group: "Group1",
-      role: "SystemAdmin",
-      LastLoginDate: "03/28/2023",
-    },
-    {
-      id: "3",
-      name: "Clementine ",
-      email: "Clementine@april.biz",
-      Department: "ISGG",
-      Group: "Group1",
-      role: "RoleAdmin",
-      LastLoginDate: "03/28/2022",
-    },
-    {
-      id: "4",
-      name: "Patricia ",
-      email: "Patricia@april.biz",
-      Department: "ISGG",
-      Group: "Group1",
-      role: "User",
-      LastLoginDate: "03/28/2022",
-      },
-    {
-      id: "5",
-      name: "Chelsey ",
-      email: "Chelsey@april.biz",
-      Department: "ISGG",
-      Group: "Group1",
-      role: "User",
-      LastLoginDate: "03/28/2022",
-      },])
-  }, [])
-
-  const callapi = () => {
-    setResult([{
-      id: "1",
-      name: "User1",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Group: "Group1",
-      role: "User",
-      LastLoginDate: "03/28/2023",
-    },
-    {
-      id: "2",
-      name: "usertwo ",
-      email: "userone@april.biz",
-      Department: "ISGG",
-      Group: "Group1",
-      role: "System Admin",
-      LastLoginDate: "03/28/2023",
-    },
-
-    ])
-  }
-
-  /*
-  useEffect(() => {
     const baseLocation = location
-    let url = new URL('/api/staff', baseLocation)
+    let url = new URL('/api/acm/usersRole', baseLocation)
     url.search = new URLSearchParams(active)
-
     fetch(url, {
       mode: 'same-origin',
       credentials: 'same-origin',
@@ -114,35 +43,41 @@ export const FilterProvider = ({ children }) => {
       })
       .then((result) => {
         handleResult(result.Item1)
-        handlePage(result.Item2, result.Item3)
+        handlePage(result.Item2)
       })
 
     const handleResult = (data) => {
       let allResult = []
       data.forEach((item) => {
+
         const resultItem = {
-          StaffName: item.StaffName,
-          Email: item.Email,
-          Department: item.Department,
-          Group: "(Group)",
-          UploadCount: item.UploadCount,
-          DownloadCount: item.DownloadCount
+          
+          id: item.id,
+          name: item.name,
+          email: item.email,
+          Department: item.department,
+          group: item.group,
+          role: item.role,
+          LastLoginDate: item.LastLoginDate,
+          
         }
+    
 
         allResult.push(resultItem)
       })
 
       setResult(allResult)
     }
-
-    const handlePage = (totalPage, currentPage) => {
-      setPage({ CurrentPage: currentPage, TotalPage: totalPage })
+    
+    const handlePage = (totalPage) => {
+      setPage({ TotalPage: totalPage })
     }
-
-  }, [active])*/
+    
+}, [active])
+  
 
   return (
-    <FilterContext.Provider value={{ active: active, setActive: setActive, result: result, setResult: setResult, page: page, setPage: setPage,callapi:callapi }}>
+    <FilterContext.Provider value={{ active: active, setActive: setActive, result: result, setResult: setResult, page: page, setPage: setPage }}>
       {children}
     </FilterContext.Provider>
   )

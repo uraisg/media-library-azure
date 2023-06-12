@@ -54,6 +54,7 @@ namespace MediaLibrary.Intranet.Web
             services.AddSingleton<ItemService>();
             services.AddTransient<GraphService>();
             services.AddTransient<UserService>();
+            services.AddTransient<ACMUserRoleService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

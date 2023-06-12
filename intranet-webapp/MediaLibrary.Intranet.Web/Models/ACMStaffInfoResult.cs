@@ -22,4 +22,15 @@ namespace MediaLibrary.Intranet.Web.Models
          public List<ACMStaffInfoResult> staffInfoResults {get; set;}
         public int totalCount { get; set; }
         }
+
+    public class ACMStaffRoleResult
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public string email { get; set; }
+        public string department { get; set; }
+        public string group { get; set; }
+        public string role { get; set; }
+        public DateTime? LastLoginDate { get; set; }
+    }
 }
