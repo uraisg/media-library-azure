@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -43,7 +43,7 @@ public class ValidateOriginAttribute : Attribute, IAuthorizationFilter
         }
 
         // Compare the source against the expected target origin in Host header
-        if (string.Equals(context.HttpContext.Request.Host.Host, sourceUri.Host, StringComparison.OrdinalIgnoreCase) &&
+        if (!string.Equals(context.HttpContext.Request.Host.Host, sourceUri.Host, StringComparison.OrdinalIgnoreCase) ||
             (context.HttpContext.Request.Host.Port != null && context.HttpContext.Request.Host.Port != sourceUri.Port))
         {
             // Origins are not matching so we block the request
