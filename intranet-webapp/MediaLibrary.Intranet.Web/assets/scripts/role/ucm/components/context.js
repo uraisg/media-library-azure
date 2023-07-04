@@ -51,7 +51,6 @@ export const FilterProvider = ({ children }) => {
       data.forEach((item) => {
 
         const resultItem = {
-          
           id: item.id,
           name: item.name,
           email: item.email,
@@ -59,13 +58,9 @@ export const FilterProvider = ({ children }) => {
           group: item.group,
           role: item.role,
           LastLoginDate: item.LastLoginDate,
-          
         }
-    
-
         allResult.push(resultItem)
       })
-
       setResult(allResult)
     }
     

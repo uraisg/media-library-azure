@@ -20,10 +20,10 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string UpdateAuditLog = "Insert into ACMAuditlog values (@userid,@userlastaction, @createdby , @createddate)";
             public const string GetUserRole = "select si.userid, staffname, staffemail, deptname, groupname,rolename, lastlogin from ACMStaffInfo si\r\ninner join ACMStaffLogin sl on si.UserID = sl.UserID\r\ninner join ACMSession ses on si.UserID = ses.UserID\r\ninner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID\r\ninner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
             public const string UpdateUserRole= "UPDATE ACMRoleUser SET rolemstrid = @rolemstrid,createdby = @createdby ,createddate = @createddate WHERE UserID = @userid and rolemstrid = @userroleid ";
-			public const string GetTotalCountUser = "SELECT COUNT(*) AS total_count from ACMStaffInfo si inner join ACMStaffLogin sl on si.UserID = sl.UserID inner join ACMSession ses on si.UserID = ses.UserID inner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
+			public const string GetTotalCountUserRole = "SELECT COUNT(*) AS total_count from ACMStaffInfo si inner join ACMStaffLogin sl on si.UserID = sl.UserID inner join ACMSession ses on si.UserID = ses.UserID inner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
 			public const string GetRole = "select rolename from ACMStaffInfo si inner join ACMStaffLogin sl on si.UserID = sl.UserID inner join ACMSession ses on si.UserID = ses.UserID inner join ACMGroupMaster gm on si.GroupID = gm.GroupID inner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = @userid";
-
-		}
+            public const string AddRoleUser = "Insert into ACMRoleUser values (@userid,@rolemstrid, @createdby , @createddate)";
+        }
 
         public string GetStaffInfo()
         {
@@ -71,14 +71,20 @@ namespace MediaLibrary.Intranet.Web.Common
 			return Queries.UpdateUserRole;
 		}
 
-		public string GetTotalCountUser()
+		public string GetTotalCountUserRole()
 		{
-			return Queries.GetTotalCountUser;
+			return Queries.GetTotalCountUserRole;
 		}
 
 		public string GetRole()
 		{
 			return Queries.GetRole;
 		}
-	}
+
+        public string AddRoleUser()
+        {
+            return Queries.AddRoleUser;
+        }
+       
+    }
 }

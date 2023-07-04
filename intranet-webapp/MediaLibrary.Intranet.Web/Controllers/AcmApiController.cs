@@ -8,6 +8,8 @@ using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
+using Microsoft.IdentityModel.Tokens;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
@@ -202,6 +204,14 @@ namespace MediaLibrary.Intranet.Web.Controllers
             return Ok(Dropdownoptions);
         }
 
+        [HttpGet("/api/acm/getAllUsersRoles", Name = nameof(GetAllUsersRoles))]
+        public IActionResult GetAllUsersRoles([FromQuery] UserRoleQuery userQuery)
+        {
+            List<DownloadUserRoleReport> Allusers;
+            Allusers = _userRoleService.GetUsersRoleReport(userQuery);
+            return Ok(Allusers);
+        }
+
         [HttpGet("/api/acm/generateUserRoleReport", Name = nameof(DownloadUsersRole))]
         public IActionResult DownloadUsersRole([FromQuery] UserRoleQuery userQuery)
         {
@@ -254,11 +264,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 IRow dataRow = sheet.CreateRow(index + 1);
                 dataRow.CreateCell(0).SetCellValue(item.id);
-                dataRow.CreateCell(1).SetCellValue(item.UserName);
-                dataRow.CreateCell(2).SetCellValue(item.Email);
-                dataRow.CreateCell(3).SetCellValue(item.Department);
-                dataRow.CreateCell(4).SetCellValue(item.Group);
-                dataRow.CreateCell(5).SetCellValue(item.Role);
+                dataRow.CreateCell(1).SetCellValue(item.name);
+                dataRow.CreateCell(2).SetCellValue(item.email);
+                dataRow.CreateCell(3).SetCellValue(item.department);
+                dataRow.CreateCell(4).SetCellValue(item.group);
+                dataRow.CreateCell(5).SetCellValue(item.role);
                 if (item.LastLoginDate.HasValue)
                 {
                     dataRow.CreateCell(6).SetCellValue((DateTime)item.LastLoginDate);
@@ -280,12 +290,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
         }
      
-        [HttpPost("/api/acm/usersRole", Name = nameof(UpdateUserRole))]
+        [HttpDelete("/api/acm/usersRole", Name = nameof(UpdateUserRole))]
         public IActionResult UpdateUserRole([FromBody] AssignedAndRevokeUsers userRoles)
         {
             _logger.LogInformation("Updating Users Role");
             var userRole = "";
-            string RoleChange = userRoles.roleChange;
+           
             try
             {
                 foreach (var userid in userRoles.UserIds)
@@ -303,23 +313,37 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
             return Ok();
         }
-        
-        [HttpPost("/api/acm/AssignedUsersRole", Name = nameof(AssignedUserRole))]
+
+        [HttpPost("/api/acm/EditUsersRole", Name = nameof(AssignedUserRole))]
         public IActionResult AssignedUserRole([FromBody] AssignedAndRevokeUsers userRoles)
         {
             _logger.LogInformation("Updating Users Role");
-            var userRole = "";
             string RoleChange = userRoles.roleChange;
+            var addRole = "";
             try
             {
                 foreach (var userid in userRoles.UserIds)
                 {
                     foreach (var userrole in userRoles.roles)
                     {
-                        userRole = userrole;
+
+                        if (userRoles.addrole.IsNullOrEmpty())
+                        {
+                            _userRoleService.assignedRoleById(User.GetUserGraphEmail(), userid, userrole, RoleChange, addRole);
+                        }
+                        else
+                        {
+                            foreach (var addrole in userRoles.addrole)
+                            {
+                                addRole = addrole;
+                                _userRoleService.assignedRoleById(User.GetUserGraphEmail(), userid, userrole, RoleChange, addRole);
+                            }
+                        }
                     }
-                    _userRoleService.assignedRoleById(User.GetUserGraphEmail(), userid, userRole,RoleChange);
                 }
+                    
+         
+
             }
             catch (Exception ex)
             {

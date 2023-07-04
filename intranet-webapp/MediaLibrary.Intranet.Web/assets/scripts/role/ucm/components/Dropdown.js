@@ -125,19 +125,8 @@ export const Filteruser = () => {
          }
 
       <table className=" table table-borderless table-responsive-lg table-sm">
-        <tbody>
-             <tr>
-               <th className="col-md-2" >Department</th>
-               <td>
-                 <Select styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
-                   isMulti
-                   options={departmentOptions.map((e1) => ({
-                     value: e1,
-                     label: e1,
-                   }))}
-                 />
-               </td>
-             </tr>
+           <tbody>
+
              <tr>
                <th className="col-md-2" >Group</th>
                <td>
@@ -151,6 +140,19 @@ export const Filteruser = () => {
                </td>
              </tr>
 
+             <tr>
+               <th className="col-md-2" >Department</th>
+               <td>
+                 <Select styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
+                   isMulti
+                   options={departmentOptions.map((e1) => ({
+                     value: e1,
+                     label: e1,
+                   }))}
+                 />
+               </td>
+             </tr>
+     
              <tr>
                <th className="col-md-2" >Role</th>
              <td>
@@ -201,12 +203,12 @@ export const Filteruser = () => {
 
                  <Button size="s"
                    className="btn btn-primary " onClick={handleFilterBtn} >
-                   Search
+                   Apply
                  </Button>
 
-                 <Button size="s"
-                   className="btn btn-primary ml-2 " onClick={handleClear}>
-                   Clear
+                 <Button size="s" 
+                   variant="outline-primary" className=" ml-2 " onClick={handleClear}>
+                   Reset
                  </Button>
 
                </td>

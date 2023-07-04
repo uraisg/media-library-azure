@@ -18,5 +18,7 @@ namespace MediaLibrary.Intranet.Web.Models
 
         public List<string> roles { get; set; }
         public string roleChange { get; set; }
+
+        public List<string> addrole { get; set; }
     }
 }

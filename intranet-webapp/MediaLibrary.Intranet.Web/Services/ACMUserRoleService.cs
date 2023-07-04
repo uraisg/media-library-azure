@@ -32,7 +32,7 @@ namespace MediaLibrary.Intranet.Web.Services
             string searchQuery = user.SearchQuery;
             string sortOption = user.SortOption;
             string sql = ACMQueries.Queries.GetUserRole;
-            string sql2 = ACMQueries.Queries.GetTotalCountUser;
+            string sql2 = ACMQueries.Queries.GetTotalCountUserRole;
             try
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
@@ -230,7 +230,8 @@ namespace MediaLibrary.Intranet.Web.Services
                 using (SqlCommand cmd2 = new SqlCommand(sql2, conn))
                 {
                     int totalCounts = (int)cmd2.ExecuteScalar();
-                    totalPage = (totalCounts / user.pagelimit) + 1;
+                    totalPage = ((totalCounts - 1) / user.pagelimit) + 1;
+
                 }
 
                 conn.Close();
@@ -383,11 +384,11 @@ namespace MediaLibrary.Intranet.Web.Services
                     {
                         DownloadUserRoleReport staffRoleReport = new DownloadUserRoleReport();
                         staffRoleReport.id = reader.GetString(0);
-                        staffRoleReport.UserName = reader.GetString(1);
-                        staffRoleReport.Email = reader.GetString(2);
-                        staffRoleReport.Department = reader.GetString(3);
-                        staffRoleReport.Group = reader.GetString(4);
-                        staffRoleReport.Role = reader.GetString(5);
+                        staffRoleReport.name = reader.GetString(1);
+                        staffRoleReport.email = reader.GetString(2);
+                        staffRoleReport.department = reader.GetString(3);
+                        staffRoleReport.group = reader.GetString(4);
+                        staffRoleReport.role = reader.GetString(5);
 
                         DateTime targetDateTime = new DateTime(1900, 1, 1, 0, 0, 0);
 
@@ -442,58 +443,79 @@ namespace MediaLibrary.Intranet.Web.Services
             }
         }
 
-        public void assignedRoleById(string lastupdatedby, string userid, string userrole,string changeRole)
+        public void assignedRoleById(string lastupdatedby, string userid, string userrole,string changeRole,string addrole)
         {
             string acmConnectionString = _appSettings.AzureSQLConnectionString;
             using SqlConnection conn = new SqlConnection(acmConnectionString);
+     
             try
             {
+    
                 conn.Open();
-                  
-
                 int changeRoleID = ACMGetRoleID(changeRole);
                 int userroleid = ACMGetRoleID(userrole);
-                int allUserRole = 0;
+                List<int> allUserRole = new List<int>();
+                string useraction = "";
+                bool conditionMet = false;
 
                 string checkrolequery = ACMQueries.Queries.GetRole;
                 using SqlCommand cmd2 = new SqlCommand(checkrolequery, conn);
                 cmd2.Parameters.AddWithValue("@userid", userid);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
-              
+
                 while (reader2.Read())
                 {
                     string UserIDsrole = reader2.GetString(0);
-                     allUserRole = ACMGetRoleID(UserIDsrole);
+                    int useridrole = ACMGetRoleID(UserIDsrole);
+                    allUserRole.Add(useridrole);
                 }
 
                 conn.Close();
 
-                if (allUserRole == userroleid || changeRoleID == userroleid)
+                foreach (int id in allUserRole)
                 {
-                    _logger.LogInformation("Same user role has been choosen,cannot assign");
+                    if (id == changeRoleID || changeRoleID == userroleid)
+                    {
+                        conditionMet = true;
+                    }
                 }
 
-
-                else
+                if (!conditionMet)
                 {
-                    conn.Open();
-                    string queryStr = ACMQueries.Queries.UpdateUserRole;
+                        if (string.IsNullOrEmpty(changeRole) && !string.IsNullOrEmpty(addrole) )
+                        {
+                            conn.Open();
+                            string addRoleQuery = ACMQueries.Queries.AddRoleUser;
+                            int addroleid = ACMGetRoleID(addrole);
+                            SqlCommand cmd3 = new SqlCommand(addRoleQuery, conn);
+                            cmd3.Parameters.AddWithValue("@userid", userid);
+                            cmd3.Parameters.AddWithValue("@rolemstrid", addroleid);
+                            cmd3.Parameters.AddWithValue("@createdby", lastupdatedby);
+                            cmd3.Parameters.AddWithValue("@createddate", DateTime.Now);
+                            using SqlDataReader reader3 = cmd3.ExecuteReader();
+                            conn.Close();
+                            useraction = "Add";
+               
+                        UpdateAuditLog(lastupdatedby, useraction, DateTime.Now);
 
+                        }
+                        else if (!string.IsNullOrEmpty(changeRole) && string.IsNullOrEmpty(addrole))
+                    {
+                            conn.Open();
+                            string queryStr = ACMQueries.Queries.UpdateUserRole;
 
-                    SqlCommand cmd = new SqlCommand(queryStr, conn);
-                    cmd.Parameters.AddWithValue("@userid", userid);
-                    cmd.Parameters.AddWithValue("@rolemstrid", changeRoleID);
-                    cmd.Parameters.AddWithValue("@createdby", lastupdatedby);
-                    cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@userroleid", userroleid);
-
-
-
-                    string useraction = "Assign";
-                    using SqlDataReader reader = cmd.ExecuteReader();
-                    conn.Close();
-                    UpdateAuditLog(lastupdatedby, useraction, DateTime.Now);
-          
+                            SqlCommand cmd = new SqlCommand(queryStr, conn);
+                            cmd.Parameters.AddWithValue("@userid", userid);
+                            cmd.Parameters.AddWithValue("@rolemstrid", changeRoleID);
+                            cmd.Parameters.AddWithValue("@createdby", lastupdatedby);
+                            cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
+                            cmd.Parameters.AddWithValue("@userroleid", userroleid);
+                            useraction = "Edit";
+             
+                            using SqlDataReader reader = cmd.ExecuteReader();
+                            conn.Close();
+                        UpdateAuditLog(lastupdatedby, useraction, DateTime.Now);
+                        }
                 }
             }
             catch (Exception ex)
@@ -574,15 +596,20 @@ namespace MediaLibrary.Intranet.Web.Services
 
                 string actionuserid = ACMGetUserID(email);
 
-                if (useraction == "Assign")
+                if (useraction == "Edit")
                 {
-                    lastaction = "Assigned Role";
+                    lastaction = "Edited Role";
                 }
 
                 else if (useraction == "Revoke")
                 {
                     lastaction = "Revoke Role";
                 }
+                else if (useraction == "Add")
+                {
+                    lastaction = "Add Role";
+                }
+
                 cmd.Parameters.AddWithValue("@userid", actionuserid);
                 cmd.Parameters.AddWithValue("@userlastaction", lastaction);
                 cmd.Parameters.AddWithValue("@createdby", email);

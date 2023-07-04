@@ -96,11 +96,11 @@ namespace MediaLibrary.Intranet.Web.Models
     public class DownloadUserRoleReport
     {
         public string id { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
-        public string Department { get; set; }
-        public string Group { get; set; }
-        public string Role { get; set; }
+        public string name { get; set; }
+        public string email { get; set; }
+        public string department { get; set; }
+        public string group { get; set; }
+        public string role { get; set; }
         public DateTime? LastLoginDate { get; set; }
     }
 

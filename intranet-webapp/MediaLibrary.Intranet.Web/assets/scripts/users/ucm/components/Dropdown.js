@@ -152,6 +152,19 @@ export function formatDate(date) {
        
       <table className=" table table-borderless table-responsive-lg table-sm">
         <tbody>
+        
+           <tr>
+             <th className="col-md-2" >Group</th>
+             <td>
+               <Select styles={customStyles} key={dropdownKey} onChange={handleDropdownChange}
+                 isMulti
+                 options={GroupOptions.map((e1) => ({
+                   value: e1,
+                   label: e1,
+                 }))}
+               />
+             </td>
+           </tr>
 
           <tr>
             <th className="col-md-2" >Department</th>
@@ -178,20 +191,7 @@ export function formatDate(date) {
    
               </div>
             </td>
-          </tr>
-             <tr>
-               <th className="col-md-2" >Group</th>
-               <td>
-                 <Select styles={customStyles} key={dropdownKey} onChange={handleDropdownChange}
-                   isMulti
-                   options={GroupOptions.map((e1) => ({
-                       value: e1,
-                       label: e1,
-                     }))}
-                   />
-               </td>
              </tr>
-
              <tr>
                <th className="col-md-2">Suspended Date</th>
                <td className="col-12 col-md-8">
@@ -256,12 +256,12 @@ export function formatDate(date) {
             <td>
               <Button size="s"
                 className="btn btn-primary " onClick={handleFilterBtn } >
-                   Search
+                   Apply
               </Button>
 
               <Button size="s"
-                className="btn btn-primary ml-2 " onClick={handleClear}>
-                Clear
+               variant="outline-primary" className=" ml-2 " onClick={handleClear}>
+                Reset
               </Button>
 
             </td>
