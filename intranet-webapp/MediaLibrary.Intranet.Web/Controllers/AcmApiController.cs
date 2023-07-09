@@ -175,11 +175,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
         }
 
         [HttpGet("/api/acm/dropdownoptions", Name = nameof(GetDropdownOptions))]
-        public IActionResult GetDropdownOptions()
+        public IActionResult GetDropdownOptions([FromQuery] UserQuery userquery)
         {
             _logger.LogInformation("Getting Dropdown options for groups and departments");
 
-            var Dropdownoptions = _userService.ACMDropdownOptions();
+            var Dropdownoptions = _userService.ACMDropdownOptions(userquery);
             
             return Ok(Dropdownoptions);
         }
@@ -195,11 +195,10 @@ namespace MediaLibrary.Intranet.Web.Controllers
         }
 
         [HttpGet("/api/acmRole/dropdownoptions", Name = nameof(GetDropdown))]
-        public IActionResult GetDropdown()
+        public IActionResult GetDropdown([FromQuery] UserRoleQuery userRole)
         {
             _logger.LogInformation("Getting Dropdown options for groups,departments and roles");
-
-            var Dropdownoptions = _userRoleService.ACMDropdownOptions();
+            var Dropdownoptions = _userRoleService.ACMDropdownOptions(userRole);
 
             return Ok(Dropdownoptions);
         }

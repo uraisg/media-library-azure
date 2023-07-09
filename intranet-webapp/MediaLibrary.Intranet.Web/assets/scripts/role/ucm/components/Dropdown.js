@@ -26,8 +26,11 @@ export const Filteruser = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [filterContext.active]);
 
+  useEffect(() => {
+    fetchData();
+  }, []);
   const fetchData = () => {
     const baseLocation = location
     let url = new URL('/api/acmRole/dropdownoptions', baseLocation)
@@ -63,10 +66,16 @@ export const Filteruser = () => {
 
   const handledepartnmentchange = (newSelectedOptions) => {
     setdepartment(newSelectedOptions.map((o) => o.value));
+    const temp = { ...filterContext.active, "filterbydepartment": newSelectedOptions.map((o) => o.value) }
+    filterContext.setActive(temp)
   };
+
 
   const handleDropdownChange = (newSelectedOptions) => {
     setgroup(newSelectedOptions.map((o) => o.value))
+    fetchData()
+    const temp = { ...filterContext.active, "filterbygroup": newSelectedOptions.map((o) => o.value)}
+     filterContext.setActive(temp)
   };
 
   const [RoleOptions, setRoleOptions] = useState([])
@@ -82,6 +91,7 @@ export const Filteruser = () => {
   const handleStartDate = (e) => {
     const temp = { ...date, "StartDate": e.target.value }
     setDate(temp)
+
 
   }
   const handleEndDate = (e) => {
@@ -139,20 +149,33 @@ export const Filteruser = () => {
                  />
                </td>
              </tr>
-
-             <tr>
-               <th className="col-md-2" >Department</th>
-               <td>
-                 <Select styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
-                   isMulti
-                   options={departmentOptions.map((e1) => ({
-                     value: e1,
-                     label: e1,
-                   }))}
-                 />
-               </td>
-             </tr>
-     
+             {Group == "" ?(
+               <tr>
+                 <th className="col-md-2" >Department</th>
+                 <td>
+                   <Select isDisabled={true} styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
+                     isMulti 
+                     options={departmentOptions.map((e1) => ({
+                       value: e1,
+                       label: e1,
+                     }))}
+                   />
+                 </td>
+               </tr>
+             ) : (
+                 <tr>
+                   <th className="col-md-2" >Department</th>
+                   <td>
+                     <Select isDisabled={false} styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
+                       isMulti
+                       options={departmentOptions.map((e1) => ({
+                         value: e1,
+                         label: e1,
+                       }))}
+                     />
+                   </td>
+                 </tr>
+             )}
              <tr>
                <th className="col-md-2" >Role</th>
              <td>

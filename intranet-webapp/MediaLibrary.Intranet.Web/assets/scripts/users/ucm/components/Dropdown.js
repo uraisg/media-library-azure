@@ -37,6 +37,9 @@ export function formatDate(date) {
      fetchData();
    }, []);
 
+   useEffect(() => {
+     fetchData();
+   }, [filterContext.active]);
    const fetchData = () => {
      const baseLocation = location
      let url = new URL('/api/acm/dropdownoptions', baseLocation)
@@ -91,15 +94,19 @@ export function formatDate(date) {
 
    const handleDropdownChange = (newSelectedOptions) => {
      setgroup(newSelectedOptions.map((o) => o.value))
-
+     const temp = { ...filterContext.active, "filterbygroup": newSelectedOptions.map((o) => o.value) }
+     filterContext.setActive(temp)
    };
 
    const handlestatuschange = (newSelectedOptions) => {
      setvalue(newSelectedOptions.map((o) => o.value))
+  
    };
 
    const handledepartnmentchange = (newSelectedOptions) => {
      setdepartment(newSelectedOptions.map((o) => o.value));
+     const temp = { ...filterContext.active, "filterbydepartment": newSelectedOptions.map((o) => o.value) }
+     filterContext.setActive(temp)
 
    };
    
@@ -123,7 +130,7 @@ export function formatDate(date) {
        filterContext.setActive(temp)
      }
      else {
-       const temp = { ...filterContext.active, "filterbydepartment": department, "filterbystatus": status, "filterbygroup": Group,  }
+       const temp = { ...filterContext.active, "filterbydepartment": department, "filterbystatus": status, "filterbygroup": Group}
        filterContext.setActive(temp)
      }
    }
@@ -165,19 +172,32 @@ export function formatDate(date) {
                />
              </td>
            </tr>
-
-          <tr>
-            <th className="col-md-2" >Department</th>
-               <td>
-                 <Select styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
-                   isMulti
-                   options={departmentOptions.map((e1) => ({
+             {Group == "" ? (
+               <tr>
+                 <th className="col-md-2" >Department</th>
+                 <td>
+                   <Select isDisabled={true} styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
+                     isMulti
+                     options={departmentOptions.map((e1) => ({
                        value: e1,
                        label: e1,
                      }))}
-                 />
-            </td>
-             </tr>
+                   />
+                 </td>
+               </tr>) : (
+                 <tr>
+                   <th className="col-md-2" >Department</th>
+                   <td>
+                     <Select isDisabled={false}  styles={customStyles} key={dropdownKey} onChange={handledepartnmentchange}
+                       isMulti
+                       options={departmentOptions.map((e1) => ({
+                         value: e1,
+                         label: e1,
+                       }))}
+                     />
+                   </td>
+                 </tr>
+               )}
         
           <tr>
             <th className="col-md-2" >Status</th>

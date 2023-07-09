@@ -23,6 +23,7 @@ namespace MediaLibrary.Intranet.Web.Common
 			public const string GetTotalCountUserRole = "SELECT COUNT(*) AS total_count from ACMStaffInfo si inner join ACMStaffLogin sl on si.UserID = sl.UserID inner join ACMSession ses on si.UserID = ses.UserID inner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
 			public const string GetRole = "select rolename from ACMStaffInfo si inner join ACMStaffLogin sl on si.UserID = sl.UserID inner join ACMSession ses on si.UserID = ses.UserID inner join ACMGroupMaster gm on si.GroupID = gm.GroupID inner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join ACMRoleUser ru on si.userid = ru.UserID inner join ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = @userid";
             public const string AddRoleUser = "Insert into ACMRoleUser values (@userid,@rolemstrid, @createdby , @createddate)";
+            public const string GetGroupDept = "Select groupname,deptname from ACMGroupMaster gm inner join ACMDeptMaster dm on gm.GroupID= dm.GroupID where groupname = @groupname";
         }
 
         public string GetStaffInfo()
@@ -85,6 +86,9 @@ namespace MediaLibrary.Intranet.Web.Common
         {
             return Queries.AddRoleUser;
         }
-       
+
+        public string GetGroupDept() {
+            return Queries.GetGroupDept;
+                }
     }
 }

@@ -374,7 +374,7 @@ namespace MediaLibrary.Intranet.Web.Services
             return userid;
         }
 
-        public Tuple<List<string>, List<string>> ACMDropdownOptions()
+        public Tuple<List<string>, List<string>> ACMDropdownOptions(UserQuery userquery)
         {
             string acmConnectionString = _appSettings.AzureSQLConnectionString;
             dropdownoptions dropdownoptions = new dropdownoptions();
@@ -389,14 +389,18 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 conn.Open();
-                string sql = String.Format("Select deptname from acmdeptmaster");
-                using SqlCommand cmd = new SqlCommand(sql, conn);
-                using SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                string filterGroups = getFilterResult(userquery.filterbygroup);
+                if (!string.IsNullOrEmpty(filterGroups))
                 {
-                    string getoptions = reader.GetString(0);
-                    options.Add(getoptions);
+                    string sql = String.Format("select deptname from ACMGroupMaster gm inner join ACMDeptMaster dm on gm.GroupID = dm.GroupID where groupname in {0}", filterGroups);
+                    using SqlCommand cmd = new SqlCommand(sql, conn);
+                    using SqlDataReader reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        string getoptions = reader.GetString(0);
+                        options.Add(getoptions);
+                    }
                 }
                 conn.Close();
 

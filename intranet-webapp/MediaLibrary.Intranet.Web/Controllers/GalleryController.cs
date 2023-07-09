@@ -6,6 +6,7 @@ using MediaLibrary.Intranet.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -13,80 +14,101 @@ namespace MediaLibrary.Intranet.Web.Controllers
     {
         private readonly ILogger<GalleryController> _logger;
         private readonly ItemService _itemService;
+        private readonly ACMUserRoleService _userRoleService;
 
-        public GalleryController(ILogger<GalleryController> logger, ItemService itemService)
+        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, ACMUserRoleService userRoleService)
         {
             _logger = logger;
             _itemService = itemService;
+            _userRoleService = userRoleService;
         }
 
         public IActionResult Index()
         {
+           var userrole = _userRoleService.getuserrole(User.GetUserGraphEmail());
+            bool isAdmin = User.IsInRole(UserRole.Admin);
+            foreach (var item in userrole)
+            {
+                _logger.LogInformation("getting admin {id}", item);
+                if (item == "User Admin" || isAdmin)
+                {
+                    bool CheckAdmin = true;
+                    ViewData["userRole"] = CheckAdmin;
+                }
+
+                else
+                {
+                    bool CheckAdmin = false;
+                    ViewData["userRole"] = CheckAdmin;
+                }
+            }
+  
             return View();
-        }
+}
 
         public async Task<IActionResult> Item([BindRequired, FromRoute] string id)
         {
-            if (!ModelState.IsValid)
-            {
-                return NotFound();
-            }
+        if (!ModelState.IsValid)
+        {
+            return NotFound();
+        }
 
-            bool isAdmin = User.IsInRole(UserRole.Admin);
+        bool isAdmin = User.IsInRole(UserRole.Admin);
 
-            // Get item info and check if user is author
-            bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
+        // Get item info and check if user is author
+        bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
-            // Get item upload date info and check if within 1 day
-            DateTime? itemUploadDateTime = (await GetItemUploadDateAsync(id));
-            DateTime currentDateTime = DateTime.UtcNow;
-            bool isOneDayValid = itemUploadDateTime != null && currentDateTime.Subtract(itemUploadDateTime.Value).TotalHours <= 24;
+        // Get item upload date info and check if within 1 day
+        DateTime? itemUploadDateTime = (await GetItemUploadDateAsync(id));
+        DateTime currentDateTime = DateTime.UtcNow;
+        bool isOneDayValid = itemUploadDateTime != null && currentDateTime.Subtract(itemUploadDateTime.Value).TotalHours <= 24;
 
-            ViewData["mediaId"] = id;
-            ViewData["showEditActions"] = isAdmin || isAuthor;
-            ViewData["showDelActions"] = isAdmin || (isAuthor && isOneDayValid);
-            return View();
+        ViewData["mediaId"] = id;
+        ViewData["showEditActions"] = isAdmin || isAuthor;
+        ViewData["showDelActions"] = isAdmin || (isAuthor && isOneDayValid);
+        return View();
         }
 
         public async Task<IActionResult> Edit([BindRequired, FromRoute] string id)
         {
-            if (!ModelState.IsValid)
-            {
-                return NotFound();
-            }
+        if (!ModelState.IsValid)
+        {
+            return NotFound();
+        }
 
-            bool isAdmin = User.IsInRole(UserRole.Admin);
+        bool isAdmin = User.IsInRole(UserRole.Admin);
 
-            // Get item info and check if user is author
-            bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
+        // Get item info and check if user is author
+        bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
-            if (isAdmin || isAuthor)
-            {
-                ViewData["mediaId"] = id;
-                return View();
-            }
-            else
-            {
-                return Forbid();
-            }
+        if (isAdmin || isAuthor)
+        {
+            ViewData["mediaId"] = id;
+            return View();
+        }
+        else
+        {
+            return Forbid();
+        }
         }
 
         private async Task<string> GetItemAuthorAsync(string id)
         {
-            _logger.LogInformation("Getting item author details for id {id}", id);
+        _logger.LogInformation("Getting item author details for id {id}", id);
 
-            MediaItem item = await _itemService.GetItemAsync(id);
+        MediaItem item = await _itemService.GetItemAsync(id);
 
-            return item?.Author;
+        return item?.Author;
         }
 
         private async Task<DateTime?> GetItemUploadDateAsync(string id)
         {
-            _logger.LogInformation("Getting item upload date for id {id}", id);
+        _logger.LogInformation("Getting item upload date for id {id}", id);
 
-            MediaItem item = await _itemService.GetItemAsync(id);
+        MediaItem item = await _itemService.GetItemAsync(id);
 
-            return item?.UploadDate;
+        return item?.UploadDate;
         }
-    }
-}
+
+        }
+        }

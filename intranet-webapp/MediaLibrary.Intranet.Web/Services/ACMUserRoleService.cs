@@ -9,6 +9,7 @@ using MediaLibrary.Intranet.Web.Common;
 using Microsoft.IdentityModel.Tokens;
 using SqlKata;
 using System.Linq;
+using Microsoft.Graph;
 
 
 namespace MediaLibrary.Intranet.Web.Services
@@ -17,6 +18,7 @@ namespace MediaLibrary.Intranet.Web.Services
     {
         private readonly AppSettings _appSettings;
         private readonly ILogger<ACMUserRoleService> _logger;
+
 
         public ACMUserRoleService(IOptions<AppSettings> appSettings, ILogger<ACMUserRoleService> logger)
         {
@@ -64,7 +66,7 @@ namespace MediaLibrary.Intranet.Web.Services
                     {
                         string newsql = string.Format("groupname in {0}", filterGroups);
                         filterConditions.Add(newsql);
-                    }
+                     }
                                
                     string filterDepts = getFilterResult(user.filterbydepartment);
                     if (!string.IsNullOrEmpty(filterDepts))
@@ -72,7 +74,7 @@ namespace MediaLibrary.Intranet.Web.Services
                         string newsql = string.Format("deptname in {0}", filterDepts);
                         filterConditions.Add(newsql);
                     }
-                               
+
                 if (searchQuery != null)
                 {
                     string newsql = string.Format("staffemail like '{0}%' or staffname like '{1}%'", searchQuery, searchQuery);
@@ -242,8 +244,7 @@ namespace MediaLibrary.Intranet.Web.Services
             }
            return Tuple.Create(ACMStaffRoleResults,totalPage);
         }
-
-        public Tuple<List<string>, List<string>,List<string>> ACMDropdownOptions()
+            public Tuple<List<string>, List<string>,List<string>> ACMDropdownOptions(UserRoleQuery userRole)
         {
             string acmConnectionString = _appSettings.AzureSQLConnectionString;
             dropdownoptions dropdownoptions = new dropdownoptions();
@@ -251,31 +252,34 @@ namespace MediaLibrary.Intranet.Web.Services
             List<string> options = new List<string>();
             List<string> groupOptions = new List<string>();
             List<string> roleOptions = new List<string>();
-
+            
             dropdownoptions.departmentoptions = options;
             dropdownoptions.groupoptions = groupOptions;
             dropdownoptions.roleoptions = roleOptions;
-
+        
             try
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 conn.Open();
-                string sql = String.Format("Select deptname from acmdeptmaster");
-                using SqlCommand cmd = new SqlCommand(sql, conn);
-                using SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                string filterGroups = getFilterResult(userRole.filterbygroup);
+                if (!string.IsNullOrEmpty(filterGroups))
                 {
-                    string getoptions = reader.GetString(0);
-                    options.Add(getoptions);
-                }
+                    string sql = String.Format("select deptname from ACMGroupMaster gm inner join ACMDeptMaster dm on gm.GroupID = dm.GroupID where groupname in {0}", filterGroups);
+                    using SqlCommand cmd = new SqlCommand(sql, conn);
+                    using SqlDataReader reader = cmd.ExecuteReader();
 
+                    while (reader.Read())
+                    {
+                        string getoptions = reader.GetString(0);
+                        options.Add(getoptions);
+                    }
+                }
                 conn.Close();
+
                 conn.Open();
                 string sql2 = String.Format("Select groupname from ACMGroupMaster ");
                 using SqlCommand cmd2 = new SqlCommand(sql2, conn);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
-
                 
                 while (reader2.Read())
                 {
@@ -293,6 +297,7 @@ namespace MediaLibrary.Intranet.Web.Services
                     roleOptions.Add(GetRoleOptions);
                 }
                 conn.Close();
+
                 return Tuple.Create(options, groupOptions,roleOptions);
 
             }
@@ -645,6 +650,34 @@ namespace MediaLibrary.Intranet.Web.Services
                 _logger.LogError(ex, "Error in getting the user ID");
             }
             return userid;
+        }
+
+
+        public List<string> getuserrole(string email)
+        {
+            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            List<string> userRole = new List<string>();
+            try
+            {
+                using SqlConnection conn = new SqlConnection(acmConnectionString);
+                conn.Open();
+                string sql = String.Format("select rolename from acmroleuser su inner join ACMStaffInfo si on su.UserID = si.UserID inner join ACMRoleMaster rm on rm.RoleMstrID = su.RoleMstrID where StaffEmail='{0}'", email);
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                using SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string role = reader.GetString(0);
+                    userRole.Add(role);
+
+                   
+                }
+                return userRole;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in getting the user role");
+            }
+            return userRole;
         }
     }
 }
