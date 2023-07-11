@@ -33,7 +33,6 @@
     "sass-loader": "^13.2.0"
   },
   "dependencies": {
-    "@files-ui/react": "^1.0.8",
     "bootstrap": "^4.6.1",
     "date-fns": "^2.29.3",
     "filepond-plugin-file-validate-size": "^2.2.8",

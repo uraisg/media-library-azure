@@ -1,67 +1,56 @@
-import {
-  Dropzone,
-  FileMosaic,
-  FullScreen,
-  ImagePreview,
-} from "@files-ui/react";
-import { useState } from "react";
+import React from 'react'
+import { FilePond, registerPlugin } from 'react-filepond'
+import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size'
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
+import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation'
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
+import 'filepond/dist/filepond.min.css'
+
 import { useForm } from '@/components/AllContext'
 
-export default function FileInput() {
-  const MAX_FILES = 25
-  const [imageSrc, setImageSrc] = useState(undefined);
+// Register the FilePond plugins
+registerPlugin(
+  FilePondPluginFileValidateSize,
+  FilePondPluginFileValidateType,
+  FilePondPluginImageExifOrientation,
+  FilePondPluginImagePreview
+)
+
+const MAX_FILES = 25
+const MAX_FILE_SIZE = '40MB'
+const ACCEPTED_FILE_TYPES = [
+  'image/png',
+  'image/jpg',
+  'image/jpeg',
+  'image/gif',
+  'image/bmp',
+  'image/heic',
+]
+
+const FileInput = () => {
   const formContext = useForm()
 
-  const updateFiles = (incommingFiles) => {
-    console.log("incomming files", incommingFiles);
-    formContext.setFiles(incommingFiles);
-  };
-
-  const onDelete = (id) => {
-    formContext.setFiles(formContext.files.filter((x) => x.id !== id));
-  };
-
-  const handleSee = (imageSource) => {
-    setImageSrc(imageSource);
-  }
-
-  const ACCEPTED_FILE_TYPES = [
-    'image/png',
-    'image/jpg',
-    'image/jpeg',
-    'image/gif',
-    'image/bmp',
-    'image/heic',
-  ]
   return (
-    <>
+    <div className="mb-3">
       <p>
         Select up to {MAX_FILES} images to upload. Each image should be less than 40 MB. Supported
         file types: {ACCEPTED_FILE_TYPES.map((_) => _.substring(_.indexOf('/') + 1)).join(', ')}
       </p>
-      <Dropzone
-        onChange={updateFiles}
-        minHeight="195px"
-        value={formContext.files}
-        accept="image/png, image/jpg,image/jpeg,image/gif,image/bmp,image/heic"
+      <FilePond
+        name="files"
+        files={formContext.files}
+        onupdatefiles={formContext.setFiles}
+        allowMultiple={true}
         maxFiles={MAX_FILES}
-        maxFileSize={41943040}
-        cleanFiles
-        label="Drag'n drop files here or click to browse"
-      >
-        {formContext.files.map((file) => (
-          <FileMosaic key={file.id} {...file} onDelete={onDelete} info
-            onSee={handleSee} preview
-
-          />
-
-        ))}
-      </Dropzone>
-      <FullScreen open={imageSrc !== undefined}
-        onClose={() => setImageSrc(undefined)}>
-        <ImagePreview src={imageSrc}></ImagePreview>
-      </FullScreen>
-    </>
-  );
+        allowFileTypeValidation={true}
+        acceptedFileTypes={ACCEPTED_FILE_TYPES}
+        allowFileSizeValidation={true}
+        maxFileSize={MAX_FILE_SIZE}
+        labelIdle='Drag images here or <span class="filepond--label-action">browse</span>'
+      />
+    </div>
+  )
 }
 
+export default FileInput

@@ -46,7 +46,7 @@ const StepperForm = () => {
     let disable = false;
 
     for (const file of formContext.files) {
-      if (file.file.size > fileSizeLimit || file.valid == false) {
+      if (file.file.size > fileSizeLimit) {
         disable = true;
         break;
       }
