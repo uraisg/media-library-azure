@@ -75,6 +75,10 @@ a.navbar-brand {
 
 .get-started-section {
   background: linear-gradient(135deg, theme-color(primary) 0%, $purple 100%) no-repeat fixed;
+
+  .cta-para {
+    max-width: 40rem;
+  }
 }
 
 .site-footer {
