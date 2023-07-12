@@ -120,7 +120,7 @@ const SpatialFilter = ({ filters, setFilters, areas }) => {
     ))
 
     return (
-      <optgroup label={region.Region}>
+      <optgroup key={region.Region} label={region.Region}>
         {options}
       </optgroup>
     )
