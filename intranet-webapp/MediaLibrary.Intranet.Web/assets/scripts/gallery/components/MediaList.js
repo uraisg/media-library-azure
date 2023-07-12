@@ -24,7 +24,7 @@ const MediaList = ({ results }) => {
         <hr />
         <div className="media p-3 my-3">
           <ThumbnailLink href={result.link}>
-            <Thumbnail src={result.thumbnail} alt={result.name} />
+            <Thumbnail src={result.src} alt={result.name} />
           </ThumbnailLink>
           <div className="d-flex w-100 media-body">
             {/*left div*/}

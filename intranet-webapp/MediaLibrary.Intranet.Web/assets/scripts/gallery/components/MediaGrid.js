@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
-import Gallery from 'react-grid-gallery'
+import { Gallery } from 'react-grid-gallery'
 import { styled } from '@linaria/react'
 import DelayedSpinner from '@/components/DelayedSpinner'
 
@@ -150,8 +150,8 @@ const MediaGrid = ({ results }) => {
   results = results.map((result) => {
     return {
       ...result,
-      thumbnailWidth: 320,
-      thumbnailHeight: 240,
+      width: 320,
+      height: 240,
     }
   })
 
@@ -186,7 +186,7 @@ const MediaGrid = ({ results }) => {
     <div>
       <Gallery
         images={results}
-        onClickThumbnail={(index, event) => onCurrentImageChange(index)}
+        onClick={(index, event) => onCurrentImageChange(index)}
         enableImageSelection={false}
       />
       {showModal &&
@@ -218,7 +218,7 @@ const MediaGrid = ({ results }) => {
                   {!loaded &&
                     <DelayedSpinner/>
                   }
-              <Image ref={imageRef} src={results[currentIndex].src} alt={results[currentIndex].name} onLoad={() => setLoad(true)} style={loaded ? {} : { display: 'none' }} />
+              <Image ref={imageRef} src={results[currentIndex].original} alt={results[currentIndex].name} onLoad={() => setLoad(true)} style={loaded ? {} : { display: 'none' }} />
                 </ImageDiv>
 
                 <AlignRightDiv>
