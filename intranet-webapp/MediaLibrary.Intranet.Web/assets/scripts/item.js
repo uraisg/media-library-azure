@@ -3,10 +3,6 @@ import { getDisplayName } from './DisplayName'
 
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
-  const downloadBtnOriginal = document.querySelector('#media-download-original')
-  const downloadBtnSmall = document.querySelector('#media-download-small')
-  const downloadBtnMedium = document.querySelector('#media-download-medium')
-  const downloadBtnLarge = document.querySelector('#media-download-large')
   const fileInfoId = img.dataset.fileinfoid
   if (!fileInfoId) return
 
@@ -25,41 +21,10 @@ function loadFileInfo() {
       return response.json()
     })
     .then((data) => {
-      img.alt = data['Name'];
-      img.src = data['FileURL'];
-      downloadBtnOriginal.href = img.src;
-      downloadBtnSmall.href = data['smallImage'];
-      downloadBtnMedium.href = data['mediumImage'];
-      downloadBtnLarge.href = data['largeImage'];
-
-      console.log(data['showSmall'])
-      if (data["showSmall"]) {
-        downloadBtnSmall.style.display = "block";
-      }
-      else {
-        downloadBtnSmall.style.display = "none";
-      }
-
-      if (data["showMedium"]) {
-        downloadBtnMedium.style.display = "block";
-      }
-      else {
-        downloadBtnMedium.style.display = "none";
-      }
-
-      if (data["showLarge"]) {
-        downloadBtnLarge.style.display = "block";
-      }
-      else {
-        downloadBtnLarge.style.display = "none";
-      }
-
-      img.onload = function (event) {
-        downloadBtnOriginal.innerText = "Original (" + img.naturalWidth + "x" + img.naturalHeight + ")";
-        downloadBtnSmall.innerText = "Small (" + data['smallImageSize'] + ")";
-        downloadBtnMedium.innerText = "Medium (" + data['mediumImageSize'] + ")";
-        downloadBtnLarge.innerText = "Large (" + data['largeImageSize'] + ")";
-      }
+      img.onload = () => generateDownloadLinks(data['FileURL'], img.naturalWidth, img.naturalHeight)
+      img.alt = data['Name']
+      img.src = data['FileURL']
+      document.querySelector('#media-download-original').href = data['FileURL']
 
       renderMetadataSection(data)
 
@@ -73,6 +38,49 @@ function loadFileInfo() {
       document.title = 'Oops! ' + document.title
       console.error(error)
     })
+}
+
+// Populate image download links for different sizes
+function generateDownloadLinks(url, imgX, imgY) {
+  const createSizeText = ([x, y]) => {
+    const span = document.createElement('span')
+    span.innerText = `(${x}x${y})`
+    return span
+  }
+
+  const downloadBtnOriginal = document.querySelector('#media-download-original')
+  downloadBtnOriginal.append(' ', createSizeText([imgX, imgY]))
+
+  const sizes = [
+    [360, '#media-download-small'],
+    [720, '#media-download-medium'],
+    [1080, '#media-download-large'],
+  ]
+
+  for (const [size, selector] of sizes) {
+    const button = document.querySelector(selector)
+    const resized = resize(imgX, imgY, size)
+    if (resized) {
+      button.append(' ', createSizeText(resized))
+      button.href = url + `/${resized[0]}-${resized[1]}`
+      button.classList.remove('d-none')
+    }
+  }
+}
+
+// Resize height and width of an image while perserving its aspect ratio
+function resize(x, y, max) {
+  // Skip if image size is smaller than target maximum
+  if (x < max && y < max) {
+    return null
+  }
+
+  // Maximum values of height and width given, scale other dimension to preserve aspect ratio.
+  if (y > x) {
+    return [Math.round((max * x) / y), max]
+  } else {
+    return [max, Math.round((max * y) / x)]
+  }
 }
 
 async function renderMetadataSection(data) {

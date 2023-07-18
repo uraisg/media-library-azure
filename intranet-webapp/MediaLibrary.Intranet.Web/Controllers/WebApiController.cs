@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
-using Newtonsoft.Json.Linq;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
@@ -132,119 +131,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
             if (item != null)
             {
-                JObject objectItem = JObject.FromObject(item);
-                string fileName = Uri.UnescapeDataString(objectItem["FileURL"].ToString().Replace("/api/assets/", ""));
-
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(fileName);
-
-                try
-                {
-                    BlobDownloadInfo download = await blobClient.DownloadAsync();
-                    Image image = Image.FromStream(download.Content);
-
-                    int small = 360;                                                                                                                                                                           ;
-                    int medium = 720;
-                    int large = 1080;
-
-                    if (image.Width > image.Height)
-                    {
-                        decimal resolution = decimal.Divide(image.Height, image.Width);
-
-                        if (image.Width > small)
-                        {
-                            objectItem["showSmall"] = true;
-                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + small + "-" + Math.Floor(small * resolution);
-                            objectItem["smallImageSize"] = small + "x" + Math.Floor(small * resolution);
-                        }
-                        else
-                        {
-                            objectItem["showSmall"] = false;
-                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + image.Width + "-" + Math.Floor(image.Width * resolution);
-                            objectItem["smallImageSize"] = image.Width + "x" + Math.Floor(image.Width * resolution);
-                        }
-
-                        if (image.Width > medium)
-                        {
-                            objectItem["showMedium"] = true;
-                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + medium + "-" + Math.Floor(medium * resolution);
-                            objectItem["mediumImageSize"] = medium + "x" + Math.Floor(medium * resolution);
-                        }
-                        else
-                        {
-                            objectItem["showMedium"] = false;
-                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + image.Width + "-" + Math.Floor(image.Width * resolution);
-                            objectItem["mediumImageSize"] = image.Width + "x" + Math.Floor(image.Width * resolution);
-                        }
-
-                        if (image.Width > large)
-                        {
-                            objectItem["showLarge"] = true;
-                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + large + "-" + Math.Floor(large * resolution);
-                            objectItem["largeImageSize"] = large + "x" + Math.Floor(large * resolution);
-                        }
-                        else
-                        {
-                            objectItem["showLarge"] = false;
-                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + image.Width + "-" + Math.Floor(image.Width * resolution);
-                            objectItem["largeImageSize"] = image.Width + "x" + Math.Floor(image.Width * resolution);
-                        }
-                    }
-                    else
-                    {
-                        decimal resolution = decimal.Divide(image.Width, image.Height);
-
-                        if (image.Height > small)
-                        {
-                            objectItem["showSmall"] = true;
-                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + Math.Floor(small * resolution) + "-" + small;
-                            objectItem["smallImageSize"] = Math.Floor(small * resolution) + "x" + small;
-                        }
-                        else
-                        {
-                            objectItem["showSmall"] = false;
-                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Height * resolution) + "-" + image.Height;
-                            objectItem["smallImageSize"] = Math.Floor(image.Height * resolution) + "x" + image.Height;
-                        }
-
-                        if (image.Height > medium)
-                        {
-                            objectItem["showMedium"] = true;
-                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + Math.Floor(medium * resolution) + "-" + medium;
-                            objectItem["mediumImageSize"] = Math.Floor(medium * resolution) + "x" + medium;
-                        }
-                        else
-                        {
-                            objectItem["showMedium"] = false;
-                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Height * resolution) + "-" + image.Height;
-                            objectItem["mediumImageSize"] = Math.Floor(image.Height * resolution) + "x" + image.Height;
-                        }
-
-                        if (image.Height > large)
-                        {
-                            objectItem["showLarge"] = true;
-                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + Math.Floor(large * resolution) + "-" + large;
-                            objectItem["largeImageSize"] = Math.Floor(large * resolution) + "x" + large;
-                        }
-                        else
-                        {
-                            objectItem["showLarge"] = false;
-                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Height * resolution) + "-" + image.Height;
-                            objectItem["largeImageSize"] = Math.Floor(image.Height * resolution) + "x" + image.Height;
-                        }
-                    }
-
-                    image.Dispose();
-                }
-                catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
-                {
-                    _logger.LogInformation("Could not get blob.", ex);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation("Could not get blob while trying to get the original size of the image.", ex);
-                }
-
-                return Ok(objectItem);
+                return Ok(item);
             }
             else
             {
