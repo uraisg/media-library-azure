@@ -55,7 +55,7 @@ function loadFileInfo() {
       }
 
       img.onload = function (event) {
-        downloadBtnOriginal.innerText = "Original (" + img.naturalHeight + "x" + img.naturalWidth + ")";
+        downloadBtnOriginal.innerText = "Original (" + img.naturalWidth + "x" + img.naturalHeight + ")";
         downloadBtnSmall.innerText = "Small (" + data['smallImageSize'] + ")";
         downloadBtnMedium.innerText = "Medium (" + data['mediumImageSize'] + ")";
         downloadBtnLarge.innerText = "Large (" + data['largeImageSize'] + ")";

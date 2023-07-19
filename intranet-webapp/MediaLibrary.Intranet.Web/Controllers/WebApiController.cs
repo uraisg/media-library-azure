@@ -102,7 +102,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 BlobDownloadInfo download = await blobClient.DownloadAsync();
 
                 var image = Image.FromStream(download.Content);
-                var resized = new Bitmap(image, new Size(int.Parse(sizes[1]), int.Parse(sizes[0])));
+                var resized = new Bitmap(image, new Size(int.Parse(sizes[0]), int.Parse(sizes[1])));
 
                 using (var stream = new MemoryStream())
                 {
@@ -146,11 +146,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
                     int medium = 720;
                     int large = 1080;
 
-                    if (image.Height > image.Width)
+                    if (image.Width > image.Height)
                     {
-                        decimal resolution = decimal.Divide(image.Width, image.Height);
+                        decimal resolution = decimal.Divide(image.Height, image.Width);
 
-                        if (image.Height > small)
+                        if (image.Width > small)
                         {
                             objectItem["showSmall"] = true;
                             objectItem["smallImage"] = objectItem["FileURL"] + "/" + small + "-" + Math.Floor(small * resolution);
@@ -159,11 +159,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
                         else
                         {
                             objectItem["showSmall"] = false;
-                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + image.Height + "-" + Math.Floor(image.Height * resolution);
-                            objectItem["smallImageSize"] = image.Height + "x" + Math.Floor(image.Height * resolution);
+                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + image.Width + "-" + Math.Floor(image.Width * resolution);
+                            objectItem["smallImageSize"] = image.Width + "x" + Math.Floor(image.Width * resolution);
                         }
 
-                        if (image.Height > medium)
+                        if (image.Width > medium)
                         {
                             objectItem["showMedium"] = true;
                             objectItem["mediumImage"] = objectItem["FileURL"] + "/" + medium + "-" + Math.Floor(medium * resolution);
@@ -172,11 +172,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
                         else
                         {
                             objectItem["showMedium"] = false;
-                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + image.Height + "-" + Math.Floor(image.Height * resolution);
-                            objectItem["mediumImageSize"] = image.Height + "x" + Math.Floor(image.Height * resolution);
+                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + image.Width + "-" + Math.Floor(image.Width * resolution);
+                            objectItem["mediumImageSize"] = image.Width + "x" + Math.Floor(image.Width * resolution);
                         }
 
-                        if (image.Height > large)
+                        if (image.Width > large)
                         {
                             objectItem["showLarge"] = true;
                             objectItem["largeImage"] = objectItem["FileURL"] + "/" + large + "-" + Math.Floor(large * resolution);
@@ -185,15 +185,15 @@ namespace MediaLibrary.Intranet.Web.Controllers
                         else
                         {
                             objectItem["showLarge"] = false;
-                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + image.Height + "-" + Math.Floor(image.Height * resolution);
-                            objectItem["largeImageSize"] = image.Height + "x" + Math.Floor(image.Height * resolution);
+                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + image.Width + "-" + Math.Floor(image.Width * resolution);
+                            objectItem["largeImageSize"] = image.Width + "x" + Math.Floor(image.Width * resolution);
                         }
                     }
                     else
                     {
-                        decimal resolution = decimal.Divide(image.Height, image.Width);
+                        decimal resolution = decimal.Divide(image.Width, image.Height);
 
-                        if (image.Width > small)
+                        if (image.Height > small)
                         {
                             objectItem["showSmall"] = true;
                             objectItem["smallImage"] = objectItem["FileURL"] + "/" + Math.Floor(small * resolution) + "-" + small;
@@ -202,11 +202,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
                         else
                         {
                             objectItem["showSmall"] = false;
-                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Width * resolution) + "-" + image.Width;
-                            objectItem["smallImageSize"] = Math.Floor(image.Width * resolution) + "x" + image.Width;
+                            objectItem["smallImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Height * resolution) + "-" + image.Height;
+                            objectItem["smallImageSize"] = Math.Floor(image.Height * resolution) + "x" + image.Height;
                         }
 
-                        if (image.Width > medium)
+                        if (image.Height > medium)
                         {
                             objectItem["showMedium"] = true;
                             objectItem["mediumImage"] = objectItem["FileURL"] + "/" + Math.Floor(medium * resolution) + "-" + medium;
@@ -215,11 +215,11 @@ namespace MediaLibrary.Intranet.Web.Controllers
                         else
                         {
                             objectItem["showMedium"] = false;
-                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Width * resolution) + "-" + image.Width;
-                            objectItem["mediumImageSize"] = Math.Floor(image.Width * resolution) + "x" + image.Width;
+                            objectItem["mediumImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Height * resolution) + "-" + image.Height;
+                            objectItem["mediumImageSize"] = Math.Floor(image.Height * resolution) + "x" + image.Height;
                         }
 
-                        if (image.Width > large)
+                        if (image.Height > large)
                         {
                             objectItem["showLarge"] = true;
                             objectItem["largeImage"] = objectItem["FileURL"] + "/" + Math.Floor(large * resolution) + "-" + large;
@@ -228,8 +228,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
                         else
                         {
                             objectItem["showLarge"] = false;
-                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Width * resolution) + "-" + image.Width;
-                            objectItem["largeImageSize"] = Math.Floor(image.Width * resolution) + "x" + image.Width;
+                            objectItem["largeImage"] = objectItem["FileURL"] + "/" + Math.Floor(image.Height * resolution) + "-" + image.Height;
+                            objectItem["largeImageSize"] = Math.Floor(image.Height * resolution) + "x" + image.Height;
                         }
                     }
 
