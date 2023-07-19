@@ -103,13 +103,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 var image = Image.FromStream(download.Content);
                 var resized = new Bitmap(image, new Size(int.Parse(sizes[0]), int.Parse(sizes[1])));
 
-                using (var stream = new MemoryStream())
-                {
-                    resized.Save(stream, ImageFormat.Jpeg);
+                var stream = new MemoryStream();
+                resized.Save(stream, ImageFormat.Jpeg);
+                stream.Seek(0, SeekOrigin.Begin);
 
-                    string newFileName = Path.GetFileNameWithoutExtension(name) + ".jpg";
-                    return File(stream.ToArray(), "image/jpeg", newFileName);
-                }
+                string newFileName = Path.GetFileNameWithoutExtension(name) + ".jpg";
+                return File(stream, "image/jpeg", newFileName);
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
             {
