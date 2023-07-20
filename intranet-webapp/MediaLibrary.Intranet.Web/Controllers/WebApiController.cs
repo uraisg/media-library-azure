@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using ImageMagick;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
@@ -80,6 +82,45 @@ namespace MediaLibrary.Intranet.Web.Controllers
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
             {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("/api/assets/{name}/{size}")]
+        public async Task<IActionResult> GetMediaFileWithSize(string name, string size)
+        {
+            _logger.LogInformation("Getting blob with name {name} and resize to {size}", name, size);
+
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
+            string[] sizes = size.Split("-");
+
+            try
+            {
+                BlobDownloadInfo download = await blobClient.DownloadAsync();
+
+                var stream = new MemoryStream();
+                using (var image = new MagickImage(download.Content))
+                {
+                    image.Strip();
+                    image.Thumbnail(new MagickGeometry(int.Parse(sizes[0]), int.Parse(sizes[1]))
+                    {
+                        IgnoreAspectRatio = true
+                    });
+                    image.Write(stream, MagickFormat.Jpeg);
+                }
+
+                stream.Seek(0, SeekOrigin.Begin);
+
+                string newFileName = Path.GetFileNameWithoutExtension(name) + ".jpg";
+                return File(stream, "image/jpeg", newFileName);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Issue with getting media file in specific size.", ex);
                 return NotFound();
             }
         }
