@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using ImageMagick;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
@@ -100,11 +98,17 @@ namespace MediaLibrary.Intranet.Web.Controllers
             {
                 BlobDownloadInfo download = await blobClient.DownloadAsync();
 
-                var image = Image.FromStream(download.Content);
-                var resized = new Bitmap(image, new Size(int.Parse(sizes[0]), int.Parse(sizes[1])));
-
                 var stream = new MemoryStream();
-                resized.Save(stream, ImageFormat.Jpeg);
+                using (var image = new MagickImage(download.Content))
+                {
+                    image.Strip();
+                    image.Thumbnail(new MagickGeometry(int.Parse(sizes[0]), int.Parse(sizes[1]))
+                    {
+                        IgnoreAspectRatio = true
+                    });
+                    image.Write(stream, MagickFormat.Jpeg);
+                }
+
                 stream.Seek(0, SeekOrigin.Begin);
 
                 string newFileName = Path.GetFileNameWithoutExtension(name) + ".jpg";
