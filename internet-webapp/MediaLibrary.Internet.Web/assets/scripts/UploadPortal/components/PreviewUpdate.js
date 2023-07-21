@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { styled } from '@linaria/react'
-import { Modal, Button } from 'react-bootstrap'
+import { Modal, Button, Form } from 'react-bootstrap'
 import { ArrowClockwise, PencilSquare, Trash, X } from 'react-bootstrap-icons'
 import { TailSpin } from 'react-loader-spinner'
 import PropTypes from 'prop-types'
@@ -8,6 +8,21 @@ import PropTypes from 'prop-types'
 import EditItem from '@/components/EditItem'
 import DisplayItem from '@/components/DisplayItem'
 import { useForm } from '@/components/AllContext'
+
+const Highlight = styled.div`
+  background-color: #f3f4f5;
+`
+
+const FormCheck = styled(Form.Check)`
+  padding-left: 1.75rem !important;
+
+  & .form-check-input {
+    margin-top: 0.15rem;
+    margin-left: -1.75rem;
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+`
 
 const Separator = styled.div`
   height: 1.25em;
@@ -218,13 +233,8 @@ const Step2 = (props) => {
     renderRefresh();
   }
 
-  const declarationcheck = (e) => {
-    if (e.target.checked) {
-      formContext.setDeclarationCheckbox(true);
-    }
-    if (!e.target.checked) { 
-      formContext.setDeclarationCheckbox(false);
-    }
+  const handleDeclarationChange = () => {
+    formContext.setDeclarationCheckbox(!formContext.declarationCheckbox)
   }
 
   return (
@@ -242,8 +252,6 @@ const Step2 = (props) => {
           setErrMsg1Text={props.setErrMsg1Text}
         />
       }
-
-
       <Modal show={deleteModal}>
         <Modal.Header>
           <Modal.Title>Confirm Delete</Modal.Title>
@@ -260,18 +268,22 @@ const Step2 = (props) => {
         </Modal.Footer>
       </Modal>
 
-
-      <p className="ml-2">Confirm uploads and update information as needed</p>
-      <div className="d-flex align-items-center shadow-sm p-3 mb-4 rounded" style={{ backgroundColor: "#f5f5f5" }}>
-        <Checkbox title="Select" className="mr-2 ml-1 mt-2" onClick={declarationcheck} />
-       I declare that I have uploaded images classified as ‘Restricted \ Sensitive Normal’ or below. <span className="text-danger">*</span>
-      </div>
+      <p>Confirm uploads and update information as needed</p>
+      <Highlight className="p-3 mb-4 rounded">
+        <FormCheck
+          className="required"
+          type="checkbox"
+          id="declaration-check"
+          label="I declare that I have uploaded images classified as ‘Restricted \ Sensitive Normal’ or below."
+          checked={formContext.declarationCheckbox}
+          onChange={handleDeclarationChange}
+        />
+      </Highlight>
 
       <div className="d-flex align-items-center " role="toolbar">
         <Checkbox className="ml-3" onClick={setAllCheck} id="all-chkbox" title="Select" />
 
         <Separator />
-
 
         <ToolbarButton variant="light" className="ml-1" onClick={renderRefresh} disabled={refresh} title="Refresh">
           {refresh ? (

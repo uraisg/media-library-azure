@@ -191,6 +191,7 @@ const StepperForm = () => {
         try {
           const imageEntities = JSON.parse(response.result["imageEntities"])
           formContext.setRetrievedFile(imageEntities)
+          formContext.setDeclarationCheckbox(false)
 
           setCompletePercentage(100);
           setProgressBar(false)
@@ -334,13 +335,13 @@ const StepperForm = () => {
       <React.Fragment>
         <Modal show={declarationModal}>
           <Modal.Header>
-            <Modal.Title> Error !</Modal.Title>
+            <Modal.Title>Error!</Modal.Title>
             <Modal.Title className="float-right"><X size={35} onClick={closeDeclarationModal} /></Modal.Title>
           </Modal.Header>
-          <Modal.Body className="text-danger"> You have not done your declaration. </Modal.Body>
+          <Modal.Body className="text-danger">You have not done your declaration.</Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={closeDeclarationModal}>
-              Confirm
+              Close
             </Button>
           </Modal.Footer>
         </Modal>
