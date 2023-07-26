@@ -30,8 +30,6 @@ mix
     [
       'node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
       'node_modules/jquery/dist/jquery.min.js',
-      'node_modules/jquery-validation/dist/jquery.validate.min.js',
-      'node_modules/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js',
       'node_modules/leaflet/dist/leaflet.js',
     ],
     'wwwroot/scripts'
