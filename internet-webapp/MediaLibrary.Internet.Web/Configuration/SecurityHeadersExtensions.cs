@@ -40,7 +40,7 @@ namespace MediaLibrary.Internet.Web.Configuration
                     $"base-uri 'none'; frame-ancestors 'none'; form-action 'self'{aadInstanceHost}; "
                     + $"default-src 'self'; script-src 'self' blob:{scriptSrcUnsafeEval}; connect-src 'self'{connectSrcWss}; "
                     + $"object-src 'none'; style-src 'self' https://fonts.googleapis.com{styleSrcUnsafeInline}; "
-                    + "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:"
+                    + "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://developers.onemap.sg"
                 );
                 headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
                 headers["X-Content-Type-Options"] = "nosniff";
