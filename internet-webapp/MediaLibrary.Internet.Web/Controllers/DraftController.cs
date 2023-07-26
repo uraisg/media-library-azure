@@ -269,6 +269,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.LocationName = req.location;
                 json.Copyright = req.copyright;
                 json.AdditionalField = new List<object>();
+                json.DeclaredClassification = false;
 
                 await ImageUploadToDraft(json, rowKey, _appSettings);
 

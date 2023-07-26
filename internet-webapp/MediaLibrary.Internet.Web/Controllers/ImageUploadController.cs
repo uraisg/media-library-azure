@@ -37,8 +37,20 @@ namespace MediaLibrary.Internet.Web.Controllers
         }
 
         [HttpPost("FileUpload/{rowkey}")]
-        public async Task<JsonResult> Index(string rowkey)
+        public async Task<JsonResult> Index(string rowkey, [FromBody] CheckDeclaration checkdeclaration)
         {
+        
+            if (!checkdeclaration.declarationbox)
+            {
+                _logger.LogError("Declaration has not been checked");
+                return Json(new
+                {
+                    success = false,
+                    errorMessage = "Declaration box not checked."
+                });
+            }
+            
+
             _logger.LogInformation("{UserName} uploading to intranet", User.Identity.Name);
 
             try
@@ -97,6 +109,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                     json.LocationName = image["LocationName"].ToString();
                     json.Copyright = image["Copyright"].ToString();
                     json.AdditionalField = JsonConvert.DeserializeObject<List<object>>(image["AdditionalField"].ToString());
+                    json.DeclaredClassification = checkdeclaration.declarationbox;
 
                     await IndexUploadToTable(json, _appSettings);
                 }
@@ -207,7 +220,8 @@ namespace MediaLibrary.Internet.Web.Controllers
                 Event = json.Event,
                 LocationName = json.LocationName,
                 Copyright = json.Copyright,
-                AdditionalField = jsonArray.ToString()
+                AdditionalField = jsonArray.ToString(),
+                DeclaredClassification = json.DeclaredClassification
             };
 
             TableOperation insertOperation = TableOperation.Insert(transferEntity);
@@ -236,6 +250,15 @@ namespace MediaLibrary.Internet.Web.Controllers
             public string LocationName { get; set; }
             public string Copyright { get; set; }
             public string AdditionalField { get; set; }
+
+            public bool DeclaredClassification { get; set; }
         }
+    }
+
+    public class CheckDeclaration
+    {
+        public CheckDeclaration() { }
+
+        public bool declarationbox { get; set; }
     }
 }

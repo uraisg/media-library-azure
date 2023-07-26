@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { styled } from '@linaria/react'
-import { Modal, Button } from 'react-bootstrap'
+import { Modal, Button, Form } from 'react-bootstrap'
 import { ArrowClockwise, PencilSquare, Trash, X } from 'react-bootstrap-icons'
 import { TailSpin } from 'react-loader-spinner'
 import PropTypes from 'prop-types'
@@ -8,6 +8,21 @@ import PropTypes from 'prop-types'
 import EditItem from '@/components/EditItem'
 import DisplayItem from '@/components/DisplayItem'
 import { useForm } from '@/components/AllContext'
+
+const Highlight = styled.div`
+  background-color: #f3f4f5;
+`
+
+const FormCheck = styled(Form.Check)`
+  padding-left: 1.75rem !important;
+
+  & .form-check-input {
+    margin-top: 0.15rem;
+    margin-left: -1.75rem;
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+`
 
 const Separator = styled.div`
   height: 1.25em;
@@ -45,6 +60,7 @@ const Step2 = (props) => {
   const [imageData, setImageData] = useState(Array)
   const [errMsg2, setErrMsg2] = useState(false)
   const [errMsg2Text, setErrMsg2Text] = useState("")
+
 
   const renderRefresh = () => {
     setErrMsg2(false)
@@ -84,6 +100,9 @@ const Step2 = (props) => {
         $('.item-chkbox').prop("checked", false)
         $('.item-list').removeClass("border bg-light")
         setRefresh(false)
+      })
+      .catch((error) => {
+        console.error(error)
       })
   }
 
@@ -132,15 +151,19 @@ const Step2 = (props) => {
     }
 
     if (formContext.retrievedFile.length === 0) {
-      deleteDraft().then((result) => {
-        if (!result) {
-          return;
-        }
+      deleteDraft()
+        .then((result) => {
+          if (!result) {
+            return
+          }
 
-        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
-        formContext.setFiles([])
-        props.setActiveStep(0)
-      })
+          formContext.setValidInput({ Name: '', Location: '', Copyright: 'URA' })
+          formContext.setFiles([])
+          props.setActiveStep(0)
+        })
+        .catch((error) => {
+          console.error(error)
+        })
     }
   }, [formContext.retrievedFile])
 
@@ -210,6 +233,10 @@ const Step2 = (props) => {
     renderRefresh();
   }
 
+  const handleDeclarationChange = () => {
+    formContext.setDeclarationCheckbox(!formContext.declarationCheckbox)
+  }
+
   return (
     <React.Fragment>
       {editItem &&
@@ -225,8 +252,6 @@ const Step2 = (props) => {
           setErrMsg1Text={props.setErrMsg1Text}
         />
       }
-
-
       <Modal show={deleteModal}>
         <Modal.Header>
           <Modal.Title>Confirm Delete</Modal.Title>
@@ -244,8 +269,19 @@ const Step2 = (props) => {
       </Modal>
 
       <p>Confirm uploads and update information as needed</p>
-      <div className="d-flex align-items-center" role="toolbar">
-        <Checkbox onClick={setAllCheck} id="all-chkbox" title="Select" />
+      <Highlight className="p-3 mb-4 rounded">
+        <FormCheck
+          className="required"
+          type="checkbox"
+          id="declaration-check"
+          label="I declare that I have uploaded images classified as ‘Restricted \ Sensitive Normal’ or below."
+          checked={formContext.declarationCheckbox}
+          onChange={handleDeclarationChange}
+        />
+      </Highlight>
+
+      <div className="d-flex align-items-center " role="toolbar">
+        <Checkbox className="ml-3" onClick={setAllCheck} id="all-chkbox" title="Select" />
 
         <Separator />
 

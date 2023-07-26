@@ -27,5 +27,6 @@ namespace MediaLibrary.Internet.Api
         public string LocationName { get; set; }
         public string Copyright { get; set; }
         public string AdditionalField { get; set; }
+        public bool DeclaredClassification { get; set; }
     }
 }
