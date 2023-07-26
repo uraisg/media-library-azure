@@ -36,7 +36,7 @@
     "@reduxjs/toolkit": "^1.7.2",
     "bootstrap": "^4.6.1",
     "date-fns": "^2.29.3",
-    "jquery": "^3.6.1",
+    "jquery": "^3.7.0",
     "jquery-validation": "^1.19.5",
     "jquery-validation-unobtrusive": "^4.0.0",
     "leaflet": "^1.9.2",
