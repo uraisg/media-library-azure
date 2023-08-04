@@ -24,31 +24,40 @@ const Page = () => {
   };
 
   return (
+
     <div>
-        {"Items per Page: "}
-        <select onChange={handlePageSizeChange} value={pageSize} className="mr-3 ">
-          {pageSizes.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-     
-        <ReactPaginate
-          containerClassName="pagination pagination-sm"
-          breakClassName="page-item"
-          breakLinkClassName="page-link"
-          pageClassName="page-item"
-          previousClassName="page-item"
-          nextClassName="page-item"
-          pageLinkClassName="page-link"
-          previousLinkClassName="page-link"
-          nextLinkClassName="page-link"
-          activeClassName="active"
-          onPageChange={onPageChange}
-        pageCount={filtercontext.page.TotalPage}
-          pageRangeDisplayed={5}
-        />
+      {filtercontext.disablesearch ? (
+      null
+      ) : <>
+          {"Items per Page: "}
+          <select onChange={handlePageSizeChange} value={pageSize} className="mr-3 " disabled={filtercontext.disablesearch}>
+            {pageSizes.map((size) => (
+              <option key={size} value={size} >
+                {size}
+              </option>
+            ))}
+          </select>
+
+          <ReactPaginate
+            containerClassName="pagination pagination-sm"
+            breakClassName="page-item"
+            breakLinkClassName="page-link"
+            pageClassName="page-item"
+            previousClassName="page-item"
+            nextClassName="page-item"
+            pageLinkClassName="page-link"
+            previousLinkClassName="page-link"
+            nextLinkClassName="page-link"
+            activeClassName="active"
+            onPageChange={onPageChange}
+            pageCount={filtercontext.page.TotalPage}
+            pageRangeDisplayed={5}
+          />
+
+          </>
+      }
+
+
     </div>
   );
 };

@@ -16,8 +16,9 @@ namespace MediaLibrary.Intranet.Web.Models
         public string SecondReminderSent { get; set; }
         public string ThirdReminderSent { get; set; }
         public DateTime LastLogin { get; set; }
+        public DateTime CreatedDate { get; set; }
 
-        public ACMCustomStaffTable(string StaffEmail, string Status,string FirstReminderSent, string SecondReminderSent, string ThirdReminderSent, DateTime LastLogin)
+        public ACMCustomStaffTable(string StaffEmail, string Status,string FirstReminderSent, string SecondReminderSent, string ThirdReminderSent, DateTime LastLogin,DateTime CreatedDate)
         {
             this.StaffEmail = StaffEmail;
             this.Status = Status;
@@ -25,8 +26,117 @@ namespace MediaLibrary.Intranet.Web.Models
             this.SecondReminderSent = SecondReminderSent;
             this.ThirdReminderSent = ThirdReminderSent;
             this.LastLogin = LastLogin;
+            this.CreatedDate = CreatedDate;
         }
 
+    }
+    public class UIAMInfo
+    {
+        public string USER_ID { get; set; }
+        public string EMAIL_ID { get; set; }
+        public string FULL_NAME { get; set; }
+        public string DESIGNATION { get; set; }
+        public string DEL_IND { get; set; }
+        public DateTime LAST_SERVICE_DATE { get; set; }
+        public string DIVISION_ID { get; set; }
+        public string DIVISION_DESCRIPTION { get; set; }
+        public string SECTION_ID { get; set; }
+
+        public string SECTION_DESCRIPTION { get; set; }
+
+        public UIAMInfo(string USER_ID, string EMAIL_ID, string FULL_NAME, string DESIGNATION, string DEL_IND, DateTime LAST_SERVICE_DATE, string DIVISION_ID,string DIVISION_DESCRIPTION, string SECTION_ID,string SECTION_DESCRIPTION)
+        {
+            this.USER_ID = USER_ID;
+            this.EMAIL_ID = EMAIL_ID;
+            this.FULL_NAME = FULL_NAME;
+            this.DESIGNATION = DESIGNATION;
+            this.DEL_IND = DEL_IND;
+            this.LAST_SERVICE_DATE = LAST_SERVICE_DATE;
+            this.DIVISION_ID = DIVISION_ID;
+            this.DIVISION_DESCRIPTION = DIVISION_DESCRIPTION;
+            this.SECTION_ID = SECTION_ID;
+            this.SECTION_DESCRIPTION = SECTION_DESCRIPTION;
+        }
+    }
+
+    public class UIAMGroupInfo
+    {
+        public string GroupID { get; set; }
+        public string GroupName { get; set; }
+
+        public UIAMGroupInfo(string GroupID, string GroupName)
+        {
+            this.GroupID = GroupID;
+            this.GroupName = GroupName;
+        }
+    }
+
+    public class ACMGroupInfo
+    {
+        public string GroupName { get; set; }
+
+        public ACMGroupInfo(string GroupName)
+        {
+            this.GroupName = GroupName;
+        }
+    }
+    public class UIAMDeptInfo
+    {
+        public string DeptID { get; set; }
+        public string DeptName { get; set; }
+
+        public string groupid { get; set; }
+
+        public UIAMDeptInfo(string DeptID, string DeptName, string groupid)
+        {
+            this.DeptID = DeptID;
+            this.DeptName = DeptName;
+            this.groupid = groupid;
+        }
+    }
+
+    public class ACMDeptInfo
+    {
+        public string DeptName { get; set; }
+
+        public ACMDeptInfo(string DeptName)
+        {
+            this.DeptName = DeptName;
+        }
+    }
+
+    public class UIAMStaffInfo
+    {
+        public string USER_ID { get; set; }
+        public string EMAIL_ID { get; set; }
+        public string FULL_NAME { get; set; }
+        public string DESIGNATION { get; set; }
+        public string DEL_IND { get; set; }
+        public DateTime LAST_SERVICE_DATE { get; set; }
+        public string DIVISION_ID { get; set; }
+        public string SECTION_ID { get; set; }
+
+        public UIAMStaffInfo(string USER_ID, string EMAIL_ID, string FULL_NAME,string DESIGNATION,string DEL_IND,DateTime LAST_SERVICE_DATE,string DIVISION_ID,string SECTION_ID)
+        {
+            this.USER_ID = USER_ID;
+            this.EMAIL_ID = EMAIL_ID;
+            this.FULL_NAME = FULL_NAME;
+            this.DESIGNATION = DESIGNATION;
+            this.DEL_IND = DEL_IND;
+            this.LAST_SERVICE_DATE = LAST_SERVICE_DATE;
+            this.DIVISION_ID = DIVISION_ID;
+            this.SECTION_ID = SECTION_ID;
+        }
+    }
+
+    public class ACMStaffInformation1
+    {
+        public string UserID { get; set; }
+
+        public ACMStaffInformation1(string UserID)
+        {
+            this.UserID = UserID;
+        }
     }
 
     public class UserQuery

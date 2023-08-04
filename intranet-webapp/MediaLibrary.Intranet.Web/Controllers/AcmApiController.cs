@@ -292,7 +292,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         [HttpDelete("/api/acm/usersRole", Name = nameof(UpdateUserRole))]
         public IActionResult UpdateUserRole([FromBody] AssignedAndRevokeUsers userRoles)
         {
-            _logger.LogInformation("Updating Users Role");
+            _logger.LogInformation("deleting Users Role");
             var userRole = "";
            
             try
@@ -302,8 +302,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
                     foreach(var userrole in userRoles.roles)
                     {
                          userRole = userrole;
+                        _userRoleService.DeleteRoleById(User.GetUserGraphEmail(), userid, userRole);
                     }
-                    _userRoleService.DeleteRoleById( User.GetUserGraphEmail(), userid, userRole);
+                   
                 }
             }
             catch (Exception ex)
@@ -317,28 +318,26 @@ namespace MediaLibrary.Intranet.Web.Controllers
         public IActionResult AssignedUserRole([FromBody] AssignedAndRevokeUsers userRoles)
         {
             _logger.LogInformation("Updating Users Role");
-            string RoleChange = userRoles.roleChange;
+   
             var addRole = "";
             try
             {
                 foreach (var userid in userRoles.UserIds)
                 {
-                    foreach (var userrole in userRoles.roles)
-                    {
-
                         if (userRoles.addrole.IsNullOrEmpty())
+                        
                         {
-                            _userRoleService.assignedRoleById(User.GetUserGraphEmail(), userid, userrole, RoleChange, addRole);
+                            _userRoleService.assignedRoleById(User.GetUserGraphEmail(), userid,addRole);
                         }
                         else
                         {
                             foreach (var addrole in userRoles.addrole)
                             {
                                 addRole = addrole;
-                                _userRoleService.assignedRoleById(User.GetUserGraphEmail(), userid, userrole, RoleChange, addRole);
+                                _userRoleService.assignedRoleById(User.GetUserGraphEmail(), userid,addRole);
                             }
                         }
-                    }
+                    
                 }
                     
          

@@ -18,23 +18,21 @@ namespace MediaLibrary.Intranet.Web.Controllers
         }
         public IActionResult Index()
         {
-
-            var userrole = _userRoleService.getuserrole(User.GetUserGraphEmail());
             bool isAdmin = User.IsInRole(UserRole.Admin);
-            foreach (var item in userrole)
-            {
-                if (item == "User Admin" || isAdmin)
-                {
-                    bool CheckAdmin = true;
-                    ViewData["userRole"] = CheckAdmin;
-                }
+            bool isCurator = User.IsInRole(UserRole.Curator);
+            if (isAdmin)
 
-                else
-                {
-                    bool CheckAdmin = false;
-                    ViewData["userRole"] = CheckAdmin;
-                }
+            {
+                bool CheckAdmin = true;
+                ViewData["userRole"] = CheckAdmin;
             }
+
+            else
+            {
+                bool CheckAdmin = false;
+                ViewData["userRole"] = CheckAdmin;
+            }
+
             return View();
         }
     }

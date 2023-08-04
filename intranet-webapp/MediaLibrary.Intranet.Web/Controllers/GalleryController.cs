@@ -1,48 +1,46 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Models;
 using MediaLibrary.Intranet.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
+   [Authorize(Roles = UserRole.Admin + "," + UserRole.User + "," + UserRole.Curator)]
     public class GalleryController : Controller
     {
         private readonly ILogger<GalleryController> _logger;
         private readonly ItemService _itemService;
-        private readonly ACMUserRoleService _userRoleService;
 
-        public GalleryController(ILogger<GalleryController> logger, ItemService itemService, ACMUserRoleService userRoleService)
+        public GalleryController(ILogger<GalleryController> logger, ItemService itemService)
         {
             _logger = logger;
             _itemService = itemService;
-            _userRoleService = userRoleService;
         }
 
         public IActionResult Index()
         {
-           var userrole = _userRoleService.getuserrole(User.GetUserGraphEmail());
             bool isAdmin = User.IsInRole(UserRole.Admin);
-            foreach (var item in userrole)
+   
+            if (isAdmin)
+                
             {
-                _logger.LogInformation("getting admin {id}", item);
-                if (item == "User Admin" || isAdmin)
-                {
-                    bool CheckAdmin = true;
-                    ViewData["userRole"] = CheckAdmin;
-                }
-
-                else
-                {
-                    bool CheckAdmin = false;
-                    ViewData["userRole"] = CheckAdmin;
-                }
+                bool CheckAdmin = true;
+                ViewData["userRole"] = CheckAdmin;
             }
-  
+
+            else
+            {
+                bool CheckAdmin = false;
+                ViewData["userRole"] = CheckAdmin;
+            }
             return View();
 }
 
@@ -52,8 +50,10 @@ namespace MediaLibrary.Intranet.Web.Controllers
         {
             return NotFound();
         }
-
+       
         bool isAdmin = User.IsInRole(UserRole.Admin);
+
+        bool isCurator = User.IsInRole(UserRole.Curator);
 
         // Get item info and check if user is author
         bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
@@ -64,8 +64,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
         bool isOneDayValid = itemUploadDateTime != null && currentDateTime.Subtract(itemUploadDateTime.Value).TotalHours <= 24;
 
         ViewData["mediaId"] = id;
-        ViewData["showEditActions"] = isAdmin || isAuthor;
-        ViewData["showDelActions"] = isAdmin || (isAuthor && isOneDayValid);
+
+        ViewData["showEditActions"] = isCurator || isAuthor;
+        ViewData["showDelActions"] = isCurator || (isAuthor && isOneDayValid);
         return View();
         }
 
@@ -77,11 +78,12 @@ namespace MediaLibrary.Intranet.Web.Controllers
         }
 
         bool isAdmin = User.IsInRole(UserRole.Admin);
+        bool isCurator = User.IsInRole(UserRole.Curator);
 
         // Get item info and check if user is author
         bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
-        if (isAdmin || isAuthor)
+        if (isCurator || isAuthor)
         {
             ViewData["mediaId"] = id;
             return View();
@@ -110,5 +112,5 @@ namespace MediaLibrary.Intranet.Web.Controllers
         return item?.UploadDate;
         }
 
-        }
-        }
+    }
+}

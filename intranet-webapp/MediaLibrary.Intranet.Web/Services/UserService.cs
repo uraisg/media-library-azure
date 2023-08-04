@@ -62,7 +62,9 @@ namespace MediaLibrary.Intranet.Web.Services
                 string filterStatus = getFilterResult(user.filterbystatus);
                 if (!string.IsNullOrEmpty(filterStatus))
                 {
+                    Debug.WriteLine("hii{0}",filterStatus);
                     string newsql = string.Format("status in {0}", filterStatus);
+                    Debug.WriteLine(newsql);
                     filterConditions.Add(newsql);
                 }
 
@@ -209,7 +211,16 @@ namespace MediaLibrary.Intranet.Web.Services
                         staffInfoResult.email = reader.GetString(2);
                         staffInfoResult.Department = reader.GetString(3);
                         staffInfoResult.group = reader.GetString(4);
-                        staffInfoResult.Status = reader.GetString(5);
+
+                        if (reader.GetString(5) == "A")
+                        {
+                            staffInfoResult.Status = "Active";
+                        }
+
+                        else
+                        {
+                            staffInfoResult.Status = "Suspended";
+                        }
 
                         DateTime targetDateTime = new DateTime(1900, 1, 1, 0, 0, 0);
 
@@ -269,7 +280,7 @@ namespace MediaLibrary.Intranet.Web.Services
             try
             {
                 conn.Open();
-                string sql = ACMQueries.Queries.UpdateStatus;
+                string sql = ACMQueries.Queries.UpdateSuspendedDate;
                 
                 string dateFormat = "yyyy/MM/dd";
         
@@ -278,11 +289,13 @@ namespace MediaLibrary.Intranet.Web.Services
 
                     if (status == "Active")
                     {
-                        cmd.Parameters.AddWithValue("@disableDate", DBNull.Value);
+                        status = "A";
+                        cmd.Parameters.AddWithValue("@suspendedDate", DBNull.Value);
                     }
                     else
                     {
-                        cmd.Parameters.AddWithValue("@disableDate", todayDate.ToString(dateFormat));
+                        status = "Suspended";
+                        cmd.Parameters.AddWithValue("@suspendedDate", todayDate.ToString(dateFormat));
                     }
 
                 cmd.Parameters.AddWithValue("@userid", userid);
@@ -293,7 +306,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 conn.Close();
 
                 conn.Open();
-                string sql2 = ACMQueries.Queries.UpdateStatus2;
+                string sql2 = ACMQueries.Queries.UpdateStatus;
                
                 using SqlCommand cmd2 = new SqlCommand(sql2, conn);
               
@@ -326,7 +339,7 @@ namespace MediaLibrary.Intranet.Web.Services
 
                 string actionuserid = ACMGetUserID(email);
 
-                if (status == "Active")
+                if (status == "Active" || status == "A")
                 {
                     lastaction = "Activate User";
                 }
@@ -476,6 +489,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 string filterStatus = getFilterResult(user.filterbystatus);
                 if (!string.IsNullOrEmpty(filterStatus))
                 {
+                    Debug.WriteLine(filterStatus);
                     string newsql = string.Format("status in {0}", filterStatus);
                     filterConditions.Add(newsql);
                 }
@@ -517,8 +531,18 @@ namespace MediaLibrary.Intranet.Web.Services
                             report1.Email = reader.GetString(2);
                             report1.Department = reader.GetString(3);
                             report1.Group = reader.GetString(4);
-                            report1.Status = reader.GetString(5);
-                            DateTime targetDateTime = new DateTime(1900, 1, 1, 0, 0, 0);
+
+                            if (reader.GetString(5) == "A" || reader.GetString(5) =="Active")
+                            {
+                                report1.Status = "Active";
+                            }
+
+                            else
+                            {
+                                report1.Status = "Suspended";
+                            }
+
+                        DateTime targetDateTime = new DateTime(1900, 1, 1, 0, 0, 0);
 
                             DateTime? datetime1 = reader.GetDateTime(6);
                             if (datetime1 == targetDateTime.Date)

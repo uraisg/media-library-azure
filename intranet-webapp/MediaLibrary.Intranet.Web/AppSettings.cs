@@ -17,6 +17,8 @@
         public string AdminUsers { get; set; }
         public string AzureSQLConnectionString { get; set; }
         public string SMTPSenderEmail { get; set; }
-        public string SMTPPW { get; set; }   
+        public string SMTPPW { get; set; }
+
+        public string UIAMConnectionString { get; set; }
     }
 }

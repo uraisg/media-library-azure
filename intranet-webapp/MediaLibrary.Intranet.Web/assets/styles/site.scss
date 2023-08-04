@@ -107,3 +107,30 @@ a.navbar-brand {
   color: $red;
   margin-left: 0.1rem;
 }
+
+.roletable {
+    border-collapse: collapse;
+    width: 50%;
+    overflow-x: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+.roletable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.roletable td, .roletable th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.rowalign {
+    margin-top:10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.alignpar {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}

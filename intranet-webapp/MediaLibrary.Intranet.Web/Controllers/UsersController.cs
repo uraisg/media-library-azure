@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
-    [Authorize(Roles = UserRole.Admin)]
+    [Authorize(Roles = UserRole.Admin )]
     public class UsersController : Controller
     {
         private readonly ACMUserRoleService _userRoleService;
@@ -18,22 +18,22 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
         public IActionResult Index()
         {
-            var userrole = _userRoleService.getuserrole(User.GetUserGraphEmail());
             bool isAdmin = User.IsInRole(UserRole.Admin);
-            foreach (var item in userrole)
-            {
-                if (item == "User Admin" || isAdmin)
-                {
-                    bool CheckAdmin = true;
-                    ViewData["userRole"] = CheckAdmin;
-                }
+            bool isCurator = User.IsInRole(UserRole.Curator);
 
-                else
-                {
-                    bool CheckAdmin = false;
-                    ViewData["userRole"] = CheckAdmin;
-                }
+            if (isAdmin)
+
+            {
+                bool CheckAdmin = true;
+                ViewData["userRole"] = CheckAdmin;
             }
+
+            else
+            {
+                bool CheckAdmin = false;
+                ViewData["userRole"] = CheckAdmin;
+            }
+
             return View();
         }
     }

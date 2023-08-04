@@ -33,7 +33,7 @@ namespace MediaLibrary.Intranet.Web.Services
             int totalPage = 1;
             string searchQuery = user.SearchQuery;
             string sortOption = user.SortOption;
-            string sql = ACMQueries.Queries.GetUserRole;
+            string sql = ACMQueries.Queries.GetAllUserRole;
             string sql2 = ACMQueries.Queries.GetTotalCountUserRole;
             try
             {
@@ -107,88 +107,88 @@ namespace MediaLibrary.Intranet.Web.Services
                         case AllSortOption.dateASC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by lastlogin OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by lastlogin,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by lastlogin OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by lastlogin,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.dateDSC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by lastlogin desc OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by lastlogin desc,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by lastlogin desc OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by lastlogin desc,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.groupASC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by groupname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by groupname,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by groupname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by groupname,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.groupDSC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by groupname desc OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by groupname desc,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by groupname desc OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by groupname desc,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.departmentASC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by deptname  OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by deptname,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by deptname  OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by deptname,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.departmentDSC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by deptname desc OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by deptname desc,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by deptname desc OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by deptname desc,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.RoleASC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by rolename OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by rolename,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by rolename OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by rolename,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
 
                         case AllSortOption.RoleDSC:
                             if (user.Page > 1)
                             {
-                                sql = String.Format("{0} order by rolename desc OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
+                                sql = String.Format("{0} order by rolename desc,staffname OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", sql, user.currPageCount, user.pagelimit);
                             }
                             else
                             {
-                                sql = String.Format("{0} order by rolename desc OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
+                                sql = String.Format("{0} order by rolename desc,staffname OFFSET 0 ROWS FETCH NEXT {1} ROWS ONLY", sql, user.pagelimit);
                             }
                             break;
                     }
@@ -337,7 +337,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 conn.Open();
                 string dateFormat = "yyyy/MM/dd";
 
-                string sql = ACMQueries.Queries.GetUserRole;
+                string sql = ACMQueries.Queries.GetAllUserRole;
                 List<string> filterConditions = new List<string>();
 
                 if (!string.IsNullOrEmpty(user.EndDate) && !string.IsNullOrEmpty(user.StartDate))
@@ -444,26 +444,24 @@ namespace MediaLibrary.Intranet.Web.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating the user role");
+                _logger.LogError(ex, "Error deleting the user role");
             }
         }
 
-        public void assignedRoleById(string lastupdatedby, string userid, string userrole,string changeRole,string addrole)
+        public void assignedRoleById(string lastupdatedby, string userid, string addrole)
         {
             string acmConnectionString = _appSettings.AzureSQLConnectionString;
             using SqlConnection conn = new SqlConnection(acmConnectionString);
      
             try
             {
-    
                 conn.Open();
-                int changeRoleID = ACMGetRoleID(changeRole);
-                int userroleid = ACMGetRoleID(userrole);
+                int addroleid = ACMGetRoleID(addrole);
                 List<int> allUserRole = new List<int>();
                 string useraction = "";
                 bool conditionMet = false;
 
-                string checkrolequery = ACMQueries.Queries.GetRole;
+                string checkrolequery = ACMQueries.Queries.CheckuserRole;
                 using SqlCommand cmd2 = new SqlCommand(checkrolequery, conn);
                 cmd2.Parameters.AddWithValue("@userid", userid);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
@@ -476,10 +474,10 @@ namespace MediaLibrary.Intranet.Web.Services
                 }
 
                 conn.Close();
-
+                
                 foreach (int id in allUserRole)
                 {
-                    if (id == changeRoleID || changeRoleID == userroleid)
+                    if (id == addroleid)
                     {
                         conditionMet = true;
                     }
@@ -487,45 +485,29 @@ namespace MediaLibrary.Intranet.Web.Services
 
                 if (!conditionMet)
                 {
-                        if (string.IsNullOrEmpty(changeRole) && !string.IsNullOrEmpty(addrole) )
-                        {
-                            conn.Open();
-                            string addRoleQuery = ACMQueries.Queries.AddRoleUser;
-                            int addroleid = ACMGetRoleID(addrole);
-                            SqlCommand cmd3 = new SqlCommand(addRoleQuery, conn);
-                            cmd3.Parameters.AddWithValue("@userid", userid);
-                            cmd3.Parameters.AddWithValue("@rolemstrid", addroleid);
-                            cmd3.Parameters.AddWithValue("@createdby", lastupdatedby);
-                            cmd3.Parameters.AddWithValue("@createddate", DateTime.Now);
-                            using SqlDataReader reader3 = cmd3.ExecuteReader();
-                            conn.Close();
-                            useraction = "Add";
-               
-                        UpdateAuditLog(lastupdatedby, useraction, DateTime.Now);
-
-                        }
-                        else if (!string.IsNullOrEmpty(changeRole) && string.IsNullOrEmpty(addrole))
+                    if (!string.IsNullOrEmpty(addrole))
                     {
-                            conn.Open();
-                            string queryStr = ACMQueries.Queries.UpdateUserRole;
+                        conn.Open();
+                        string addRoleQuery = ACMQueries.Queries.AddRoleUser;
 
-                            SqlCommand cmd = new SqlCommand(queryStr, conn);
-                            cmd.Parameters.AddWithValue("@userid", userid);
-                            cmd.Parameters.AddWithValue("@rolemstrid", changeRoleID);
-                            cmd.Parameters.AddWithValue("@createdby", lastupdatedby);
-                            cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
-                            cmd.Parameters.AddWithValue("@userroleid", userroleid);
-                            useraction = "Edit";
-             
-                            using SqlDataReader reader = cmd.ExecuteReader();
-                            conn.Close();
+                        SqlCommand cmd3 = new SqlCommand(addRoleQuery, conn);
+                        cmd3.Parameters.AddWithValue("@userid", userid);
+                        cmd3.Parameters.AddWithValue("@rolemstrid", addroleid);
+                        cmd3.Parameters.AddWithValue("@createdby", lastupdatedby);
+                        cmd3.Parameters.AddWithValue("@createddate", DateTime.Now);
+                        using SqlDataReader reader3 = cmd3.ExecuteReader();
+                        conn.Close();
+                        useraction = "Add";
+
                         UpdateAuditLog(lastupdatedby, useraction, DateTime.Now);
-                        }
+
+                    }
                 }
+     
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating the user role");
+                _logger.LogError(ex, "Error inserting the user role");
             }
         }
 
@@ -600,13 +582,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 string lastaction = "";
 
                 string actionuserid = ACMGetUserID(email);
-
-                if (useraction == "Edit")
-                {
-                    lastaction = "Edited Role";
-                }
-
-                else if (useraction == "Revoke")
+                 if (useraction == "Revoke")
                 {
                     lastaction = "Revoke Role";
                 }

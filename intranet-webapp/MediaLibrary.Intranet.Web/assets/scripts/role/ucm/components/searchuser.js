@@ -7,6 +7,7 @@ import { useFilter } from './@/../../../ucm/components/context'
 import { Filteruser }  from './@/../../../ucm/components/Dropdown'
 import { convertSort } from './@/../../../ucm/components/sort'
 
+
 const TopDiv = styled.div`
   display: relative;
   @media only screen and (max-width: 799px) {
@@ -31,7 +32,9 @@ const RightDiv = styled.div`
 `
 
 export const SearchUser = () => {
+
   const filterContext = useFilter()
+
   const [search, setSearch] = useState("")
   const sortOption = ["dateDSC", "dateASC","RoleASC","RoleDSC","groupASC", "groupDSC", "departmentDSC", "departmentASC"]
 
@@ -100,11 +103,12 @@ export const SearchUser = () => {
             type="search"
             placeholder="Enter email here..."
             value={search}
+            disabled={filterContext.disablesearch}
             onChange={handleSearch}
             onKeyPress={handleEnterSearch} />
 
           <InputGroup.Append>
-            <Button onClick={() => handleSearchBtn()}>
+            <Button onClick={() => handleSearchBtn()} disabled={filterContext.disablesearch}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
               </svg>
@@ -113,7 +117,7 @@ export const SearchUser = () => {
         </InputGroup>
 
         <Dropdown>
-          <Dropdown.Toggle className="border border-primary mr-2" variant="" size="s">
+          <Dropdown.Toggle className="border border-primary mr-2" variant="" size="s" disabled={filterContext.disablesearch}>
             Sort By: {convertSort(filterContext.active.SortOption)}
           </Dropdown.Toggle>
 
@@ -121,6 +125,7 @@ export const SearchUser = () => {
             {sortOption.map((item, index) => (
               <Dropdown.Item
                 className="sortDropDown"
+
                 key={index}
                 style={item == filterContext.active.SortOption ? { backgroundColor: "rgb(227, 230, 228)" } : {}}
                 onClick={() => handleSort(item)}
@@ -132,14 +137,14 @@ export const SearchUser = () => {
         </Dropdown>
 
         <Button onClick={handleClick}
-          size="sm"
+          size="sm" disabled={filterContext.disablesearch}
           variant="outline-primary"
           className="mr-2" >
           Filter
         </Button>
 
         <Button size="sm" variant="outline-primary" className="mr-2"
-          onClick={downloadUserRolesReport}
+          onClick={downloadUserRolesReport} disabled={filterContext.disablesearch}
         >
           Download
         </Button>
@@ -147,8 +152,10 @@ export const SearchUser = () => {
       {isShown ? (
           <Filteruser />
       ) : null}
-      
+
     </TopDiv>
+
+
   )
 }
 

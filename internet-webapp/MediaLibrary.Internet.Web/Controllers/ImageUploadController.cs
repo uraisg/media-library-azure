@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ using MediaLibrary.Internet.Web.Common;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
@@ -27,6 +29,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
+    [Authorize(Roles = UserRole.User)]
     public class ImageUploadController : Controller
     {
         private static readonly string TransferPartitionKey = "transfer";

@@ -22,7 +22,7 @@ export const FilterProvider = ({ children }) => {
 
   const [result, setResult] = useState([])
   const [page, setPage] = useState({ CurrentPage: 1, TotalPage: 1 })
-
+  const [disablesearch, setDisableSearch] = useState(false)
   useEffect(() => {
     const baseLocation = location
     let url = new URL('/api/acm/usersRole', baseLocation)
@@ -72,7 +72,7 @@ export const FilterProvider = ({ children }) => {
   
 
   return (
-    <FilterContext.Provider value={{ active: active, setActive: setActive, result: result, setResult: setResult, page: page, setPage: setPage }}>
+    <FilterContext.Provider value={{ active: active, setActive: setActive, result: result, setResult: setResult, page: page, setPage: setPage, disablesearch: disablesearch, setDisableSearch: setDisableSearch }}>
       {children}
     </FilterContext.Provider>
   )

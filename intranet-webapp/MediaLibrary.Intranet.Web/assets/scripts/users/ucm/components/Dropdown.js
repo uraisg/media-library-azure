@@ -67,8 +67,8 @@ export function formatDate(date) {
   
    const [status, setvalue] = useState([])
    const statusoption = [
-     { label: ' Active', value: 'Active' },
-     { label: 'Inactive', value: 'Inactive' },
+     { label: ' Active', value: 'A' },
+    // { label: 'Inactive', value: 'Inactive' },
      { label: 'Suspended', value: 'Suspended' },
    ]
 

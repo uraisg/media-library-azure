@@ -19,27 +19,35 @@ const LeftDiv = styled.div`
   margin-top:2.5em;
 `
 
+
 const customStyles = {
   control: (provided) => ({
     ...provided,
     width: '300px',
+  
+
   }),
   menu: (provided) => ({
     ...provided,
     width: '300px',
+    position: 'absolute',
+    zIndex: 4, 
   }),
+
 };
+
+
 
 const SelectTableComponent = () => {
   const filtercontext = useFilter()
   const SHORT_DATE_FORMAT = 'dd/MM/yyyy'
   const [SelectRowOptions, setSelectedRoleOptions] = useState([])
-  const [selectedValue, setSelectedValue] = useState('');
-
 
   useEffect(() => {
     fetchData();
   }, []);
+
+
 
   const fetchData = () => {
     const baseLocation = location
@@ -62,45 +70,38 @@ const SelectTableComponent = () => {
       })
       .then((result) => {
         setSelectedRoleOptions(result)
+        
       })
   };
 
   const [isCheck, setIsCheck] = useState([]);
 
-  const [roleCheck, setRoleCheck] = useState([]);
-  const [rowindex, SetrowIndex] = useState()
- 
   const [UserIDRoles, setUserIDRoles] = useState([])
 
   const [AddRole, setAddrole] = useState([])
   
   const [isCheckUser, setIsCheckUser] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
-  const handleClickUser = (index, userid) => {
+  const handleSelectAllChange = (event) => {
+    setSelectAll(!selectAll);
+    setIsCheckUser(AddRole.map(li => li.role));
+
+    if (selectAll) {
+      setIsCheckUser([]);
+      }
+
+    };
+
+  const handleClickUser = (userid) => {
     const { id, checked } = userid.target;
-    SetrowIndex(index)
     setIsCheckUser([...isCheckUser, id]);
- 
-    const userrowcheck = AddRole[index].role
-
-    const filteredData = totalUsers.filter((i) => i.id.includes(id) && i.role !== userrowcheck);
-
-    const CheckUseridRoles = filteredData.map((items) => items.role);
-
-    setUserIDRoles(CheckUseridRoles)
-    setRoleCheck([...roleCheck, userrowcheck]);
 
     if (!checked) {
       setIsCheckUser(isCheckUser.filter(item => item !== id));
-      setRoleCheck(roleCheck.filter(ids => ids !== userrowcheck));
-      setUserIDRoles([]);
-      setAdd(false)
-      setEdit(false)
     };
   }
-
   const [totalUsers, setTotalUsers] = useState([]);
-
   useEffect(() => {
     const baseLocation = location
     let url = new URL('/api/acm/getAllUsersRoles', baseLocation)
@@ -147,11 +148,12 @@ const SelectTableComponent = () => {
   }, [filtercontext.active])
 
 
-  const handleClick = (index, itemId) => {
+  const handleClick = (itemId) => {
     const { id, checked } = itemId.target;
     setIsCheck([...isCheck, id]);
     const Roledata = totalUsers.filter((role) => role.id.includes(id));
     setAddrole(Roledata)
+    filtercontext.setDisableSearch(true)
 
 
     if (!checked) {
@@ -165,7 +167,7 @@ const SelectTableComponent = () => {
      let bodyMsg = {};
       bodyMsg = {
         UserIds: isCheck,
-        roles: roleCheck,
+        roles: isCheckUser,
       }
 
     fetch('/api/acm/usersRole', {
@@ -188,31 +190,23 @@ const SelectTableComponent = () => {
       })
     }
 
-
-  const [isEdit, setEdit] = useState(false);
   const [disable, setDisable] = useState(true);
-
-
   const [isAdd, setAdd] = useState(false);
 
   const handleAdd = (i) => {
     setAdd(!isAdd);
+    const filteredData = totalUsers.filter((i) => i.id.includes(isCheck));
+    console.log(filteredData)
+    const CheckUseridRoles = filteredData.map((items) => items.role);
+    setUserIDRoles(CheckUseridRoles)
   };
-
-  const handleEdit = (i) => {
-    setEdit(!isEdit);
-  };
-
-
+  
   const handleSave = () => {
-    setEdit(!isEdit);
     setDisable(true);
     let bodyMsg = {};
 
     bodyMsg = {
       UserIds: isCheck,
-      roles: roleCheck,
-      roleChange: selectedValue,
       addrole: userNewRole
     }
 
@@ -235,32 +229,14 @@ const SelectTableComponent = () => {
         window.location.href = `/Role`
       })
   };
-
- 
-  const handleInputChange = (e) => {
-    setDisable(false);
-    setSelectedValue(e.target.value);
-  };
-
-  const checkDuplicates = () => {
-    for (let i = 0; i < UserIDRoles.length; i++) {
-      if (UserIDRoles[i] === selectedValue) {
-        return true; 
-      }
-    }
-    return false; 
-  };
-
   const handleCancel = () => {
     setIsCheck([])
-    setRoleCheck([])
     setAddrole([])
     setIsCheckUser([])
     setAdd(false)
+    filtercontext.setDisableSearch(false)
   }
 
-
-  //to add new role for users the dropdown select 
   const [userNewRole, setUserNewRole] = useState([])
   const handleaddrole = (newSelectedOptions) => {
   setUserNewRole(newSelectedOptions.map((o) => o.value));
@@ -270,142 +246,109 @@ const SelectTableComponent = () => {
   const renderTable = () => {
     const renderedIds = [];
     return (
+      
       <div>
 
-        <div>
-          {isCheckUser.length > 0 ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button size="sm" className="ml-2 btn-success mt-3" onClick={handleEdit}>Edit User Role</Button>
-               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button size="sm" className="mr-2 btn-success mt-3" onClick={handleAdd} >Add User Role</Button>
-            <Button align="left" size="sm" className="mr-2 mt-3 btn-danger" onClick={RevokeUsers}>Revoke User Role</Button>
-              </div>
-            </div>
-          ) :
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button disabled size="sm" className="ml-2 btn-success mt-3" onClick={handleEdit}>Edit User Role</Button>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button disabled size="sm" className="mr-2 btn-success mt-3" onClick={handleAdd} >Add User Role</Button>
-              <Button disabled align="left" size="sm" className="mr-2 mt-3 btn-danger" onClick={RevokeUsers}>Revoke User Role </Button>
-            </div>
-            </div>
-          }
-        </div>
+        {AddRole.map((userrole, index) => {
+          if (!renderedIds.includes(userrole.id)) {
+            renderedIds.push(userrole.id);
 
-        <table className=" table table-striped  table-bordered table-responsive-lg table-lg mt-3" width="100%" >
+            return (
+
+              <div key={index} className="alignpar">
+                <p className="font-weight-bold ">Name: {userrole.name}</p>
+                <p>Email: {userrole.email}</p>
+                <p>Group: {userrole.group}</p>
+                <p>Department: {userrole.Department}</p>
+              </div>
+
+            );
+          }
+        })
+        }
+        <hr></hr>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button size="sm" className="mr-2 btn-success mt-3" onClick={handleAdd} >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-plus" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+          </svg></Button>
+          {isCheckUser.length > 0 ? (
+          <>
+
+              <Button align="left" size="sm" className="mr-2 mt-3 btn-danger" onClick={RevokeUsers}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-dash-lg" viewBox="0 0 16 16">
+                  <path d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z" />
+                </svg>
+              </Button>
+            </>
+          ) :
+
+            <>
+
+              <Button disabled align="left" size="sm" className="mr-2 mt-3 btn-danger"
+                onClick={RevokeUsers}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-dash-lg" viewBox="0 0 16 16">
+                  <path d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z" />
+                </svg>
+              </Button>
+            </>
+          }
+
+       
+        </div>
+        
+
+        <table className="roletable" >
         <thead >
-          <tr>
-          <th></th>
-            <th scope="col">Name</th>
-            <th scope="col">Email</th>
-            <th scope="col ">Department </th>
-            <th scope="col ">Group </th>
-            <th scope="col">Role</th>
+            <tr>
+              <th>
+                <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={handleSelectAllChange}
+                />
+              </th>
+
+              <th >Role</th>
 
           </tr>
         </thead>
 
         <tbody>
           {AddRole.map((userrole, index) => {
-            if (!renderedIds.includes(userrole.id)) {
-              renderedIds.push(userrole.id);
-              return (
-            
-                  <tr key={index}>
-                      <td>
-                          {isCheckUser.length == 0 || rowindex == index
-                              ? (<input
-                                  type="checkbox"
-                                  id={userrole.id}
-                                  onChange={(event) => handleClickUser(index, event)}
-                                  checked={isCheckUser.includes(userrole.id)} />
-                              ) :
-                              <input
-                                  type="checkbox"
-                                  id={userrole.id}
-                                  onChange={handleClickUser}
-                                  checked={isCheckUser.includes(userrole.id)}
-                                  className="d-none" />}
-                      </td>
-                      <td>{userrole.name}</td>
-                      <td>{userrole.email}</td>
-                      <td>{userrole.group}</td>
-                      <td>{userrole.Department}</td>
-                      {isEdit && isCheckUser == userrole.id && rowindex == index ? (
-                          <td padding="none">
 
-                              <select id="mySelect" value={selectedValue} onChange={handleInputChange}>
-                                  <option value="">-- Select --</option>
-                                  {SelectRowOptions.map((option) => (
-                                      <option key={option} value={option}>
-                                          {option}
-                                      </option>
-                                  ))}
-                              </select>
-                          </td>) : (
-                          <td>{userrole.role}</td>
-                      )}
-                </tr>
-
-              );
-            } else {
-              return (
-                <React.Fragment key={index}>
-                <tr >
-                  <td>
-                    {isCheckUser.length == 0 || rowindex == index
-                      ? (<input
+            return (
+       
+                <tr key={index} >
+                  <td >
+                   <input
                         type="checkbox"
-                        id={userrole.id}
-                        onChange={(event) => handleClickUser(index, event)}
-                        checked={isCheckUser.includes(userrole.id)}
+                        id={userrole.role}
+                      onChange={(event) => handleClickUser(event)}
+                      checked={isCheckUser.includes(userrole.role)}
 
                       />
-                      ) :
-                      <input
-                        type="checkbox"
-                        id={userrole.id}
-                        onChange={handleClickUser}
-                        checked={isCheckUser.includes(userrole.id)}
-                        className="d-none"
-                      />}
+              
+                          
                   </td>
+                  <td>{userrole.role}</td>
 
-                  <td ></td>
-                  <td ></td>
-                  <td></td>
-                    <td></td>
-
-                  {isEdit && isCheckUser == userrole.id && rowindex == index ? (
-                      <td padding="none">
-
-                        <select id="mySelect" value={selectedValue} onChange={handleInputChange}>
-                          <option value="">-- Select --</option>
-                          {SelectRowOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-
-                      </td>) : (
-                      <td>{userrole.role}</td>
-                    )}
                 </tr>
-                </React.Fragment>
+                 
               );
-            }
+
           })
             }
           
         </tbody>
         </table>
-        {isAdd && isCheckUser.length >0 &&
-          <table>
+        {isAdd &&
+          <table className="rowalign">
             <thead>
               <tr>
                 <th colSpan="3">
-                  Select roles to assign to {isCheckUser}
+                  Select roles to assign 
                 </th>
               </tr>
 
@@ -419,7 +362,7 @@ const SelectTableComponent = () => {
                     isMulti 
 
                     options={SelectRowOptions
-                      .filter((e1) => e1 != roleCheck && !UserIDRoles.includes(e1) )
+                      .filter((e1) => !UserIDRoles.includes(e1) )
                  
                       .map((e1) => ({
                         value: e1,
@@ -434,7 +377,7 @@ const SelectTableComponent = () => {
           </table>}
 
 
-        {checkDuplicates() || disable || selectedValue == roleCheck && selectedValue != "" || isCheckUser.length == 0 ? (
+        {disable || userNewRole == "" ? (
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button size="sm" disabled className=" mr-2 mb-2 btn btn-primary" onClick={handleSave}>Save</Button>
@@ -452,30 +395,22 @@ const SelectTableComponent = () => {
       </div>
     )
   }
-           
-
   
   return (
     <>
-      <div className="text-danger">
-        {checkDuplicates() && <p>Error: Duplicate value found in the other list</p>}
-      </div>
+     
+      <div>
 
-      {selectedValue == roleCheck && selectedValue != "" &&
-        <p className="text-danger">User Role and role selected is the same !</p>
-      }
-
-    
-    <div>
-    
-      <TopDiv>
-          <LeftDiv>
-          </LeftDiv>
+        <TopDiv>
+          <LeftDiv></LeftDiv>
         </TopDiv>
-   
-        <div className="shadow bg-white rounded mt-3">
 
-          {isCheck.length == 0  ? (
+
+
+       
+        <div className="shadow bg-white rounded mt-3">
+        {isCheck.length == 0 ? (
+        
       <table className=" table table-striped table-borderless table-responsive-lg table-lg" width="100%" >
           <thead>
             <tr>
@@ -500,7 +435,7 @@ const SelectTableComponent = () => {
                   ? (<input
                   type="checkbox"
                   id={item.id}
-                    onChange={(event) => handleClick(index, event)}
+                    onChange={(event) => handleClick(event)}
                     checked={isCheck.includes(item.id) } 
                   />        
                 ) :
@@ -518,22 +453,8 @@ const SelectTableComponent = () => {
               <td >{item.email}</td>
               <td>{item.Department}</td>
               <td>{item.group}</td>
-
-              {isEdit && item.id == isCheck && rowindex == index  ? (
-                <td padding="none">
-              
-                  <select id="mySelect" value={selectedValue} onChange={handleInputChange}>
-                    <option value="">-- Select --</option>
-                    {SelectRowOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  
-                </td>) : (
                 <td>{item.role}</td>
-              )}
+             
   
               {item.LastLoginDate != null ? (
                 <td>{format(new Date(item.LastLoginDate), SHORT_DATE_FORMAT)}</td>) :
@@ -543,18 +464,19 @@ const SelectTableComponent = () => {
             ))}
 
         </tbody>
-            </table>) :
+            </table>
+) :
 
-            <div>
+          <div>
 
               {renderTable()}
             </div>
           }
 
-
+        </div>
 
     </div>
-        </div>
+    
    
     </>
   );
