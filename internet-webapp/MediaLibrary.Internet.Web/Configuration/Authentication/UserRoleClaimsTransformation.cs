@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.Data.SqlClient;
 using System.Security.Principal;
+using MediaLibrary.Intranet.Web.Common;
 
 namespace MediaLibrary.Internet.Web.Configuration
 {
@@ -37,9 +38,11 @@ namespace MediaLibrary.Internet.Web.Configuration
                 _hasTransformed = true;
                 using SqlConnection conn = new SqlConnection(mlizConnectionString);
 
+                bool CheckUserStatus = await Checkstatus(conn, principal.GetUserGraphEmail());
+
                 bool CheckUserExist = await CheckUserInTable(conn, principal.GetUserGraphEmail());
                 // Skip adding roles if user's email address format is unexpected
-                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && CheckUserExist || (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
+                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && CheckUserExist && CheckUserStatus && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
                 {
                     string role = UserRole.User;
                     var ci = new ClaimsIdentity();
@@ -59,7 +62,7 @@ namespace MediaLibrary.Internet.Web.Configuration
             try
             { 
                 conn.Open();
-                string sql = "select * from ACMStaffInfo where staffemail = @email";
+                string sql = ACMQueries.Queries.CheckUserInTable;
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@email", email);
                 using SqlDataReader reader = cmd.ExecuteReader();
@@ -81,6 +84,37 @@ namespace MediaLibrary.Internet.Web.Configuration
             }
             conn.Close();
             return userexist;
+        }
+
+        private static async Task<bool> Checkstatus(SqlConnection conn, string email)
+        {
+            bool userActive = false;
+            try
+            {
+                conn.Open();
+                string sql = ACMQueries.Queries.Checkstatus;
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@status", "A");
+                using SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    if (reader[0] == DBNull.Value)
+                    {
+                        userActive = false;
+                    }
+                    else
+                    {
+                        userActive = true;
+                    }
+                }
+                conn.Close();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            return userActive;
         }
 
 

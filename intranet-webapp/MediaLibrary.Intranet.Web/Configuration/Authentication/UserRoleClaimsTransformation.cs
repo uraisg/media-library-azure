@@ -58,35 +58,6 @@ namespace MediaLibrary.Intranet.Web.Configuration
 
             return principal;
         }
-
-        private static async Task<IEnumerable<string>> GetRoleBasedOfUser(string sql,string acmConnectionString,  string staffEmail)
-        {
-
-            List<string> userRole = new List<string>();
-            try
-            {
-                await using SqlConnection conn = new SqlConnection(acmConnectionString);
-                conn.Open();
-
-                using SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@email", staffEmail);
-                using SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    string role = reader.GetString(0);
-                    userRole.Add(role);
-
-
-                }
-                return userRole;
-            }
-
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-            return userRole;
-        }
     }*/
 
         private string mlizConnectionString = "";
@@ -94,7 +65,6 @@ namespace MediaLibrary.Intranet.Web.Configuration
         public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings)
         {
             mlizConnectionString = appSettings.Value.AzureSQLConnectionString;
-            var adminUsersStr = appSettings.Value.AdminUsers;
         }
 
         public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
@@ -137,6 +107,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 string sql = ACMQueries.Queries.GetUserID;
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@staffEmail", email);
+
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -147,6 +118,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+                
             }
             return userid;
         }
@@ -159,6 +131,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 string sql = ACMQueries.Queries.GetAdminRole;
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@userid", userid);
+                cmd.Parameters.AddWithValue("@status", "A");
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {

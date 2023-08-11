@@ -194,11 +194,14 @@ namespace MediaLibrary.Intranet.Web.Background
                                             await SendEmail(staffEmail, isReminder);
 
                                             //Suspend user
+                                            sql = ACMQueries.Queries.GettUserID;
+                                            string userid = await GetStaffIdByEmail(sql,conn,staffEmail);
 
                                             sql = ACMQueries.Queries.UpdateServiceSuspendedDate;
-                                            await UpdateSuspendedDate(sql, conn, todayDate, staffEmail);
+                                            await UpdateSuspendedDate(sql, conn, todayDate, userid);
 
                                             sql = ACMQueries.Queries.updateServiceStatus;
+
                                             await updateServiceStatus(sql, conn, staffEmail);
 
 
@@ -383,7 +386,7 @@ namespace MediaLibrary.Intranet.Web.Background
             }
         }
 
-        private static async Task UpdateSuspendedDate(string sql, SqlConnection conn, DateTime todayDate, string staffEmail)
+        private static async Task UpdateSuspendedDate(string sql, SqlConnection conn, DateTime todayDate, string userid)
         {
             try
             {
@@ -391,8 +394,8 @@ namespace MediaLibrary.Intranet.Web.Background
 
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@suspendedDate", Convert.ToDateTime(todayDate.ToString(dateFormat)));
-                cmd.Parameters.AddWithValue("@lastupdatedby", "SYSTEM");
-                cmd.Parameters.AddWithValue("@staffEmail", staffEmail);
+                cmd.Parameters.AddWithValue("@lastupdated", "SYSTEM");
+                cmd.Parameters.AddWithValue("@userid", userid);
                 using SqlDataReader reader = cmd.ExecuteReader();
             }
             catch (Exception ex)
@@ -1099,5 +1102,28 @@ namespace MediaLibrary.Intranet.Web.Background
             return UIAMGroupID;
         }
 
+        private static async Task<string> GetStaffIdByEmail(string sql, SqlConnection conn,string staffemail)
+        {
+            string staffid = "";
+            try
+            {
+                
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@email", staffemail);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    staffid = reader.GetString(0);
+                    return staffid;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+          
+            return staffid;
+        }
     }
 }

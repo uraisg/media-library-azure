@@ -17,7 +17,7 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string UpdateReminderSent3 = "UPDATE acmstafflogin SET ThirdReminderSent = 'Yes' FROM acmstafflogin sp left join acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
             public const string InsertJobHistory = "insert into ACMJobHistory values(@jobname,@jobstatus,@jobstart,@jobend,@createdby,@createddate)";
             public const string GetAdminEmails = "select staffemail from ACMStaffInfo  si left join acmroleuser ru on si.userid = ru.userid where ru.RoleMstrID =1 ";
-            public const string UpdateServiceSuspendedDate = "UPDATE acmstafflogin SET suspendeddate = @suspendedDate,LastUpdatedBy = @lastupdated WHERE staffEmail = @staffEmail";
+            public const string UpdateServiceSuspendedDate = "UPDATE acmstafflogin SET suspendeddate = @suspendedDate,LastUpdatedBy = @lastupdated WHERE userid = @userid";
             public const string updateServiceStatus = "UPDATE ACMStaffInfo SET status = 'Suspended' WHERE staffEmail = @staffEmail";
 
             //query for user list page -activate and suspend user
@@ -53,7 +53,7 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string UpdateStaffData = "update acmstaffinfo set status = @del_ind, lastservicedate = @last_service_date where userid = @user_id";
 
             public const string InsertLoginSession = "INSERT INTO acmSession (UserID, SessionID, IPAddress, LastLogin, LastLogout, CreatedBy, CreatedDate) VALUES (@userid, @sessionid, @ipaddress, @lastlogin, @lastlogout, @createdby, @createddate)";
-            public const string GetAdminRole = "select rolename from acmrolemaster rm left join acmroleuser ru on rm.rolemstrid = ru.rolemstrid where userid = @userid";
+            public const string GetAdminRole = "select rolename from acmrolemaster rm left join acmroleuser ru on rm.rolemstrid = ru.rolemstrid left join ACMStaffInfo si on si.UserID = ru.UserID where si.userid = @userid and status = @status";
             public const string GetUserID = "SELECT UserID FROM acmStaffInfo where staffEmail=@staffEmail";
 
             //check if user exist in the acmstaffinfo table
@@ -62,8 +62,12 @@ namespace MediaLibrary.Intranet.Web.Common
             //UIAM - All info table
             public const string GetUIAMInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID,DIVISION_DESCRIPTION, SECTION_ID,SECTION_DESCRIPTION from v_uiam2_all_staff where user_id not like '%@%'";
 
+            public const string GettUserID = "select userid from acmstaffinfo where staffemail =@email";
         }
-
+        public string GetUGettUserIDIAMInfo()
+        {
+            return Queries.GettUserID;
+        }
         public string GetUIAMInfo()
         {
             return Queries.GetUIAMInfo;
