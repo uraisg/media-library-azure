@@ -188,7 +188,6 @@ function renderMediaDetails(data) {
     const listAdditionalField = JSON.parse(data['AdditionalField']);
 
     listAdditionalField.forEach(json => {
-      console.log(json)
       const clone = template.content.firstElementChild.cloneNode(true)
       const dt = clone.querySelector('dt')
       const dd = clone.querySelector('dd')

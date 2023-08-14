@@ -165,6 +165,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
                 itemToUpdate.Project = mediaItem.Project;
                 itemToUpdate.LocationName = mediaItem.LocationName;
                 itemToUpdate.Copyright = mediaItem.Copyright;
+                itemToUpdate.AdditionalField = mediaItem.AdditionalField;
 
                 await _itemService.UpdateItemAsync(id, itemToUpdate);
                 _logger.LogInformation("Updated item details for id {id}", id);
