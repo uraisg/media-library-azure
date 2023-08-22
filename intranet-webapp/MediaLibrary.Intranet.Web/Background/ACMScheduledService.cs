@@ -9,12 +9,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NCrontab;
 using Microsoft.Data.SqlClient;
-using System.Diagnostics;
 using System.Net.Mail;
 using System.Net;
-using System.Collections;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using Microsoft.Graph;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
@@ -26,11 +22,8 @@ namespace MediaLibrary.Intranet.Web.Background
         private CrontabSchedule _schedule;
         private DateTime _nextRun;
 
-        // Run once at every second minute
-        private static readonly string Schedule = "*/2 * * * *";
-
-        // Run at 10:00 on every day-of-month
-        private static readonly string Schedule2 = "0 10 * /1 * *";
+        // Run at 10:00 am every day
+        private static readonly string Schedule = "0 10 * * *";
 
         private readonly AppSettings _appSettings;
         private readonly ILogger<ACMScheduledService> _logger;
@@ -47,7 +40,7 @@ namespace MediaLibrary.Intranet.Web.Background
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
-            _logger.LogInformation("ACMScheduledService started");
+            _logger.LogInformation("ACM scheduled service has started running.. (10am every day)");
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -55,11 +48,8 @@ namespace MediaLibrary.Intranet.Web.Background
                     var now = DateTime.Now;
                     if (now > _nextRun)
                     {
-                       
-                        _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
-
                         await ProcessACM();
-                      //  _nextRun = _schedule2.GetNextOccurrence(DateTime.Now);
+                        _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
                     }
                 }
                 catch (Exception ex)
@@ -82,10 +72,11 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 conn.Open();
                 
-                _logger.LogInformation("Syncing UIAM data");
+                //_logger.LogInformation("Syncing UIAM data");
+                // Disabled UIAM part; this requires connection to UIAM GCC view
                 // await syncUIAMData();
 
-                _logger.LogInformation("Querying staff info");
+                _logger.LogInformation("Querying staff info..");
 
                 List<ACMCustomStaffTable> staffList = new List<ACMCustomStaffTable>();
 
@@ -138,18 +129,18 @@ namespace MediaLibrary.Intranet.Web.Background
 
                         //applies 2 logic ,first is to check last login.Second is to give the user a grace period before auto suspend them.
 
-                        if (todayDate.Subtract(lastlogin).Days > 10 && todayDate.Subtract(staffCreatedDate).Days>10) //for testing, 10 days
+                        if (todayDate.Subtract(lastlogin).Days > 10 && todayDate.Subtract(staffCreatedDate).Days>89)
                         {
 
                             // Only process the following actions if status is detected as active
-                            if (status == "Active" || status =="A")
+                            if (status == "Active" || status == "A")
                             {
                                 string sql = "";
 
                                 // Checks remindersent - if null, send smtp and update table. if all not null, update a 'suspended'
                                 if (firstReminderSent == "")
                                 {
-                                    _logger.LogInformation("Will send 1st reminder");
+                                    _logger.LogInformation("Will send 1st reminder..");
                                     //send smtp to notify
                                     await SendEmail(staffEmail, isReminder);
 
@@ -161,7 +152,7 @@ namespace MediaLibrary.Intranet.Web.Background
                                 {
                                     if (secondReminderSent == "")
                                     {
-                                        _logger.LogInformation("Will send 2nd reminder");
+                                        _logger.LogInformation("Will send 2nd reminder..");
 
                                         //send smtp to notify
                                         await SendEmail(staffEmail, isReminder);
@@ -174,7 +165,7 @@ namespace MediaLibrary.Intranet.Web.Background
                                     {
                                         if (thirdReminderSent == "")
                                         {
-                                            _logger.LogInformation("Will send 3rd reminder");
+                                            _logger.LogInformation("Will send 3rd reminder..");
 
                                             //send smtp to notify
                                             await SendEmail(staffEmail, isReminder);
@@ -185,7 +176,7 @@ namespace MediaLibrary.Intranet.Web.Background
                                         }
                                         else //3rdreminder
                                         {
-                                            _logger.LogInformation("Account will be suspended");
+                                            _logger.LogInformation("Account will be suspended.");
 
                                             //Changes body of mail
                                             isReminder = false;
@@ -201,7 +192,6 @@ namespace MediaLibrary.Intranet.Web.Background
                                             await UpdateSuspendedDate(sql, conn, todayDate, userid);
 
                                             sql = ACMQueries.Queries.updateServiceStatus;
-
                                             await updateServiceStatus(sql, conn, staffEmail);
 
 
@@ -234,12 +224,12 @@ namespace MediaLibrary.Intranet.Web.Background
                     return;
                 }
 
+                //Send admin notifications
                 try
                 {
-                    //get the list of emails who is admin
+                    //get the list of users (emails) who are admin-role level
                     string sql = ACMQueries.Queries.GetAdminEmails;
                     string emails = await GetAdminEmails(sql, conn);
-
                     //send email to admin for info that job has finish running
                     await sendAdminNotification(jobstatus, emails);
 
@@ -247,7 +237,6 @@ namespace MediaLibrary.Intranet.Web.Background
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Got exception while sending emails to admin");
-                    return;
                 }
 
                 conn.Close();
@@ -259,7 +248,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
         }
 
-        private static async Task<string> GetStatus(string sql, SqlConnection conn)
+        private async Task<string> GetStatus(string sql, SqlConnection conn)
         {
             string status = "";
             try
@@ -274,14 +263,14 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
                 status = "error";
             }
 
             return status;
         }
 
-        private static async Task<DateTime> GetLastLogin(string sql, SqlConnection conn)
+        private async Task<DateTime> GetLastLogin(string sql, SqlConnection conn)
         {
             DateTime? lastlogin = null;
             try
@@ -295,14 +284,14 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
                 
             }
 
             return (DateTime)lastlogin;
         }
 
-        private static async Task<List<ACMCustomStaffTable>> GetStaffInfo(string sql, SqlConnection conn)
+        private async Task<List<ACMCustomStaffTable>> GetStaffInfo(string sql, SqlConnection conn)
         {
             List<ACMCustomStaffTable> staffList = new List<ACMCustomStaffTable>();
             try
@@ -363,13 +352,13 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
 
             return staffList;
         }
 
-        private static async Task UpdateReminderSent(string sql, SqlConnection conn, string staffEmail)
+        private async Task UpdateReminderSent(string sql, SqlConnection conn, string staffEmail)
         {
             try
             {
@@ -381,12 +370,11 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-               
+                _logger.LogError(ex.ToString());
             }
         }
 
-        private static async Task UpdateSuspendedDate(string sql, SqlConnection conn, DateTime todayDate, string userid)
+        private async Task UpdateSuspendedDate(string sql, SqlConnection conn, DateTime todayDate, string userid)
         {
             try
             {
@@ -400,11 +388,10 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-     
+                _logger.LogError(ex.ToString());
             }
         }
-        private static async Task updateServiceStatus(string sql, SqlConnection conn, string staffEmail)
+        private async Task updateServiceStatus(string sql, SqlConnection conn, string staffEmail)
         {
             try
             {
@@ -416,11 +403,10 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
         }
-        private static async Task InsertJobHistory(string sql, SqlConnection conn,bool jobstatus)
+        private async Task InsertJobHistory(string sql, SqlConnection conn,bool jobstatus)
         {
             try
             {
@@ -439,11 +425,10 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
         }
-        private static async Task<string> GetAdminEmails(string sql, SqlConnection conn)
+        private async Task<string> GetAdminEmails(string sql, SqlConnection conn)
         {
             string emails = "";
             try
@@ -461,8 +446,7 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
             return emails;
 
@@ -470,248 +454,266 @@ namespace MediaLibrary.Intranet.Web.Background
 
         private async Task SendEmail(string staffEmail, bool isReminder)
         {
-            string To = staffEmail;
-            string From = _appSettings.SMTPSenderEmail;
-
-            //Setting
-            var smtpClient = new SmtpClient()
+            try
             {
-                Host = "smtp.gmail.com", //urasmtpiz.ura.gov.sg
-                Port = 587, //25
-                EnableSsl = true,
-                Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
-                UseDefaultCredentials = false, // in ura intranet should set to true
-            };
+                string To = staffEmail;
+                string From = "MediaLibrary_DoNotReply@ura.gov.sg"; //_appSettings.SMTPSenderEmail;
 
-            if (isReminder == true)
-            {
-                //Compose reminder notification email
-                var mailMessage = new MailMessage
+                //Setting
+                var smtpClient = new SmtpClient()
                 {
-                    From = new MailAddress(From),
-                    Subject = "Expiring Media Library",
-                    Body = "<h1>Please be noted that you have an expiring Media Lib access. Please login now to avoid disable.</h1>",
-                    IsBodyHtml = true,
-                    Priority = MailPriority.High
+                    Host = "urasmtpiz.ura.gov.sg", //"smtp.gmail.com"
+                    Port = 25, //587
+                    EnableSsl = true,
+                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
+                    UseDefaultCredentials = true, // in ura intranet should set to true, devt false
                 };
 
-                //Recipients
-                mailMessage.To.Add(To);
-                smtpClient.Send(mailMessage);
+                if (isReminder == true)
+                {
+                    //Compose reminder notification email
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(From),
+                        Subject = "Expiring Media Library Access",
+                        Body = "<h1>Please note that you have an expiring Media Library access. Please login as soon as possible to avoid disabling of account on the 90th day mark. Thank you.</h1>",
+                        IsBodyHtml = true,
+                        Priority = MailPriority.High
+                    };
+
+                    //Recipients
+                    mailMessage.To.Add(To);
+                    smtpClient.Send(mailMessage);
+                }
+                else
+                {
+                    //Compose disabled notification email
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(From),
+                        Subject = "Disabled Media Library Access",
+                        Body = "<h1>Please note that your Media Library access has been disabled due to 90 days inactivity. For reactivation, please look for Eng Yong/Rajimah. Thank you.</h1>",
+                        IsBodyHtml = true,
+                        Priority = MailPriority.High
+                    };
+
+                    //Recipients
+                    mailMessage.To.Add(To);
+                    smtpClient.Send(mailMessage);
+                }
+
             }
-            else
+            catch(Exception ex)
             {
-                //Compose disabled notification email
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(From),
-                    Subject = "Disabled Media Library",
-                    Body = "<h1>Please be noted that your Media Lib access is disabled. Thank you.</h1>",
-                    IsBodyHtml = true,
-                    Priority = MailPriority.High
-                };
-
-                //Recipients
-                mailMessage.To.Add(To);
-                smtpClient.Send(mailMessage);
+                _logger.LogError(ex.ToString());
             }
 
         }
         private async Task sendAdminNotification(bool jobstatus,string staffemails)
         {
-            string To = staffemails.Substring(0, staffemails.Length-1);
-
-            Debug.WriteLine(To);
-
-            string From = _appSettings.SMTPSenderEmail;
-
-            //Setting
-            var smtpClient = new SmtpClient()
+            try
             {
-                Host = "smtp.gmail.com", //urasmtpiz.ura.gov.sg
-                Port = 587, //25
-                EnableSsl = true,
-                Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
-                UseDefaultCredentials = false, // in ura intranet should set to true
-            };
+                string To = staffemails.Substring(0, staffemails.Length - 1);
+                string From = _appSettings.SMTPSenderEmail;
 
-            if (jobstatus == true)
-            {
-                //Compose reminder notification email
-                var mailMessage = new MailMessage
+                //Setting
+                var smtpClient = new SmtpClient()
                 {
-                    From = new MailAddress(From),
-                    Subject = "Media Library 90 days batch job",
-                    Body = "<h1>The job has run successfully.</h1>",
-                    IsBodyHtml = true,
-                    Priority = MailPriority.High
+                    Host = "smtp.gmail.com", //urasmtpiz.ura.gov.sg
+                    Port = 587, //25
+                    EnableSsl = true,
+                    Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
+                    UseDefaultCredentials = false, // in ura intranet should set to true
                 };
 
-                //Recipients
-                mailMessage.To.Add(To);
-                smtpClient.Send(mailMessage);
+                if (jobstatus == true)
+                {
+                    //Compose reminder notification email
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(From),
+                        Subject = "Media Library 90 days batch job",
+                        Body = "<h1>The job has run successfully.</h1>",
+                        IsBodyHtml = true,
+                        Priority = MailPriority.High
+                    };
+
+                    //Recipients
+                    mailMessage.To.Add(To);
+                    smtpClient.Send(mailMessage);
+                }
+                else
+                {
+                    //Compose disabled notification email
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(From),
+                        Subject = "Media Library 90 days batch job",
+                        Body = "<h1>The job has failed.</h1>",
+                        IsBodyHtml = true,
+                        Priority = MailPriority.High
+                    };
+
+                    //Recipients
+                    mailMessage.To.Add(To);
+                    smtpClient.Send(mailMessage);
+                }
+
             }
-            else
-            {
-                //Compose disabled notification email
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(From),
-                    Subject = "Media Library 90 days batch job",
-                    Body = "<h1>The job has failed.</h1>",
-                    IsBodyHtml = true,
-                    Priority = MailPriority.High
-                };
-
-                //Recipients
-                mailMessage.To.Add(To);
-                smtpClient.Send(mailMessage);
+            catch(Exception ex) {
+                _logger.LogError(ex.ToString());
             }
 
         }
 
         private async Task syncUIAMData()
         {
-            string uiamConnStr = _appSettings.UIAMConnectionString;
-            using SqlConnection conn = new SqlConnection(uiamConnStr);
-
-            //Get all the data and stored in a list
-            string sql = ACMQueries.Queries.GetUIAMInfo;
-            List<UIAMInfo> AllInfoList = await GetUIAMInfo(sql, conn);
-
-            // append data to group table if not there
-            sql = ACMQueries.Queries.GetUIAMGroupInfo;
-            List<UIAMGroupInfo> list =  await GetUIAMGroupInfo(sql, conn);
-
-            sql = ACMQueries.Queries.GetACMGroupInfo;
-            List<ACMGroupInfo> list2 = await GetACMGroupInfo(sql, conn);
-
-           //Iterate ACM/UIAM table to insert new group 
-            foreach (var group1 in list2)
+            try
             {
-                bool groupMatch = false;
-                string groupid = "";
-                string groupname = "";
+                string uiamConnStr = _appSettings.UIAMConnectionString;
+                using SqlConnection conn = new SqlConnection(uiamConnStr);
 
-                foreach (var group2 in list)   
+                //Get all the data and stored in a list
+                string sql = ACMQueries.Queries.GetUIAMInfo;
+                List<UIAMInfo> AllInfoList = await GetUIAMInfo(sql, conn);
+
+                // append data to group table if not there
+                sql = ACMQueries.Queries.GetUIAMGroupInfo;
+                List<UIAMGroupInfo> list = await GetUIAMGroupInfo(sql, conn);
+
+                sql = ACMQueries.Queries.GetACMGroupInfo;
+                List<ACMGroupInfo> list2 = await GetACMGroupInfo(sql, conn);
+
+                //Iterate ACM/UIAM table to insert new group 
+                foreach (var group1 in list2)
                 {
-                    if (group1.GroupName != group2.GroupName)
+                    bool groupMatch = false;
+                    string groupid = "";
+                    string groupname = "";
+
+                    foreach (var group2 in list)
                     {
-                        groupMatch = false;
-                        groupid = group2.GroupID;
-                        groupname = group2.GroupName;
-                        break;
+                        if (group1.GroupName != group2.GroupName)
+                        {
+                            groupMatch = false;
+                            groupid = group2.GroupID;
+                            groupname = group2.GroupName;
+                            break;
+                        }
+                        else
+                        {
+                            groupMatch = true;
+                        }
                     }
-                    else
+                    if (groupMatch == false)
                     {
-                        groupMatch = true;
+                        sql = ACMQueries.Queries.InsertGroupData;
+                        await InsertGroupData(sql, conn, groupid, groupname);
                     }
                 }
-                if (groupMatch == false) { 
-                    sql = ACMQueries.Queries.InsertGroupData;
-                    await InsertGroupData(sql, conn,groupid,groupname);
-                }
-            }
 
-            // append data to dept table if not there
-          //   sql = ACMQueries.Queries.GetUIAMDeptInfo;
-           //  List<UIAMDeptInfo> deptlist1 = await GetUIAMDeptInfo(sql, conn);
+                // append data to dept table if not there
+                //   sql = ACMQueries.Queries.GetUIAMDeptInfo;
+                //  List<UIAMDeptInfo> deptlist1 = await GetUIAMDeptInfo(sql, conn);
 
-            sql = ACMQueries.Queries.GetACMDeptInfo;
-            List<ACMDeptInfo> acmdeptlist2 = await GetACMDeptInfo(sql, conn);
+                sql = ACMQueries.Queries.GetACMDeptInfo;
+                List<ACMDeptInfo> acmdeptlist2 = await GetACMDeptInfo(sql, conn);
 
                 foreach (var row in acmdeptlist2)
                 {
-                bool isMatch = false;
-                string deptid = "";
-                string deptname = "";
-                string groupid = "";
+                    bool isMatch = false;
+                    string deptid = "";
+                    string deptname = "";
+                    string groupid = "";
 
-                foreach (var row2 in AllInfoList)
-                {
-                    if(row.DeptName != row2.SECTION_DESCRIPTION)
+                    foreach (var row2 in AllInfoList)
                     {
-                        isMatch = false;
-                        deptid = row2.SECTION_ID;
-                        deptname = row2.SECTION_DESCRIPTION;
-                        groupid = row2.DIVISION_ID;
-                        break;
+                        if (row.DeptName != row2.SECTION_DESCRIPTION)
+                        {
+                            isMatch = false;
+                            deptid = row2.SECTION_ID;
+                            deptname = row2.SECTION_DESCRIPTION;
+                            groupid = row2.DIVISION_ID;
+                            break;
+                        }
+                        else
+                        {
+                            isMatch = true;
+                        }
                     }
-                    else
+                    if (isMatch == false)
                     {
-                        isMatch = true;
+                        sql = ACMQueries.Queries.InsertDeptData;
+                        await InsertDeptData(sql, conn, deptid, deptname, groupid);
                     }
                 }
-                if (isMatch == false)
+
+                // append data to staff table if not there
+                sql = ACMQueries.Queries.GetUIAMStaffInfo;
+                List<UIAMStaffInfo> staffinfolist1 = await GetUIAMStaffInfo(sql, conn);
+
+                sql = ACMQueries.Queries.GetACMStaffInfo;
+                List<ACMStaffInformation1> acmstaffinfolist2 = await GetACMStaffInfo(sql, conn);
+
+                foreach (var staff in acmstaffinfolist2)
                 {
-                    sql = ACMQueries.Queries.InsertDeptData;
-                    await InsertDeptData(sql, conn, deptid, deptname, groupid);
+                    bool staffinfoMatch = false;
+                    string userid = "";
+                    string emailid = "";
+                    string fullname = "";
+                    string designation = "";
+                    string del_ind = "";
+                    string staffgroupid = "";
+                    string staffdeptid = "";
+                    DateTime lastservicedate = default;
+
+                    foreach (var staff2 in staffinfolist1)
+                    {
+                        if (staff.UserID != staff2.USER_ID)
+                        {
+                            staffinfoMatch = false;
+                            userid = staff2.USER_ID;
+                            emailid = staff2.EMAIL_ID;
+                            fullname = staff2.FULL_NAME;
+                            designation = staff2.DESIGNATION;
+                            del_ind = staff2.DEL_IND;
+                            staffgroupid = staff2.DIVISION_ID;
+                            staffdeptid = staff2.SECTION_ID;
+                            lastservicedate = staff2.LAST_SERVICE_DATE;
+                            break;
+                        }
+                        else
+                        {
+                            staffinfoMatch = true;
+                        }
+                    }
+
+                    if (staffinfoMatch == false)
+                    {
+                        sql = ACMQueries.Queries.InsertStaffData;
+                        await InsertStaffInfoData(sql, conn, userid, emailid, fullname, designation, del_ind, lastservicedate, staffgroupid, staffdeptid);
+                    }
+
+                    else // update existing staff table data if there is change
+                    {
+                        if (del_ind != "A")
+                        {
+                            sql = ACMQueries.Queries.UpdateStaffData;
+                            await UpdateStaffData(sql, conn, del_ind, lastservicedate, userid);
+                        }
+                    }
+
                 }
             }
-
-            // append data to staff table if not there
-            sql = ACMQueries.Queries.GetUIAMStaffInfo;
-            List<UIAMStaffInfo> staffinfolist1= await GetUIAMStaffInfo(sql, conn);
-
-            sql = ACMQueries.Queries.GetACMStaffInfo;
-            List<ACMStaffInformation1> acmstaffinfolist2 = await GetACMStaffInfo(sql, conn);
-
-            foreach (var staff in acmstaffinfolist2)
-            {
-                bool staffinfoMatch = false;
-                string userid = "";
-                string emailid = "";
-                string fullname = "";
-                string designation = "";
-                string del_ind = "";
-                string staffgroupid = "";
-                string staffdeptid = "";
-                DateTime lastservicedate = default;
-
-                foreach (var staff2 in staffinfolist1)
-                {
-                    if (staff.UserID != staff2.USER_ID)
-                    {
-                        staffinfoMatch = false;
-                        userid = staff2.USER_ID;
-                        emailid = staff2.EMAIL_ID;
-                        fullname = staff2.FULL_NAME;
-                        designation = staff2.DESIGNATION;
-                        del_ind = staff2.DEL_IND;
-                        staffgroupid = staff2.DIVISION_ID;
-                        staffdeptid = staff2.SECTION_ID;
-                        lastservicedate = staff2.LAST_SERVICE_DATE;
-                        break;
-                    }
-                    else
-                    {
-                        staffinfoMatch = true;
-                    }
-                }
-
-                if (staffinfoMatch == false)
-                {
-                        sql = ACMQueries.Queries.InsertStaffData;
-                        await InsertStaffInfoData(sql, conn,userid,emailid,fullname,designation,del_ind, lastservicedate,staffgroupid, staffdeptid);
-                }
-
-                else // update existing staff table data if there is change
-                {
-                    if (del_ind != "A") 
-                    {
-                        sql = ACMQueries.Queries.UpdateStaffData;
-                        await UpdateStaffData(sql, conn,del_ind, lastservicedate,userid);
-                    }
-                }
-
+            catch(Exception ex) {
+                _logger.LogError(ex.ToString());
             }
         }
-        private static async Task<List<UIAMInfo>> GetUIAMInfo(string sql, SqlConnection conn)
+        private async Task<List<UIAMInfo>> GetUIAMInfo(string sql, SqlConnection conn)
         {
             List<UIAMInfo> UIAMAlllist = new List<UIAMInfo>();
             try
             {
-
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -780,15 +782,14 @@ namespace MediaLibrary.Intranet.Web.Background
 
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
             return UIAMAlllist;
 
         }
 
 
-        private static async Task<List<UIAMGroupInfo>> GetUIAMGroupInfo(string sql, SqlConnection conn)
+        private async Task<List<UIAMGroupInfo>> GetUIAMGroupInfo(string sql, SqlConnection conn)
         {
             List<UIAMGroupInfo> UIAMGrouplist = new List<UIAMGroupInfo>();
             try
@@ -816,14 +817,13 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
             return UIAMGrouplist;
 
         }
 
-        private static async Task<List<ACMGroupInfo>> GetACMGroupInfo(string sql, SqlConnection conn)
+        private async Task<List<ACMGroupInfo>> GetACMGroupInfo(string sql, SqlConnection conn)
         {
             List<ACMGroupInfo> ACMGrouplist = new List<ACMGroupInfo>();
             try
@@ -845,19 +845,17 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
             return ACMGrouplist;
 
         }
 
-        private static async Task InsertGroupData(string sql, SqlConnection conn,string groupid,string groupname)
+        private async Task InsertGroupData(string sql, SqlConnection conn,string groupid,string groupname)
         {
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
-                // wat is the groupid and groupname
                 cmd.Parameters.AddWithValue("@groupid", groupid);
                 cmd.Parameters.AddWithValue("@groupname", groupname);
                 cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
@@ -866,11 +864,11 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
         }
 
-        private static async Task<List<UIAMDeptInfo>> GetUIAMDeptInfo(string sql, SqlConnection conn)
+        private async Task<List<UIAMDeptInfo>> GetUIAMDeptInfo(string sql, SqlConnection conn)
         {
             List<UIAMDeptInfo> UIAMDeptlist = new List<UIAMDeptInfo>();
             try
@@ -897,13 +895,13 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
 
             }
             return UIAMDeptlist;
         }
 
-        private static async Task<List<ACMDeptInfo>> GetACMDeptInfo(string sql, SqlConnection conn)
+        private async Task<List<ACMDeptInfo>> GetACMDeptInfo(string sql, SqlConnection conn)
         {
             List<ACMDeptInfo> ACMDeptlist = new List<ACMDeptInfo>();
             try
@@ -924,12 +922,12 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
 
             }
             return ACMDeptlist;
         }
-        private static async Task InsertDeptData(string sql, SqlConnection conn,string deptid,string deptname, string groupid)
+        private async Task InsertDeptData(string sql, SqlConnection conn,string deptid,string deptname, string groupid)
         {
             try
             {
@@ -943,11 +941,11 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
         }
 
-        private static async Task<List<UIAMStaffInfo>> GetUIAMStaffInfo(string sql, SqlConnection conn)
+        private async Task<List<UIAMStaffInfo>> GetUIAMStaffInfo(string sql, SqlConnection conn)
         {
             List<UIAMStaffInfo> UIAMStafflist = new List<UIAMStaffInfo>();
             try
@@ -1009,13 +1007,12 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
             return UIAMStafflist;
         }
 
-        private static async Task<List<ACMStaffInformation1>> GetACMStaffInfo(string sql, SqlConnection conn)
+        private async Task<List<ACMStaffInformation1>> GetACMStaffInfo(string sql, SqlConnection conn)
         {
             List<ACMStaffInformation1> ACMStafflist = new List<ACMStaffInformation1>();
             try
@@ -1036,16 +1033,14 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-
+                _logger.LogError(ex.ToString());
             }
             return ACMStafflist;
         }
 
-        private static async Task InsertStaffInfoData(string sql, SqlConnection conn,string userid,string email,string name,string designation,string DEL_IND,DateTime lastservicedate,string groupid,string deptid)
+        private async Task InsertStaffInfoData(string sql, SqlConnection conn,string userid,string email,string name,string designation,string DEL_IND,DateTime lastservicedate,string groupid,string deptid)
         {
             try
-
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@USER_ID", userid);
@@ -1062,10 +1057,10 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
         }
-        private static async Task UpdateStaffData(string sql, SqlConnection conn,string del_ind,DateTime lastservicedate,string userid)
+        private async Task UpdateStaffData(string sql, SqlConnection conn,string del_ind,DateTime lastservicedate,string userid)
         {
             try
             {
@@ -1077,11 +1072,11 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
         }
 
-        private static async Task<string> GetUIAMGroupID(string sql, SqlConnection conn)
+        private async Task<string> GetUIAMGroupID(string sql, SqlConnection conn)
         {
             string UIAMGroupID = "";
             try
@@ -1096,13 +1091,13 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
 
             return UIAMGroupID;
         }
 
-        private static async Task<string> GetStaffIdByEmail(string sql, SqlConnection conn,string staffemail)
+        private async Task<string> GetStaffIdByEmail(string sql, SqlConnection conn,string staffemail)
         {
             string staffid = "";
             try
@@ -1120,7 +1115,7 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
           
             return staffid;
