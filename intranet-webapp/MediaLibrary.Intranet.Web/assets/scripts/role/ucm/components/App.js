@@ -1,17 +1,17 @@
 import React from 'react'
+import { styled } from '@linaria/react'
 import { Container } from 'react-bootstrap'
 import { SearchUser } from './@/../../../ucm/components/searchuser'
-import styled from "styled-components";
 import Users from './@/../../../ucm/components/users'
-import { FilterProvider } from './context';
+import { FilterProvider } from './context'
 import Page from './@/../../../ucm/components/Pagination'
 
 const Style = styled.div`
-    background-color: #f6f6f6;
-    display: flex;
-    min-height: 100vh;
-    height: 100%;
-  `
+  background-color: #f6f6f6;
+  display: flex;
+  min-height: 100vh;
+  height: 100%;
+`
 
 const App = () => {
   return (
@@ -20,10 +20,10 @@ const App = () => {
         <FilterProvider>
           <SearchUser />
           <Users />
-          <Page/>
-    </FilterProvider>
+          <Page />
+        </FilterProvider>
       </Container>
     </Style>
-  );
+  )
 }
 export default App
