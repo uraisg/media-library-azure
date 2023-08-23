@@ -3,7 +3,6 @@ import { getDisplayName } from './DisplayName'
 
 function loadFileInfo() {
   const img = document.querySelector('#main-media')
-  const downloadBtn = document.querySelector('#media-download')
   const fileInfoId = img.dataset.fileinfoid
   if (!fileInfoId) return
 
@@ -22,9 +21,10 @@ function loadFileInfo() {
       return response.json()
     })
     .then((data) => {
+      img.onload = () => generateDownloadLinks(data['FileURL'], img.naturalWidth, img.naturalHeight)
       img.alt = data['Name']
       img.src = data['FileURL']
-      downloadBtn.href = img.src
+      document.querySelector('#media-download-original').href = data['FileURL']
 
       renderMetadataSection(data)
 
@@ -38,6 +38,49 @@ function loadFileInfo() {
       document.title = 'Oops! ' + document.title
       console.error(error)
     })
+}
+
+// Populate image download links for different sizes
+function generateDownloadLinks(url, imgX, imgY) {
+  const createSizeText = ([x, y]) => {
+    const span = document.createElement('span')
+    span.innerText = `(${x}x${y})`
+    return span
+  }
+
+  const downloadBtnOriginal = document.querySelector('#media-download-original')
+  downloadBtnOriginal.append(' ', createSizeText([imgX, imgY]))
+
+  const sizes = [
+    [360, '#media-download-small'],
+    [720, '#media-download-medium'],
+    [1080, '#media-download-large'],
+  ]
+
+  for (const [size, selector] of sizes) {
+    const button = document.querySelector(selector)
+    const resized = resize(imgX, imgY, size)
+    if (resized) {
+      button.append(' ', createSizeText(resized))
+      button.href = url + `/${resized[0]}-${resized[1]}`
+      button.classList.remove('d-none')
+    }
+  }
+}
+
+// Resize height and width of an image while perserving its aspect ratio
+function resize(x, y, max) {
+  // Skip if image size is smaller than target maximum
+  if (x < max && y < max) {
+    return null
+  }
+
+  // Maximum values of height and width given, scale other dimension to preserve aspect ratio.
+  if (y > x) {
+    return [Math.round((max * x) / y), max]
+  } else {
+    return [max, Math.round((max * y) / x)]
+  }
 }
 
 async function renderMetadataSection(data) {
@@ -101,7 +144,7 @@ async function renderMetadataSection(data) {
   if (editAbility){
     deleteListener(data['Id'], data['Name'])
   }
-  
+
 }
 
 function formatLatLng(coords) {

@@ -8,26 +8,41 @@
 
 @if (!User.Identity.IsAuthenticated)
 {
-<div class="intro-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6 col-xl-8">
-                <h1>Media Library Upload Portal</h1>
-                <p>This portal provides a convenient method to upload media files into the Media Library from your own devices.</p>
-                <hr>
-                <div class="mb-3">
-                    <span class="small">To continue, sign in using your official email address</span>
-                </div>
-                <form method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">
-                    <button type="submit" class="btn btn-lg btn-primary">Sign In</button>
-                </form>
-            </div>
-            <div class="col-md-6 col-xl-4 d-none d-md-block">
-                <img class="img-fluid" src="~/images/hero-image.svg" role="presentation" alt="">
-            </div>
-        </div>
-    </div>
-</div>
+	<div class="intro-section">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-6 col-xl-8">
+					<h1>Media Library Upload Portal</h1>
+					<p>This portal provides a convenient method to upload media files into the Media Library from your own devices.</p>
+					<hr>
+					<div>
+						<span class="medium font-weight-bold">This system only accepts images classified as ‘Restricted \ Sensitive Normal’ or below.</span>
+					</div>
+
+					<div class="mb-3">
+						<span class="small">To continue, sign in using your official email address</span>
+					</div>
+
+					<div class="d-flex justify-content-left">
+						<form method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">
+							<button type="submit" class="btn btn-m btn-primary">Sign In</button>
+						</form>
+
+					</div>
+
+				</div>
+
+				<div class="col-md-6 col-xl-4 d-none d-md-block text-center pt-5">
+					<p class="h5">Upload with QR code</p>
+					<span class="small">Scan QR code to upload photos from mobile device</span>
+					<img class="img-fluid pt-3 w-75 " src="~/images/qrcode.png" alt="QR Code">
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+
 <div class="how-it-works-section text-center">
     <div class="container">
         <div class="row">
@@ -74,7 +89,7 @@
         <div class="row">
             <div class="col">
                 <h2 class="mb-3">It's easy to get started</h2>
-                <p class="d-block mx-auto mb-4" style="max-width: 40rem;">Sign in to this portal using your official email address. Complete the OTP verification and you can start uploading your media files right away.</p>
+				<p class="d-block mx-auto mb-4 cta-para">Sign in to this portal using your official email address. Complete the OTP verification and you can start uploading your media files right away.</p>
                 <form method="get" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">
                     <button type="submit" class="btn btn-light">Sign In</button>
                 </form>
@@ -94,8 +109,9 @@ else
 <p>You do not have access to this resource</p>
 }
 
+
 @section Scripts {
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity.IsAuthenticated && User.IsInRole(UserRole.User))
 {
     <script src="~/scripts/upload_portal.js"></script>
 }

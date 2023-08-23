@@ -21,18 +21,27 @@ namespace MediaLibrary.Internet.Web.Configuration
                 aadInstanceHost = " " + new Uri(aadInstance).Host;
             }
 
-            // Allow eval() script in development
+            // Add more allowed sources in development
             var scriptSrcUnsafeEval = "";
+            var styleSrcUnsafeInline = "";
+            var connectSrcWss = "";
             if (isDevelopment)
             {
                 scriptSrcUnsafeEval = " 'unsafe-eval'";
+                styleSrcUnsafeInline = " 'unsafe-inline'";
+                connectSrcWss = " wss:";
             }
 
             app.UseHsts();
             app.Use(async (context, next) =>
             {
                 var headers = context.Response.Headers;
-                headers["Content-Security-Policy"] = $"form-action 'self'{aadInstanceHost}; script-src 'self' blob:{scriptSrcUnsafeEval}; object-src 'none'; frame-ancestors 'none'";
+                headers["Content-Security-Policy"] = (
+                    $"base-uri 'none'; frame-ancestors 'none'; form-action 'self'{aadInstanceHost}; "
+                    + $"default-src 'self'; script-src 'self' blob:{scriptSrcUnsafeEval}; connect-src 'self'{connectSrcWss}; "
+                    + $"object-src 'none'; style-src 'self' https://fonts.googleapis.com{styleSrcUnsafeInline}; "
+                    + "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://developers.onemap.sg"
+                );
                 headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
                 headers["X-Content-Type-Options"] = "nosniff";
                 headers["X-Frame-Options"] = "DENY";

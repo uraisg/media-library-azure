@@ -1,10 +1,12 @@
 ﻿using System.Diagnostics;
 using MediaLibrary.Intranet.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
+    [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

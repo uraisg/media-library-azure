@@ -15,11 +15,8 @@ using Microsoft.Graph;
 namespace MediaLibrary.Intranet.Web.Configuration
 {
     /// <summary>
-    /// UserRoleClaimsTransformation checks if the ClaimsPrincipal represents a normal or an admin
-    /// user and adds it as a Role claim. 
+    /// UserRoleClaimsTransformation validates the ClaimsPrincipal and adds the appropriate Role claim.
     /// </summary>
-    ///
-
     class UserRoleClaimsTransformation : IClaimsTransformation
     {/*
         private readonly IEnumerable<string> _adminUsers;
@@ -46,14 +43,17 @@ namespace MediaLibrary.Intranet.Web.Configuration
             {
                 _hasTransformed = true;
 
-                 role = _adminUsers.Contains(principal.GetUserGraphEmail())
-                    ? UserRole.Admin
-                    : UserRole.User; 
-
-                var ci = new ClaimsIdentity();
-                ci.AddClaim(new Claim(ClaimTypes.Role, role));
-                principal.AddIdentity(ci);
-                
+                // Skip adding roles if user's email address format is unexpected
+                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
+                {
+                    // Check if user's email address is in list of admins
+                    string role = _adminUsers.Contains(principal.GetUserGraphEmail())
+                        ? UserRole.Admin
+                        : UserRole.User;
+                    var ci = new ClaimsIdentity();
+                    ci.AddClaim(new Claim(ClaimTypes.Role, role));
+                    principal.AddIdentity(ci);
+                }
             }
 
             return principal;

@@ -34,11 +34,15 @@ const StepperForm = () => {
   const [completePercentage, setCompletePercentage] = useState(0)
   const [errMsg, setErrMsg] = useState(false)
   const [errMsg1, setErrMsg1] = useState(false)
-  const [errMsg1Text, setErrMsg1Text] = useState("")
-  const [draftKey, setDraftKey] = useState("")
-  const [cancelModal, setCancelModal] = useState(false);
-  const [disabledBtn, setDisabledBtn] = useState(false);
+  const [errMsg1Text, setErrMsg1Text] = useState('')
+  const [draftKey, setDraftKey] = useState('')
+  const [disabledBtn, setDisabledBtn] = useState(false)
 
+  const [declarationModal, setDeclarationModal] = useState(false)
+  const closeDeclarationModal = () => setDeclarationModal(false)
+  const openDeclarationModal = () => setDeclarationModal(true)
+
+  const [cancelModal, setCancelModal] = useState(false)
   const closeModal = () => setCancelModal(false);
   const openModal = () => setCancelModal(true);
 
@@ -55,20 +59,25 @@ const StepperForm = () => {
     setDisabledBtn(disable);
   }, [formContext.files])
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (activeStep == 0) {
       if (validateInput()) {
-        uploadStep1()
+       await uploadStep1()
       }
     }
     else if (activeStep == 1) {
-      uploadStep2()
+      if (formContext.declarationCheckbox) {
+        uploadStep2()
+      }
+      else {
+        openDeclarationModal()
+      }
     }
     else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1)
       window.scrollTo(0, 0)
     }
-  };
+  }
 
   const validateInput = () => {
     if (!formContext.validInput.Name || !formContext.validInput.Location || formContext.files.length == 0) {
@@ -82,13 +91,17 @@ const StepperForm = () => {
     fetch(`draft/all/${draftKey}`, {
       method: 'DELETE',
       headers: {
-        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
-      }
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content,
+      },
     })
-
-    window.scrollTo(0, 0)
-    setActiveStep((prevActiveStep) => prevActiveStep - 1)
-  };
+      .then(() => {
+        window.scrollTo(0, 0)
+        setActiveStep((prevActiveStep) => prevActiveStep - 1)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  }
 
   const uploadStep1 = async () => {
     let completedPer = 0;
@@ -178,6 +191,7 @@ const StepperForm = () => {
         try {
           const imageEntities = JSON.parse(response.result["imageEntities"])
           formContext.setRetrievedFile(imageEntities)
+          formContext.setDeclarationCheckbox(false)
 
           setCompletePercentage(100);
           setProgressBar(false)
@@ -191,39 +205,49 @@ const StepperForm = () => {
           setProgressBar(false);
         }
       })
+      .catch((error) => {
+        console.error(error)
+      })
   }
 
   const uploadStep2 = () => {
     setProgressBar(true)
     setCompletePercentage(20)
 
+    const declarationdetails = formContext.declarationCheckbox
+
     //Call api here
     fetch(`FileUpload/${draftKey}`, {
       method: 'POST',
       headers: {
-        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content
-      }
+        'Content-Type': 'application/json',
+        RequestVerificationToken: document.querySelector('meta[name="RequestVerificationToken"]').content,
+      },
+      body: JSON.stringify({ declarationbox: declarationdetails }),
     })
       .then((response) => response.json())
       .then((response) => {
         if (!response.success) {
-          setErrMsg1Text(response.errorMessage);
-          setErrMsg1(true);
-          setProgressBar(false);
-          return;
+          setErrMsg1Text(response.errorMessage)
+          setErrMsg1(true)
+          setProgressBar(false)
+          return
         }
 
         setCompletePercentage(100)
 
         setProgressBar(false)
         formContext.setFiles([])
-        formContext.setValidInput({ "Name": "", "Location": "", "Copyright": "URA" })
+        formContext.setValidInput({ Name: '', Location: '', Copyright: 'URA' })
         setActiveStep(0)
         window.scrollTo(0, 0)
 
         // Shows alert for "Uploading to intranet in 10 minutes"
         formContext.setAlertActive(true)
-        setTimeout(() => { formContext.setAlertActive(false) }, 5000)
+        setTimeout(() => formContext.setAlertActive(false), 5000)
+      })
+      .catch((error) => {
+        console.error(error)
       })
   }
 
@@ -303,6 +327,21 @@ const StepperForm = () => {
               closeModal();
             }}>
               Confirm
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </React.Fragment>
+
+      <React.Fragment>
+        <Modal show={declarationModal}>
+          <Modal.Header>
+            <Modal.Title>Error!</Modal.Title>
+            <Modal.Title className="float-right"><X size={35} onClick={closeDeclarationModal} /></Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-danger">You have not done your declaration.</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={closeDeclarationModal}>
+              Close
             </Button>
           </Modal.Footer>
         </Modal>

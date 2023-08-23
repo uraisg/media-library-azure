@@ -179,8 +179,8 @@ const processData = (data) => {
   return data.Items.map((doc) => {
     return {
       id: doc.Id,
-      src: new URL(doc.FileURL, window.location).toString(),
-      thumbnail: new URL(doc.ThumbnailURL, window.location).toString(),
+      original: new URL(doc.FileURL, window.location).toString(),
+      src: new URL(doc.ThumbnailURL, window.location).toString(),
       name: doc.Name,
       caption: doc.Caption,
       link: new URL('/Gallery/Item/' + doc.Id, window.location).toString(),

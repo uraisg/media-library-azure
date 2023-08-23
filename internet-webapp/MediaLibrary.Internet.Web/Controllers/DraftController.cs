@@ -8,25 +8,24 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos.Table;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using ImageMagick;
 using MediaLibrary.Internet.Web.Common;
 using MediaLibrary.Internet.Web.Models;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
-using ImageMagick;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Azure;
-using Microsoft.AspNetCore.Authorization;
-using System.Data;
 
 namespace MediaLibrary.Internet.Web.Controllers
 {
@@ -270,6 +269,7 @@ namespace MediaLibrary.Internet.Web.Controllers
                 json.LocationName = req.location;
                 json.Copyright = req.copyright;
                 json.AdditionalField = new List<object>();
+                json.DeclaredClassification = false;
 
                 await ImageUploadToDraft(json, rowKey, _appSettings);
 
