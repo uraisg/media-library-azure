@@ -21,7 +21,7 @@ jobs:
       internet: ${{ steps.filter.outputs.internet }}
       intranet: ${{ steps.filter.outputs.intranet }}
     steps:
-    - uses: actions/checkout@v3.5.3
+    - uses: actions/checkout@v4.0.0
     - uses: dorny/paths-filter@v2
       id: filter
       with:
@@ -37,7 +37,7 @@ jobs:
     if: ${{ needs.changes.outputs.internet == 'true' }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3.5.3
+    - uses: actions/checkout@v4.0.0
       with:
         fetch-depth: 0
     - name: Setup .NET
@@ -84,7 +84,7 @@ jobs:
     if: ${{ needs.changes.outputs.intranet == 'true' }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3.5.3
+    - uses: actions/checkout@v4.0.0
       with:
         fetch-depth: 0
     - name: Setup .NET
