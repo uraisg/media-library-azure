@@ -361,13 +361,12 @@ namespace MediaLibrary.Intranet.Web.Background
                 while (reader.Read())
                 {
                     status = reader.GetString(0);
-                    return status;
                 }
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex.ToString());
+            {               
                 status = "error";
+                _logger.LogError(ex.ToString());
             }
 
             return status;
@@ -1271,7 +1270,6 @@ namespace MediaLibrary.Intranet.Web.Background
                 while (reader.Read())
                 {
                     UIAMGroupID = reader.GetString(0);
-                    return UIAMGroupID;
                 }
             }
             catch (Exception ex)
@@ -1295,7 +1293,6 @@ namespace MediaLibrary.Intranet.Web.Background
                 while (reader.Read())
                 {
                     staffid = reader.GetString(0);
-                    return staffid;
                 }
             }
             catch (Exception ex)
@@ -1368,8 +1365,6 @@ namespace MediaLibrary.Intranet.Web.Background
             bool result = true;
             try
             {
-                _logger.LogInformation("checking session for: " + userid);
-
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@userid", userid);
                 using SqlDataReader reader = cmd.ExecuteReader();
@@ -1387,8 +1382,6 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 _logger.LogError(ex.ToString());
             }
-
-            _logger.LogInformation("result for checking session: " + result);
             return result;
         }  
 

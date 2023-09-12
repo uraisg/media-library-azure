@@ -528,7 +528,6 @@ namespace MediaLibrary.Intranet.Web.Services
                 while (reader.Read())
                 {
                     roleMstrID = reader.GetInt32(0);
-                    return roleMstrID;
                 }
 
             }
@@ -558,8 +557,6 @@ namespace MediaLibrary.Intranet.Web.Services
                     string GetRoleOptions = reader3.GetString(0);
                     roleOptions.Add(GetRoleOptions);
                 }
-
-                return roleOptions;
 
             }
             catch (Exception ex)
@@ -617,7 +614,6 @@ namespace MediaLibrary.Intranet.Web.Services
                 while (reader.Read())
                 {
                     userid = reader.GetString(0);
-                    return userid;
                 }
 
             }
@@ -644,10 +640,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     string role = reader.GetString(0);
                     userRole.Add(role);
-
-                   
                 }
-                return userRole;
             }
             catch (Exception ex)
             {

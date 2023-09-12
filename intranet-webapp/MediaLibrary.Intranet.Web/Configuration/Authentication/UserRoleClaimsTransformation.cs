@@ -156,9 +156,6 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 }
 
             }
-                Debug.WriteLine("Role for me1: " + principal.HasClaim("Role","Admin"));
-                Debug.WriteLine("Role for me2: " + principal.HasClaim("Role", "User"));
-                Debug.WriteLine("Role for me3: " + principal.HasClaim("Role", "Curator"));
             return principal;
         }
 
@@ -175,7 +172,6 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 while (reader.Read())
                 {
                     userid = reader.GetString(0);
-                    return userid;
                 }
             }
             catch (Exception ex)
