@@ -11,9 +11,9 @@ namespace MediaLibrary.Intranet.Web.Common
         public static class Queries
         {
             //Check if user is in table
-            public const string CheckUserInTable = "select * from ACMStaffInfo where staffemail = @email";
+            public const string CheckUserInTable = "select * from mlezmgr.ACMStaffInfo where staffemail = @email";
 
-            public const string Checkstatus ="select * from ACMStaffInfo where staffemail =@email and status =@status";
+            public const string Checkstatus ="select * from mlezmgr.ACMStaffInfo where staffemail = @email and status = @status";
         }
 
         public string CheckUserInTable()

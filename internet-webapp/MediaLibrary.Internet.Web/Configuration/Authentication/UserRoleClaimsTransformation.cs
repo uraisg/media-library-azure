@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -9,7 +7,6 @@ using MediaLibrary.Internet.Web.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.Data.SqlClient;
-using System.Security.Principal;
 using MediaLibrary.Intranet.Web.Common;
 
 namespace MediaLibrary.Internet.Web.Configuration
@@ -39,13 +36,13 @@ namespace MediaLibrary.Internet.Web.Configuration
 
                 bool CheckUserExist = await CheckUserInTable(conn, principal.GetUserGraphEmail());
                 // Skip adding roles if user's email address format is unexpected
-                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && CheckUserExist && CheckUserStatus && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
-                {
+                //if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && CheckUserExist && CheckUserStatus && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
+                //{
                     string role = UserRole.User;
                     var ci = new ClaimsIdentity();
                     ci.AddClaim(new Claim(ClaimTypes.Role, role));
                     principal.AddIdentity(ci);
-                }
+                //}
              
             }
 
@@ -92,7 +89,7 @@ namespace MediaLibrary.Internet.Web.Configuration
                 string sql = ACMQueries.Queries.Checkstatus;
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@email", email);
-                cmd.Parameters.AddWithValue("@status", "A");
+                cmd.Parameters.AddWithValue("@status", "Active");
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {

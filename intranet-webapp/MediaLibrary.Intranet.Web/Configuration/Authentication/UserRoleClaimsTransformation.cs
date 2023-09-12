@@ -66,9 +66,9 @@ namespace MediaLibrary.Intranet.Web.Configuration
     }*/
 
         private string mlizConnectionString = "";
-        private readonly ILogger<SessionHelper> _logger;
+        private readonly ILogger<UserRoleClaimsTransformation> _logger;
 
-        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<SessionHelper> logger)
+        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<UserRoleClaimsTransformation> logger)
         {
             mlizConnectionString = appSettings.Value.AzureSQLConnectionString;
             _logger = logger;
@@ -156,7 +156,9 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 }
 
             }
-
+                Debug.WriteLine("Role for me1: " + principal.HasClaim("Role","Admin"));
+                Debug.WriteLine("Role for me2: " + principal.HasClaim("Role", "User"));
+                Debug.WriteLine("Role for me3: " + principal.HasClaim("Role", "Curator"));
             return principal;
         }
 
@@ -192,7 +194,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 string sql = ACMQueries.Queries.GetAdminRole;
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@userid", userid);
-                cmd.Parameters.AddWithValue("@status", "A");
+                cmd.Parameters.AddWithValue("@status", "Active");
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {

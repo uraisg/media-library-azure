@@ -64,6 +64,8 @@ namespace MediaLibrary.Intranet.Web
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
             services.AddSingleton<MediaSearchService>();
             services.AddSingleton<ItemService>();
+            services.AddSingleton<ACMUserRoleService>();
+            services.AddSingleton<UserService>();
             services.AddTransient<GraphService>();
         }
 
