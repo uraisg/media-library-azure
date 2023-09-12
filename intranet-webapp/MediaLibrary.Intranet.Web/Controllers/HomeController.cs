@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaLibrary.Intranet.Web.Controllers
 {
-    [Authorize(Roles = UserRole.Admin + "," + UserRole.User)]
+    [Authorize(Roles = UserRole.Admin + "," + UserRole.Curator + "," + UserRole.User)]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

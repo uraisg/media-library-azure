@@ -9,7 +9,7 @@ namespace MediaLibrary.Intranet.Web.Common
         public static class Queries
         {
             //scheduleservice for acm to send emails 
-            public const string GetStaffInfo = "SELECT staffEmail, status, firstReminderSent, secondReminderSent, thirdReminderSent, lastLogin,si.createddate FROM mlizmgr.acmStaffInfo si left join mlizmgr.acmstafflogin sp ON si.userid = sp.userid left join mlizmgr.acmSession ss ON si.userid = ss.userid";
+            public const string GetStaffInfo = "SELECT si.userid, staffEmail, status, firstReminderSent, secondReminderSent, thirdReminderSent, lastLogin,si.createddate FROM mlizmgr.acmStaffInfo si left join mlizmgr.acmstafflogin sp ON si.userid = sp.userid left join mlizmgr.acmSession ss ON si.userid = ss.userid";
             public const string UpdateReminderSent1 = "UPDATE mlizmgr.acmstafflogin SET FirstReminderSent = 'Yes' FROM mlizmgr.acmstafflogin sp left join mlizmgr.acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
             public const string UpdateReminderSent2 = "UPDATE mlizmgr.acmstafflogin SET SecondReminderSent = 'Yes' FROM mlizmgr.acmstafflogin sp left join mlizmgr.acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
             public const string UpdateReminderSent3 = "UPDATE mlizmgr.acmstafflogin SET ThirdReminderSent = 'Yes' FROM mlizmgr.acmstafflogin sp left join mlizmgr.acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
@@ -17,6 +17,8 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetAdminEmails = "select staffemail from mlizmgr.ACMStaffInfo si left join mlizmgr.acmroleuser ru on si.userid = ru.userid where ru.RoleMstrID =1 ";
             public const string UpdateServiceSuspendedDate = "UPDATE mlizmgr.acmstafflogin SET suspendeddate = @suspendedDate,LastUpdatedBy = @lastupdated WHERE userid = @userid";
             public const string updateServiceStatus = "UPDATE mlizmgr.ACMStaffInfo SET status = 'Suspended' WHERE staffEmail = @staffEmail";
+            public const string GetSessionInfo = "select userid, MAX(lastlogin) as max_lastlogin from mlizmgr.ACMSession group by userid";
+            public const string SeedLoginProfile = "INSERT INTO mlizmgr.acmStaffLogin (UserID, FirstReminderSent, SecondReminderSent, ThirdReminderSent, SuspendedDate, LastUpdatedBy, CreatedBy, CreatedDate) VALUES (@userid, @firstremindersent, @secondremindersent, @thirdremindersent, @suspendeddate, @lastupdatedby, @createdby, @createddate);";
 
             //query for user list page -activate and suspend user
             public const string GetAllUsers = "select si.userid, staffname, staffemail, deptname, groupname, status, lastlogin, suspendeddate from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMSession ses on si.UserID = ses.UserID inner join mlizmgr.ACMGroupMaster gm on si.GroupID = gm.GroupID inner join mlizmgr.ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID";
@@ -67,6 +69,7 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetAllStaffInfo = "select * from mlizmgr.ACMStaffInfo";
             public const string QueryStaffSessionRecords = "select count(*) from mlizmgr.ACMSession where userid = @userid";
         }
+
         public string GetUGettUserIDIAMInfo()
         {
             return Queries.GettUserID;
@@ -107,47 +110,38 @@ namespace MediaLibrary.Intranet.Web.Common
         {
             return Queries.UpdateReminderSent3;
         }
-
         public string UpdateStatus()
         {
             return Queries.UpdateStatus;
         }
-
         public string UpdateAuditLog()
         {
             return Queries.UpdateAuditLog;
         }
-
         public string CheckuserRole()
         {
             return Queries.CheckuserRole;
         }
-
         public string GetTotalCountUserRole()
         {
             return Queries.GetTotalCountUserRole;
         }
-
         public string GetAllUserRole()
         {
             return Queries.GetAllUserRole;
         }
-
         public string AddRoleUser()
         {
             return Queries.AddRoleUser;
         }
-
         public string GetRoleBasedOfUser()
         {
             return Queries.GetRoleBasedOfUser;
         }
-
         public string UpdateServiceSuspendedDate()
         {
             return Queries.UpdateServiceSuspendedDate;
         }
-
         public string updateServiceStatus()
         {
             return Queries.updateServiceStatus;
@@ -164,7 +158,6 @@ namespace MediaLibrary.Intranet.Web.Common
         {
             return Queries.GetUIAMGroupInfo;
         }
-
         public string GetACMGroupInfo()
         {
             return Queries.GetACMGroupInfo;
@@ -177,13 +170,10 @@ namespace MediaLibrary.Intranet.Web.Common
         {
             return Queries.GetUIAMGroupID;
         }
-
-
         public string GetUIAMDeptInfo()
         {
             return Queries.GetUIAMDeptInfo;
         }
-
         public string GetACMDeptInfo()
         {
             return Queries.GetACMDeptInfo;
@@ -192,7 +182,6 @@ namespace MediaLibrary.Intranet.Web.Common
         {
             return Queries.InsertDeptData;
         }
-
         public string GetUIAMStaffInfo()
         {
             return Queries.GetUIAMStaffInfo;
@@ -209,10 +198,13 @@ namespace MediaLibrary.Intranet.Web.Common
         {
             return Queries.UpdateStaffData;
         }
-
         public string SeedLoginInfoSession()
         {
             return Queries.SeedLoginInfoSession;
+        }
+        public string SeedLoginProfile()
+        {
+            return Queries.SeedLoginProfile;
         }
         public string GetAllStaffInfo()
         {
@@ -221,6 +213,10 @@ namespace MediaLibrary.Intranet.Web.Common
         public string QueryStaffSessionRecords()
         {
             return Queries.QueryStaffSessionRecords;
+        }
+        public string GetSessionInfo()
+        {
+            return Queries.GetSessionInfo;
         }
     }
 }

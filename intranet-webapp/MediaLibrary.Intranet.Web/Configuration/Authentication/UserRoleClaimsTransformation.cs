@@ -80,23 +80,58 @@ namespace MediaLibrary.Intranet.Web.Configuration
             {
                 string email = principal.GetUserGraphEmail();
                 using SqlConnection conn = new SqlConnection(mlizConnectionString);
+                string userid = "";
+                bool CheckUserExist = false;
+                List<string> roleList = new List<string>();
 
                 conn.Open();
-                //gets userid
-                var userid = await GetUserID(conn, email);
+
+                //gets userid               
+                try
+                {
+                    userid = await GetUserID(conn, email);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.ToString());
+                }
+
                 //checks role access based off userid
-                List<string> roleList = await GetRoleList(conn, userid);
+                try
+                {
+                    roleList = await GetRoleList(conn, userid);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.ToString());
+                }
 
                 //Inserts a login session
-                //string ssid = HttpContext.Session.Id;
-                string ssid = "N/A";
+                try
+                {
+                    //string ssid = HttpContext.Session.Id;
+                    string ssid = "N/A";
 
-                //SessionHelper sh = new SessionHelper(ssid, userid);
-                //sh.insertSession();
-                await InsertLoginSession(conn, userid, ssid);                              
+                    //SessionHelper sh = new SessionHelper(ssid, userid);
+                    //sh.insertSession();
+                    await InsertLoginSession(conn, userid, ssid);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.ToString());
+                }
+
 
                 // Check if email is valid (in staff table)
-                bool CheckUserExist =await CheckUserInTable(conn, email);
+                try
+                {
+                    CheckUserExist = await CheckUserInTable(conn, email);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.ToString());
+                }               
+
                 conn.Close();
 
                 var ci = new ClaimsIdentity();
@@ -104,13 +139,13 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 {
                     if(roleList.Count > 0)
                     {
-                        if (roleList.Contains(UserRole.Admin))
-                        {
-                            ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.Admin));
-                        }
                         if (roleList.Contains(UserRole.Curator))
                         {
                             ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.Curator));
+                        }
+                        if (roleList.Contains(UserRole.Admin))
+                        {
+                            ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.Admin));
                         }
                     }                    
                     else
@@ -119,12 +154,13 @@ namespace MediaLibrary.Intranet.Web.Configuration
                     }
                     principal.AddIdentity(ci);
                 }
+
             }
 
             return principal;
         }
 
-        private static async Task<string> GetUserID(SqlConnection conn, string email)
+        private async Task<string> GetUserID(SqlConnection conn, string email)
         {
             string userid = "";
             try
@@ -142,13 +178,13 @@ namespace MediaLibrary.Intranet.Web.Configuration
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
                 
             }
             return userid;
         }
 
-        private static async Task<List<string>> GetRoleList(SqlConnection conn, string userid)
+        private async Task<List<string>> GetRoleList(SqlConnection conn, string userid)
         {
             List<string> roleList = new List<string>();
             try
@@ -171,12 +207,12 @@ namespace MediaLibrary.Intranet.Web.Configuration
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
             return roleList;
         }
 
-        private static async Task<bool> CheckUserInTable(SqlConnection conn, string email)
+        private async Task<bool> CheckUserInTable(SqlConnection conn, string email)
         {
             bool userexist = false;
             try
@@ -199,7 +235,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogError(ex.ToString());
             }
             return userexist;
         }

@@ -28,9 +28,9 @@ namespace MediaLibrary.Intranet.Web.Controllers
         public IActionResult Index()
         {
             bool isAdmin = User.IsInRole(UserRole.Admin);
-   
-            if (isAdmin)
-                
+            bool isCurator = User.IsInRole(UserRole.Curator);
+
+            if (isAdmin || isCurator)                
             {
                 bool CheckAdmin = true;
                 ViewData["userRole"] = CheckAdmin;
@@ -65,8 +65,8 @@ namespace MediaLibrary.Intranet.Web.Controllers
 
         ViewData["mediaId"] = id;
 
-        ViewData["showEditActions"] = isCurator || isAuthor;
-        ViewData["showDelActions"] = isCurator || (isAuthor && isOneDayValid);
+        ViewData["showEditActions"] = isAdmin || isCurator || isAuthor;
+        ViewData["showDelActions"] = isAdmin || isCurator || (isAuthor && isOneDayValid);
         return View();
         }
 
@@ -83,7 +83,7 @@ namespace MediaLibrary.Intranet.Web.Controllers
         // Get item info and check if user is author
         bool isAuthor = (await GetItemAuthorAsync(id)) == User.GetUserGraphEmail();
 
-        if (isCurator || isAuthor)
+        if (isAdmin || isCurator || isAuthor)
         {
             ViewData["mediaId"] = id;
             return View();

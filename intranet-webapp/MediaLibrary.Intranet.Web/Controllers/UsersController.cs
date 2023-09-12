@@ -19,7 +19,6 @@ namespace MediaLibrary.Intranet.Web.Controllers
         public IActionResult Index()
         {
             bool isAdmin = User.IsInRole(UserRole.Admin);
-            bool isCurator = User.IsInRole(UserRole.Curator);
 
             if (isAdmin)
 

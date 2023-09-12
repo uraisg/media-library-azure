@@ -60,6 +60,7 @@ namespace MediaLibrary.Intranet.Web
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHttpClient();
             services.AddHostedService<ScheduledService>();
+            services.AddHostedService<ACMScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
             services.AddSingleton<MediaSearchService>();
             services.AddSingleton<ItemService>();

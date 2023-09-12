@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Graph;
 using Newtonsoft.Json;
 
 
@@ -10,23 +11,31 @@ namespace MediaLibrary.Intranet.Web.Models
 {
     public class ACMCustomStaffTable
     {
+        public string UserID { get; set; }
         public string StaffEmail { get; set; }
         public string Status { get; set; }
         public string FirstReminderSent { get; set; }
         public string SecondReminderSent { get; set; }
         public string ThirdReminderSent { get; set; }
-        public DateTime LastLogin { get; set; }
-        public DateTime CreatedDate { get; set; }
-
-        public ACMCustomStaffTable(string StaffEmail, string Status,string FirstReminderSent, string SecondReminderSent, string ThirdReminderSent, DateTime LastLogin,DateTime CreatedDate)
+        public ACMCustomStaffTable(string UserID, string StaffEmail, string Status, string FirstReminderSent, string SecondReminderSent, string ThirdReminderSent)
         {
+            this.UserID = UserID;
             this.StaffEmail = StaffEmail;
             this.Status = Status;
             this.FirstReminderSent = FirstReminderSent;
             this.SecondReminderSent = SecondReminderSent;
             this.ThirdReminderSent = ThirdReminderSent;
+        }
+
+    }
+    public class ACMSessionTable
+    {
+        public string UserID { get; set; }
+        public DateTime LastLogin { get; set; }
+        public ACMSessionTable(string UserID, DateTime LastLogin)
+        {
+            this.UserID = UserID;
             this.LastLogin = LastLogin;
-            this.CreatedDate = CreatedDate;
         }
 
     }
@@ -41,9 +50,7 @@ namespace MediaLibrary.Intranet.Web.Models
         public string DIVISION_ID { get; set; }
         public string DIVISION_DESCRIPTION { get; set; }
         public string SECTION_ID { get; set; }
-
         public string SECTION_DESCRIPTION { get; set; }
-
         public UIAMInfo(string USER_ID, string EMAIL_ID, string FULL_NAME, string DESIGNATION, string DEL_IND, DateTime LAST_SERVICE_DATE, string DIVISION_ID,string DIVISION_DESCRIPTION, string SECTION_ID,string SECTION_DESCRIPTION)
         {
             this.USER_ID = USER_ID;
@@ -63,7 +70,6 @@ namespace MediaLibrary.Intranet.Web.Models
     {
         public string GroupID { get; set; }
         public string GroupName { get; set; }
-
         public UIAMGroupInfo(string GroupID, string GroupName)
         {
             this.GroupID = GroupID;
@@ -74,7 +80,6 @@ namespace MediaLibrary.Intranet.Web.Models
     public class ACMGroupInfo
     {
         public string GroupName { get; set; }
-
         public ACMGroupInfo(string GroupName)
         {
             this.GroupName = GroupName;
@@ -84,9 +89,7 @@ namespace MediaLibrary.Intranet.Web.Models
     {
         public string DeptID { get; set; }
         public string DeptName { get; set; }
-
         public string groupid { get; set; }
-
         public UIAMDeptInfo(string DeptID, string DeptName, string groupid)
         {
             this.DeptID = DeptID;
@@ -98,7 +101,6 @@ namespace MediaLibrary.Intranet.Web.Models
     public class ACMDeptInfo
     {
         public string DeptName { get; set; }
-
         public ACMDeptInfo(string DeptName)
         {
             this.DeptName = DeptName;
@@ -115,7 +117,6 @@ namespace MediaLibrary.Intranet.Web.Models
         public DateTime LAST_SERVICE_DATE { get; set; }
         public string DIVISION_ID { get; set; }
         public string SECTION_ID { get; set; }
-
         public UIAMStaffInfo(string USER_ID, string EMAIL_ID, string FULL_NAME,string DESIGNATION,string DEL_IND,DateTime LAST_SERVICE_DATE,string DIVISION_ID,string SECTION_ID)
         {
             this.USER_ID = USER_ID;
@@ -132,7 +133,6 @@ namespace MediaLibrary.Intranet.Web.Models
     public class ACMStaffInformation1
     {
         public string UserID { get; set; }
-
         public ACMStaffInformation1(string UserID)
         {
             this.UserID = UserID;
