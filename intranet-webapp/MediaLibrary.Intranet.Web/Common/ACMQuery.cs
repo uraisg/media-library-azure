@@ -26,7 +26,7 @@ namespace MediaLibrary.Intranet.Web.Common
 
             //User role page
             public const string GetAllUserRole = "select si.userid, staffname, staffemail, deptname, groupname,rolename, lastlogin from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMSession ses on si.UserID = ses.UserID inner join mlizmgr.ACMGroupMaster gm on si.GroupID = gm.GroupID inner join mlizmgr.ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
-			public const string GetTotalCountUserRole = "SELECT COUNT(*) AS total_count from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMSession ses on si.UserID = ses.UserID inner join mlizmgr.ACMGroupMaster gm on si.GroupID = gm.GroupID inner join mlizmgr.ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
+            public const string GetTotalCountUserRole = "SELECT COUNT(*) AS total_count from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMSession ses on si.UserID = ses.UserID inner join mlizmgr.ACMGroupMaster gm on si.GroupID = gm.GroupID inner join mlizmgr.ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
             public const string CheckuserRole = "select rolename from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = @userid";
             public const string AddRoleUser = "Insert into mlizmgr.ACMRoleUser values (@userid,@rolemstrid, @createdby , @createddate)";
 
@@ -42,10 +42,10 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetACMDeptInfo = "select distinct deptname from mlizmgr.acmDeptMaster";
             public const string InsertDeptData = "insert into mlizmgr.acmDeptMaster values(@deptid, @deptname, @groupid, @createdby, @createddate)";
             public const string GetUIAMGroupID = "select DIVISION_ID where deptid = @SECTION_ID";
-            
+
 
             //UIAM - staffinfo table
-            public const string GetUIAMStaffInfo= "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID, SECTION_ID from v_uiam2_all_staff where user_id not like '%@%'";
+            public const string GetUIAMStaffInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID, SECTION_ID from v_uiam2_all_staff where user_id not like '%@%'";
             public const string GetACMStaffInfo = "select userid from mlizmgr.acmstaffinfo";
             public const string InsertStaffData = "insert into mlizmgr.acmstaffinfo values(@USER_ID, @EMAIL_ID, @FULL_NAME, @DESIGNATION, @DEL_IND, @LAST_SERVICE_DATE, @DIVISION_ID, @SECTION_ID, @createdby, @createddate)";
             public const string UpdateStaffData = "update mlizmgr.acmstaffinfo set status = @del_ind, lastservicedate = @last_service_date where userid = @user_id";
@@ -61,6 +61,11 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetUIAMInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID,DIVISION_DESCRIPTION, SECTION_ID,SECTION_DESCRIPTION from v_uiam2_all_staff where user_id not like '%@%'";
 
             public const string GettUserID = "select userid from mlizmgr.acmstaffinfo where staffemail =@email";
+
+            //Query that inserts login session for all staff, till 1 Oct 2023
+            public const string SeedLoginInfoSession = "INSERT INTO mlizmgr.acmSession (UserID, SessionID, IPAddress, LastLogin, LastLogout, CreatedBy, CreatedDate) VALUES (@userid, @sessionid, @ipaddress, @lastlogin, @lastlogout, @createdby, @createddate)";
+            public const string GetAllStaffInfo = "select * from mlizmgr.ACMStaffInfo";
+            public const string QueryStaffSessionRecords = "select count(*) from mlizmgr.ACMSession where userid = @userid";
         }
         public string GetUGettUserIDIAMInfo()
         {
@@ -118,15 +123,15 @@ namespace MediaLibrary.Intranet.Web.Common
             return Queries.CheckuserRole;
         }
 
-		public string GetTotalCountUserRole()
-		{
-			return Queries.GetTotalCountUserRole;
-		}
+        public string GetTotalCountUserRole()
+        {
+            return Queries.GetTotalCountUserRole;
+        }
 
-		public string GetAllUserRole()
-		{
-			return Queries.GetAllUserRole;
-		}
+        public string GetAllUserRole()
+        {
+            return Queries.GetAllUserRole;
+        }
 
         public string AddRoleUser()
         {
@@ -173,7 +178,7 @@ namespace MediaLibrary.Intranet.Web.Common
             return Queries.GetUIAMGroupID;
         }
 
-        
+
         public string GetUIAMDeptInfo()
         {
             return Queries.GetUIAMDeptInfo;
@@ -205,5 +210,17 @@ namespace MediaLibrary.Intranet.Web.Common
             return Queries.UpdateStaffData;
         }
 
+        public string SeedLoginInfoSession()
+        {
+            return Queries.SeedLoginInfoSession;
+        }
+        public string GetAllStaffInfo()
+        {
+            return Queries.GetAllStaffInfo;
+        }
+        public string QueryStaffSessionRecords()
+        {
+            return Queries.QueryStaffSessionRecords;
+        }
     }
 }

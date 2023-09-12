@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
-using System.Linq;
+using System.Net.Sockets;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using MediaLibrary.Intranet.Web.Common;
-using MediaLibrary.Intranet.Web.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
+using static System.Net.WebRequestMethods;
+using Microsoft.Extensions.Logging;
+using MediaLibrary.Intranet.Web.Models;
 
 namespace MediaLibrary.Intranet.Web.Configuration
 {
@@ -18,7 +21,9 @@ namespace MediaLibrary.Intranet.Web.Configuration
     /// UserRoleClaimsTransformation validates the ClaimsPrincipal and adds the appropriate Role claim.
     /// </summary>
     class UserRoleClaimsTransformation : IClaimsTransformation
-    {/*
+    {
+        //old code
+        /*
         private readonly IEnumerable<string> _adminUsers;
 
         private bool _hasTransformed = false;
@@ -61,41 +66,61 @@ namespace MediaLibrary.Intranet.Web.Configuration
     }*/
 
         private string mlizConnectionString = "";
+        private readonly ILogger<SessionHelper> _logger;
 
-        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings)
+        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<SessionHelper> logger)
         {
             mlizConnectionString = appSettings.Value.AzureSQLConnectionString;
+            _logger = logger;
         }
 
         public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
             if (!principal.HasClaim(claim => claim.Type == ClaimTypes.Role && claim.Value == "Admin" || claim.Value == "User" || claim.Value == "Curator"))
             {
-                Debug.WriteLine("checking claims...");
                 string email = principal.GetUserGraphEmail();
                 using SqlConnection conn = new SqlConnection(mlizConnectionString);
 
                 conn.Open();
+                //gets userid
                 var userid = await GetUserID(conn, email);
+                //checks role access based off userid
                 List<string> roleList = await GetRoleList(conn, userid);
 
                 //Inserts a login session
-               // await InsertLoginSession(conn, userid);    
+                //string ssid = HttpContext.Session.Id;
+                string ssid = "N/A";
+
+                //SessionHelper sh = new SessionHelper(ssid, userid);
+                //sh.insertSession();
+                await InsertLoginSession(conn, userid, ssid);                              
+
+                // Check if email is valid (in staff table)
+                bool CheckUserExist =await CheckUserInTable(conn, email);
                 conn.Close();
 
-                // Check if userid is in list of admins
-                bool CheckUserExist =await CheckUserInTable(conn, email);
                 var ci = new ClaimsIdentity();
                 if (CheckUserExist)
                 {
-                    foreach (string role in roleList)
+                    if(roleList.Count > 0)
                     {
-                        ci.AddClaim(new Claim(ClaimTypes.Role, role));
+                        if (roleList.Contains(UserRole.Admin))
+                        {
+                            ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.Admin));
+                        }
+                        if (roleList.Contains(UserRole.Curator))
+                        {
+                            ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.Curator));
+                        }
+                    }                    
+                    else
+                    {
+                        ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.User));
                     }
                     principal.AddIdentity(ci);
                 }
-
             }
+
             return principal;
         }
 
@@ -156,7 +181,6 @@ namespace MediaLibrary.Intranet.Web.Configuration
             bool userexist = false;
             try
             {
-                conn.Open();
                 string sql = ACMQueries.Queries.CheckUserExist;
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@email", email);
@@ -177,9 +201,47 @@ namespace MediaLibrary.Intranet.Web.Configuration
             {
                 Debug.WriteLine(ex);
             }
-            conn.Close();
             return userexist;
         }
 
+        private static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
+        }
+
+        private async Task InsertLoginSession(SqlConnection conn, string userid, string ssid)
+        {
+            try
+            {
+                string sql = ACMQueries.Queries.InsertLoginSession;
+                string ipaddress = GetLocalIPAddress();
+
+                DateTime lastlogout = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
+                DateTime timeNow = DateTime.Now;
+
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@userid", userid);
+                cmd.Parameters.AddWithValue("@sessionid", ssid);
+                cmd.Parameters.AddWithValue("@ipaddress", ipaddress);
+                cmd.Parameters.AddWithValue("@lastlogin", timeNow);
+                cmd.Parameters.AddWithValue("@lastlogout", lastlogout);
+                cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
+                cmd.Parameters.AddWithValue("@createddate", timeNow);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+        }
     }
 }

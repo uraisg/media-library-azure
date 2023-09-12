@@ -11,6 +11,7 @@ using NCrontab;
 using Microsoft.Data.SqlClient;
 using System.Net.Mail;
 using System.Net;
+using Microsoft.Graph;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
@@ -64,23 +65,73 @@ namespace MediaLibrary.Intranet.Web.Background
  
         private async Task ProcessACM()
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
-            using SqlConnection conn = new SqlConnection(acmConnectionString);
-            bool jobstatus = true;
 
+            //1. Queries UIAM view and seeds data into ACMStaffInfo
+            /*  try
+            {
+                //_logger.LogInformation("Syncing UIAM data");
+                string uiamConnectionString = _appSettings.UIAMConnectionString;
+                using SqlConnection conn = new SqlConnection(uiamConnectionString);
+                conn.Open();
+                await syncUIAMData(conn);
+                conn.Close();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while retrieving Staff list from UIAM View");
+            }*/
+
+            //2. Will seed in stafflogin per every entry in acmstaffinfo
             try
             {
+                string sql = "";
+                string userid = "";
+                List<string> allStaffInfo = new List<string>(); //contains list of all active staff userid's
+
+                string acmConnectionString = _appSettings.AzureSQLConnectionString;
+                using SqlConnection conn = new SqlConnection(acmConnectionString);
+
                 conn.Open();
-                
-                //_logger.LogInformation("Syncing UIAM data");
-                // Disabled UIAM part; this requires connection to UIAM GCC view
-                // await syncUIAMData();
+
+                //Gets list of acmstaffinfo for processing
+                sql = ACMQueries.Queries.GetAllStaffInfo;
+                allStaffInfo = await GetAllStaffInfo(sql, conn);
+
+                foreach (var i in allStaffInfo)
+                {
+                    userid = i;
+
+                    //Queries acmsession if this staff entry is already present
+                    sql = ACMQueries.Queries.QueryStaffSessionRecords;
+                    bool doesRecordExist = await queryStaffSessionRecords(sql, conn, userid);
+
+                    //Seeds in login session for this staff if entry is not present
+                    if (doesRecordExist == false)
+                    {
+                        sql = ACMQueries.Queries.SeedLoginInfoSession;
+                        await seedLoginInfoSession(sql, conn, userid);
+                    }
+                }
+                conn.Close();
+                _logger.LogInformation("Successfully processed stafflogin seeding batch job ");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+
+            //3. Checks staff (acmstaffinfo) for inactivity, and sends reminders
+            try
+            {
+                string acmConnectionString = _appSettings.AzureSQLConnectionString;
+                using SqlConnection conn = new SqlConnection(acmConnectionString);
+                bool jobstatus = true;
+                conn.Open();
 
                 _logger.LogInformation("Querying staff info..");
 
                 List<ACMCustomStaffTable> staffList = new List<ACMCustomStaffTable>();
-
-                // #1.LJ acmstaffinfo, acmsession, acmprofile data
+                // #1.LJ acmstaffinfo, acmsession, acmstafflogin data
                 try
                 {
                     string sql = ACMQueries.Queries.GetStaffInfo;
@@ -89,7 +140,7 @@ namespace MediaLibrary.Intranet.Web.Background
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Got exception while retriving Staff list");
+                    _logger.LogError(ex, "Exception while retrieving Staff list");
                     jobstatus = false;
                     return;
                 }
@@ -104,7 +155,6 @@ namespace MediaLibrary.Intranet.Web.Background
                         string staffEmail = i.StaffEmail;
 
                         //Get status
-
                         string status = i.Status;
 
                         //Get lastlogin
@@ -119,8 +169,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         //Get remindersent3
                         string thirdReminderSent = i.ThirdReminderSent;
 
-
-                        //Get createddate of staff's profile (to prevenet new staff sedning for < 90d)
+                        //Get createddate of staff's profile (to prevent new staff sending for < 90d)
                         DateTime staffCreatedDate= i.CreatedDate;
 
                         bool isReminder = true;
@@ -129,14 +178,12 @@ namespace MediaLibrary.Intranet.Web.Background
 
                         //applies 2 logic ,first is to check last login.Second is to give the user a grace period before auto suspend them.
 
-                        if (todayDate.Subtract(lastlogin).Days > 10 && todayDate.Subtract(staffCreatedDate).Days>89)
+                        if (todayDate.Subtract(lastlogin).Days > 10 && todayDate.Subtract(staffCreatedDate).Days>86)
                         {
-
                             // Only process the following actions if status is detected as active
                             if (status == "Active" || status == "A")
                             {
                                 string sql = "";
-
                                 // Checks remindersent - if null, send smtp and update table. if all not null, update a 'suspended'
                                 if (firstReminderSent == "")
                                 {
@@ -294,6 +341,7 @@ namespace MediaLibrary.Intranet.Web.Background
         private async Task<List<ACMCustomStaffTable>> GetStaffInfo(string sql, SqlConnection conn)
         {
             List<ACMCustomStaffTable> staffList = new List<ACMCustomStaffTable>();
+
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
@@ -356,6 +404,48 @@ namespace MediaLibrary.Intranet.Web.Background
             }
 
             return staffList;
+        }
+
+        private async Task<List<string>> GetAllStaffInfo(string sql, SqlConnection conn)
+        {
+            List<string> allStaffInfo = new List<string>();
+
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+                string userid = "";
+                string status = "";
+
+                while (reader.Read())
+                {
+                    //Get Status
+                    if (reader[4] != DBNull.Value)
+                    {
+                        status = reader.GetString(4);
+                    }
+
+                    if (status == "A")
+                    {
+                        //Gets UserID
+                        if (reader[0] != DBNull.Value)
+                        {
+                            userid = reader.GetString(0);
+                        }
+                    }
+
+                    //Adds to list, only for Active accounts
+                    allStaffInfo.Add(userid);
+                }
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+
+            return allStaffInfo;
         }
 
         private async Task UpdateReminderSent(string sql, SqlConnection conn, string staffEmail)
@@ -462,10 +552,10 @@ namespace MediaLibrary.Intranet.Web.Background
                 //Setting
                 var smtpClient = new SmtpClient()
                 {
-                    Host = "urasmtpiz.ura.gov.sg", //"smtp.gmail.com"
+                    Host = _appSettings.SMTPHost, //"smtp.gmail.com"
                     Port = 25, //587
                     EnableSsl = true,
-                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
+                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // used for devt testing
                     UseDefaultCredentials = true, // in ura intranet should set to true, devt false
                 };
 
@@ -492,7 +582,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         From = new MailAddress(From),
                         Subject = "Disabled Media Library Access",
-                        Body = "<h1>Please note that your Media Library access has been disabled due to 90 days inactivity. For reactivation, please look for Eng Yong/Rajimah. Thank you.</h1>",
+                        Body = "<h1>Please note that your Media Library access has been disabled due to 90 days inactivity. For reactivation, please look for [CS] Eng Yong/Rajimah. Thank you.</h1>",
                         IsBodyHtml = true,
                         Priority = MailPriority.High
                     };
@@ -514,28 +604,26 @@ namespace MediaLibrary.Intranet.Web.Background
             try
             {
                 string To = staffemails.Substring(0, staffemails.Length - 1);
-                string From = _appSettings.SMTPSenderEmail;
+                string From = "MediaLibrary_DoNotReply@ura.gov.sg"; //_appSettings.SMTPSenderEmail;
 
                 //Setting
                 var smtpClient = new SmtpClient()
                 {
-                    Host = "smtp.gmail.com", //urasmtpiz.ura.gov.sg
-                    Port = 587, //25
+                    Host = _appSettings.SMTPHost, //"smtp.gmail.com"
+                    Port = 25, //587
                     EnableSsl = true,
-                    Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
-                    UseDefaultCredentials = false, // in ura intranet should set to true
+                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
+                    UseDefaultCredentials = true, // in ura intranet should set to true
                 };
 
                 if (jobstatus == true)
                 {
-                    //Compose reminder notification email
                     var mailMessage = new MailMessage
                     {
                         From = new MailAddress(From),
-                        Subject = "Media Library 90 days batch job",
+                        Subject = "[Success] Media Library 90 days batch job",
                         Body = "<h1>The job has run successfully.</h1>",
                         IsBodyHtml = true,
-                        Priority = MailPriority.High
                     };
 
                     //Recipients
@@ -544,14 +632,12 @@ namespace MediaLibrary.Intranet.Web.Background
                 }
                 else
                 {
-                    //Compose disabled notification email
                     var mailMessage = new MailMessage
                     {
                         From = new MailAddress(From),
-                        Subject = "Media Library 90 days batch job",
+                        Subject = "[Error] Media Library 90 days batch job",
                         Body = "<h1>The job has failed.</h1>",
                         IsBodyHtml = true,
-                        Priority = MailPriority.High
                     };
 
                     //Recipients
@@ -566,13 +652,10 @@ namespace MediaLibrary.Intranet.Web.Background
 
         }
 
-        private async Task syncUIAMData()
+        private async Task syncUIAMData(SqlConnection conn)
         {
             try
             {
-                string uiamConnStr = _appSettings.UIAMConnectionString;
-                using SqlConnection conn = new SqlConnection(uiamConnStr);
-
                 //Get all the data and stored in a list
                 string sql = ACMQueries.Queries.GetUIAMInfo;
                 List<UIAMInfo> AllInfoList = await GetUIAMInfo(sql, conn);
@@ -595,7 +678,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         if (group1.GroupName != group2.GroupName)
                         {
-                            groupMatch = false;
+                            groupMatch = true;
                             groupid = group2.GroupID;
                             groupname = group2.GroupName;
                             break;
@@ -1120,5 +1203,69 @@ namespace MediaLibrary.Intranet.Web.Background
           
             return staffid;
         }
+
+        private async Task seedLoginInfoSession(string sql, SqlConnection conn, string userid)
+        {
+            DateTime lastlogin;
+            DateTime lastlogout = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
+
+            //If before 1 Oct 2023, will insert lastlogin as is, to allow users 3mths 1-time access
+            if (DateTime.Now < DateTime.Parse("20230930 00:00:00"))
+            {
+                lastlogin = DateTime.Parse("20230930 00:00:00");
+            }
+            else
+            {
+                lastlogin = DateTime.Now;
+            }
+
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@userid", userid);
+                cmd.Parameters.AddWithValue("@sessionid", "N/A");
+                cmd.Parameters.AddWithValue("@ipaddress", "N/A");
+                cmd.Parameters.AddWithValue("lastlogin", lastlogin);
+                cmd.Parameters.AddWithValue("lastlogout", lastlogout);
+                cmd.Parameters.AddWithValue("createdby", "SYSTEM");
+                cmd.Parameters.AddWithValue("createddate", DateTime.Now);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+                _logger.LogInformation("Seeded login session for staffid: " + userid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+        }
+
+        private async Task <bool> queryStaffSessionRecords(string sql, SqlConnection conn, string staffid)
+        {
+            bool result = true;
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@staffid", staffid);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int countResult = reader.GetInt32(0);
+                    if (countResult == 0)
+                    {
+                        result = false; // means entry not there 
+                    }
+
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+
+            return result;
+        }  
+
     }
 }

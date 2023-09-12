@@ -2,6 +2,7 @@
 using MediaLibrary.Intranet.Web.Common;
 using MediaLibrary.Intranet.Web.Configuration;
 using MediaLibrary.Intranet.Web.Services;
+using MediaLibrary.Intranet.Web.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
+using System;
+using System.Threading;
 
 namespace MediaLibrary.Intranet.Web
 {
@@ -44,18 +47,23 @@ namespace MediaLibrary.Intranet.Web
                     .Build();
             });
             services.AddCustomMvcConfig();
-
+            //For Session
+            /*services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+                options.IdleTimeout = TimeSpan.FromMinutes(60);
+            });
+            services.AddHttpContextAccessor();*/
             services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHttpClient();
             services.AddHostedService<ScheduledService>();
-            services.AddHostedService<ACMScheduledService>();
             services.AddSingleton<IGeoSearchHelper, GeoSearchHelper>();
             services.AddSingleton<MediaSearchService>();
             services.AddSingleton<ItemService>();
             services.AddTransient<GraphService>();
-            services.AddTransient<UserService>();
-            services.AddTransient<ACMUserRoleService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -89,7 +97,11 @@ namespace MediaLibrary.Intranet.Web
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.Use(async (context, next) =>
+            {
+                Thread.CurrentPrincipal = context.User;
+                await next(context);
+            });
             // Configure default Cache-Control headers that are applied to controllers/actions without a [ResponseCache] attribute set,
             // according to https://docs.microsoft.com/en-us/aspnet/core/performance/caching/middleware?view=aspnetcore-3.1#configuration
             app.Use(async (context, next) =>
@@ -99,6 +111,8 @@ namespace MediaLibrary.Intranet.Web
 
                 await next();
             });
+            //For Session
+            /*app.UseSession();*/
 
             app.UseEndpoints(endpoints =>
             {
@@ -111,6 +125,7 @@ namespace MediaLibrary.Intranet.Web
                     defaults: new { controller = "Gallery", action = "Index" });
                 endpoints.MapRazorPages();
             });
+
         }
     }
 }
