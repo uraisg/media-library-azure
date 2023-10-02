@@ -1,29 +1,28 @@
-﻿
-
-using System.Collections.Generic;
-using MediaLibrary.Internet.Web.Models;
-using Microsoft.Graph;
-
-namespace MediaLibrary.Intranet.Web.Common
+﻿namespace MediaLibrary.Internet.Web.Common
 {
     public class ACMQueries
     {
         public static class Queries
         {
             //Check if user is in table
-            public const string CheckUserInTable = "select * from mlezmgr.ACMStaffInfo where staffemail = @email";
+            public const string Checkstatus ="select * from mlizmgr.ACMStaffInfo where staffemail = @email and status = @status";
+            public const string GetUserID = "SELECT UserID FROM mlizmgr.acmStaffInfo where staffEmail=@staffEmail";
+            public const string InsertLoginSession = "INSERT INTO mlizmgr.acmSession (UserID, SessionID, IPAddress, LastLogin, LastLogout, CreatedBy, CreatedDate) VALUES (@userid, @sessionid, @ipaddress, @lastlogin, @lastlogout, @createdby, @createddate)";
 
-            public const string Checkstatus ="select * from mlezmgr.ACMStaffInfo where staffemail = @email and status = @status";
+            //ACMAuditLog related
+            public const string InsertAuditLog = "insert into mliz.acmauditlog (UserID, UserLastAction, CreatedBy, CreatedDate) VALUES (@userid, @userlastaction, @createdby, @createddate)";
         }
-
-        public string CheckUserInTable()
-        {
-            return Queries.CheckUserInTable;
-        }
-
         public string Checkstatus()
         {
             return Queries.Checkstatus;
+        }
+        public string GetUserID()
+        {
+            return Queries.GetUserID;
+        }
+        public string InsertAuditLog()
+        {
+            return Queries.InsertAuditLog;
         }
     }
 }

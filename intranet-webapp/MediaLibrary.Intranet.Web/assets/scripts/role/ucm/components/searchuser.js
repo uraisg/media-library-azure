@@ -84,7 +84,7 @@ export const SearchUser = () => {
 
         // Simulate a click on the download link
         downloadLink.click();
-
+        
         // Clean up
         URL.revokeObjectURL(downloadLink.href);
       })
@@ -106,7 +106,7 @@ export const SearchUser = () => {
             disabled={filterContext.disablesearch}
             onChange={handleSearch}
             onKeyPress={handleEnterSearch} />
-
+            
           <InputGroup.Append>
             <Button onClick={() => handleSearchBtn()} disabled={filterContext.disablesearch}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">

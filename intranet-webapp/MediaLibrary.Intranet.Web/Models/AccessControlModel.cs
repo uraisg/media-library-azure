@@ -79,9 +79,11 @@ namespace MediaLibrary.Intranet.Web.Models
 
     public class ACMGroupInfo
     {
+        public int GroupID { get; set; }
         public string GroupName { get; set; }
-        public ACMGroupInfo(string GroupName)
+        public ACMGroupInfo(int GroupID, string GroupName)
         {
+            this.GroupID= GroupID;
             this.GroupName = GroupName;
         }
     }
@@ -89,20 +91,22 @@ namespace MediaLibrary.Intranet.Web.Models
     {
         public string DeptID { get; set; }
         public string DeptName { get; set; }
-        public string groupid { get; set; }
-        public UIAMDeptInfo(string DeptID, string DeptName, string groupid)
+        public string Groupid { get; set; }
+        public UIAMDeptInfo(string DeptID, string DeptName, string Groupid)
         {
             this.DeptID = DeptID;
             this.DeptName = DeptName;
-            this.groupid = groupid;
+            this.Groupid = Groupid;
         }
     }
 
     public class ACMDeptInfo
     {
+        public int DeptID { get; set; }
         public string DeptName { get; set; }
-        public ACMDeptInfo(string DeptName)
+        public ACMDeptInfo(int DeptID, string DeptName)
         {
+            this.DeptID = DeptID;
             this.DeptName = DeptName;
         }
     }
@@ -115,9 +119,9 @@ namespace MediaLibrary.Intranet.Web.Models
         public string DESIGNATION { get; set; }
         public string DEL_IND { get; set; }
         public DateTime LAST_SERVICE_DATE { get; set; }
-        public string DIVISION_ID { get; set; }
-        public string SECTION_ID { get; set; }
-        public UIAMStaffInfo(string USER_ID, string EMAIL_ID, string FULL_NAME,string DESIGNATION,string DEL_IND,DateTime LAST_SERVICE_DATE,string DIVISION_ID,string SECTION_ID)
+        public string DIVISION_DESCRIPTION { get; set; }
+        public string SECTION_DESCRIPTION { get; set; }
+        public UIAMStaffInfo(string USER_ID, string EMAIL_ID, string FULL_NAME,string DESIGNATION,string DEL_IND,DateTime LAST_SERVICE_DATE,string DIVISION_DESCRIPTION, string SECTION_DESCRIPTION)
         {
             this.USER_ID = USER_ID;
             this.EMAIL_ID = EMAIL_ID;
@@ -125,8 +129,8 @@ namespace MediaLibrary.Intranet.Web.Models
             this.DESIGNATION = DESIGNATION;
             this.DEL_IND = DEL_IND;
             this.LAST_SERVICE_DATE = LAST_SERVICE_DATE;
-            this.DIVISION_ID = DIVISION_ID;
-            this.SECTION_ID = SECTION_ID;
+            this.DIVISION_DESCRIPTION = DIVISION_DESCRIPTION;
+            this.SECTION_DESCRIPTION = SECTION_DESCRIPTION;
         }
     }
 

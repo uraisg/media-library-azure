@@ -6,6 +6,10 @@ namespace MediaLibrary.Intranet.Web.Common
 {
     public class ACMQueries
     {
+        /// <summary>
+        /// Holds all sql queries for ACM usage
+        /// </summary>
+        
         public static class Queries
         {
             //scheduleservice for acm to send emails 
@@ -35,19 +39,18 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetRoleBasedOfUser = "select rolename from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = (select userid from mlizmgr.ACMStaffInfo where StaffEmail = @email)";
 
             //UIAM - group table
-            public const string GetUIAMGroupInfo = "select distinct DIVISION_ID, DIVISION_DESCRIPTION from v_uiam2_all_staff";
-            public const string GetACMGroupInfo = "select distinct groupName from mlizmgr.acmGroupMaster";
-            public const string InsertGroupData = "insert into mlizmgr.acmGroupMaster values(@groupid, @groupname, @createdby, @createddate)";
+            public const string GetUIAMGroupInfo = "select distinct DIVISION_ID, DIVISION_DESCRIPTION from UIAM2.UIAM2_ALL_STAFF";
+            public const string GetACMGroupInfo = "select distinct groupID, groupName from mlizmgr.ACMGroupMaster";
+            public const string InsertGroupData = "insert into mlizmgr.acmGroupMaster values(@groupname, @createdby, @createddate)";
 
             //UIAM - dept table
-            public const string GetUIAMDeptInfo = "select distinct SECTION_ID, SECTION_DESCRIPTION from v_uiam2_all_staff";
-            public const string GetACMDeptInfo = "select distinct deptname from mlizmgr.acmDeptMaster";
+            public const string GetUIAMDeptInfo = "select distinct SECTION_ID, SECTION_DESCRIPTION from UIAM2.UIAM2_ALL_STAFF";
+            public const string GetACMDeptInfo = "select distinct deptID, deptName from mlizmgr.ACMDeptMaster";
             public const string InsertDeptData = "insert into mlizmgr.acmDeptMaster values(@deptid, @deptname, @groupid, @createdby, @createddate)";
-            public const string GetUIAMGroupID = "select DIVISION_ID where deptid = @SECTION_ID";
-
+            public const string GetUIAMGroupID = "select DIVISION_ID where SECTION_ID = @SECTION_ID";
 
             //UIAM - staffinfo table
-            public const string GetUIAMStaffInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID, SECTION_ID from v_uiam2_all_staff where user_id not like '%@%'";
+            public const string GetUIAMStaffInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_DESCRIPTION, SECTION_DESCRIPTION from UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%' and DIVISION_ID is not null";
             public const string GetACMStaffInfo = "select userid from mlizmgr.acmstaffinfo";
             public const string InsertStaffData = "insert into mlizmgr.acmstaffinfo values(@USER_ID, @EMAIL_ID, @FULL_NAME, @DESIGNATION, @DEL_IND, @LAST_SERVICE_DATE, @DIVISION_ID, @SECTION_ID, @createdby, @createddate)";
             public const string UpdateStaffData = "update mlizmgr.acmstaffinfo set status = @del_ind, lastservicedate = @last_service_date where userid = @user_id";
@@ -60,7 +63,7 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string CheckUserExist = "select * from mlizmgr.ACMStaffInfo where staffemail = @email";
 
             //UIAM - All info table
-            public const string GetUIAMInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID,DIVISION_DESCRIPTION, SECTION_ID,SECTION_DESCRIPTION from v_uiam2_all_staff where user_id not like '%@%'";
+            public const string GetUIAMInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID,DIVISION_DESCRIPTION, SECTION_ID,SECTION_DESCRIPTION from UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%'";
 
             public const string GettUserID = "select userid from mlizmgr.acmstaffinfo where staffemail =@email";
 
@@ -68,6 +71,9 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string SeedLoginInfoSession = "INSERT INTO mlizmgr.acmSession (UserID, SessionID, IPAddress, LastLogin, LastLogout, CreatedBy, CreatedDate) VALUES (@userid, @sessionid, @ipaddress, @lastlogin, @lastlogout, @createdby, @createddate)";
             public const string GetAllStaffInfo = "select * from mlizmgr.ACMStaffInfo";
             public const string QueryStaffSessionRecords = "select count(*) from mlizmgr.ACMSession where userid = @userid";
+
+            //ACMAuditLog related
+            public const string InsertAuditLog = "insert into mliz.acmauditlog (UserID, UserLastAction, CreatedBy, CreatedDate) VALUES (@userid, @userlastaction, @createdby, @createddate)";
         }
 
         public string GetUGettUserIDIAMInfo()
@@ -217,6 +223,10 @@ namespace MediaLibrary.Intranet.Web.Common
         public string GetSessionInfo()
         {
             return Queries.GetSessionInfo;
+        }
+        public string InsertAuditLog()
+        {
+            return Queries.InsertAuditLog;
         }
     }
 }

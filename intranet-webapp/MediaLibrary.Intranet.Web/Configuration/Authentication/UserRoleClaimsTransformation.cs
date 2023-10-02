@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net;
 using System.Security.Claims;
@@ -22,55 +21,12 @@ namespace MediaLibrary.Intranet.Web.Configuration
     /// </summary>
     class UserRoleClaimsTransformation : IClaimsTransformation
     {
-        //old code
-        /*
-        private readonly IEnumerable<string> _adminUsers;
-
-        private bool _hasTransformed = false;
-        private readonly string _acmConnectionString;
-        string useremail;
-        string sql;
-
-        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings)
-        {
-            var adminUsersStr = appSettings.Value.AdminUsers;
-            _adminUsers = string.IsNullOrEmpty(adminUsersStr)
-                ? Enumerable.Empty<string>()
-                : adminUsersStr.Split(',').Select(x => x.Trim()).ToHashSet();
-
-            _acmConnectionString = appSettings.Value.AzureSQLConnectionString;
-        }
-        public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
-        {
-            string role = "";
-
-            if (!_hasTransformed)
-            {
-                _hasTransformed = true;
-
-                // Skip adding roles if user's email address format is unexpected
-                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
-                {
-                    // Check if user's email address is in list of admins
-                    string role = _adminUsers.Contains(principal.GetUserGraphEmail())
-                        ? UserRole.Admin
-                        : UserRole.User;
-                    var ci = new ClaimsIdentity();
-                    ci.AddClaim(new Claim(ClaimTypes.Role, role));
-                    principal.AddIdentity(ci);
-                }
-            }
-
-            return principal;
-        }
-    }*/
-
         private string mlizConnectionString = "";
         private readonly ILogger<UserRoleClaimsTransformation> _logger;
 
         public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<UserRoleClaimsTransformation> logger)
         {
-            mlizConnectionString = appSettings.Value.AzureSQLConnectionString;
+            mlizConnectionString = appSettings.Value.intranetmlizconndb;
             _logger = logger;
         }
 
@@ -86,7 +42,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
 
                 conn.Open();
 
-                //gets userid               
+                //Gets userid               
                 try
                 {
                     userid = await GetUserID(conn, email);
@@ -115,6 +71,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
                     //SessionHelper sh = new SessionHelper(ssid, userid);
                     //sh.insertSession();
                     await InsertLoginSession(conn, userid, ssid);
+                    await InsertAuditlog(conn, userid);
                 }
                 catch (Exception ex)
                 {
@@ -269,6 +226,28 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 cmd.Parameters.AddWithValue("@lastlogout", lastlogout);
                 cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
                 cmd.Parameters.AddWithValue("@createddate", timeNow);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+        }
+
+        private async Task InsertAuditlog(SqlConnection conn, string userid)
+        {
+            try
+            {
+                string sql = ACMQueries.Queries.InsertAuditLog;
+
+                string userlastaction = ACMActions.Actions.UserAttemptsLogin;
+
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@userid", userid);
+                cmd.Parameters.AddWithValue("@userlastaction", userlastaction);
+                cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
+                cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
                 using SqlDataReader reader = cmd.ExecuteReader();
 
             }

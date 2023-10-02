@@ -23,8 +23,8 @@ namespace MediaLibrary.Intranet.Web.Background
         private CrontabSchedule _schedule;
         private DateTime _nextRun;
 
-        // Run at 10:00 am every day
-        private static readonly string Schedule = "0 10 * * *";
+        // Run at 10:00 pm every day
+        private static readonly string Schedule = "0 22 * * *";
 
         //for testing, every 3mins
         //private static readonly string Schedule = "*/3 * * * *";
@@ -44,7 +44,7 @@ namespace MediaLibrary.Intranet.Web.Background
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
-            _logger.LogInformation("ACM scheduled service has started running.. (10am every day)");
+            _logger.LogInformation("ACM scheduled service has started running.. (10pm every day)");
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -70,11 +70,10 @@ namespace MediaLibrary.Intranet.Web.Background
         {
 
             //1. Queries UIAM view and seeds data into ACMStaffInfo
-            //_logger.LogInformation("Initializing querying UIAM view and seeding staff data into ACMStaffInfo");
-            /*  try
+            _logger.LogInformation("Initializing querying UIAM view and seeding staff data into ACMStaffInfo");
+            try
             {
-                //_logger.LogInformation("Syncing UIAM data");
-                string uiamConnectionString = _appSettings.UIAMConnectionString;
+                string uiamConnectionString = _appSettings.intranetmlizconndb;
                 using SqlConnection conn = new SqlConnection(uiamConnectionString);
                 conn.Open();
                 await syncUIAMData(conn);
@@ -84,7 +83,7 @@ namespace MediaLibrary.Intranet.Web.Background
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception while retrieving Staff list from UIAM View");
-            }*/
+            }
 
             //2. Will seed in stafflogin per every entry in acmstaffinfo
             _logger.LogInformation("Initializing seeding missing stafflogin per every entry in acmstaffinfo");
@@ -94,7 +93,7 @@ namespace MediaLibrary.Intranet.Web.Background
                 string userid = "";
                 List<string> allStaffInfo = new List<string>(); //will hold list of all active staff userid's
 
-                string acmConnectionString = _appSettings.AzureSQLConnectionString;
+                string acmConnectionString = _appSettings.intranetmlizconndb;
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
 
                 conn.Open();
@@ -144,7 +143,7 @@ namespace MediaLibrary.Intranet.Web.Background
             _logger.LogInformation("Initializing checking staff for inactivity");
             try
             {
-                string acmConnectionString = _appSettings.AzureSQLConnectionString;
+                string acmConnectionString = _appSettings.intranetmlizconndb;
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 bool jobstatus = true;
                 conn.Open();
@@ -645,11 +644,11 @@ namespace MediaLibrary.Intranet.Web.Background
                 //Setting
                 var smtpClient = new SmtpClient()
                 {
-                    Host = _appSettings.SMTPHost, //"smtp.gmail.com",
-                    Port = 25, //587,
+                    Host = _appSettings.SMTPHost, //"smtp.gmail.com" 
+                    Port = _appSettings.SMTPPort, //587
                     EnableSsl = true,
-                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // used for devt testing
-                    UseDefaultCredentials = true, // in ura intranet should set to true, devt false
+                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // not needed in intranet
+                    UseDefaultCredentials = true, // in intranet should set to true, in devt false
                 };
 
                 if (isReminder == true)
@@ -697,16 +696,16 @@ namespace MediaLibrary.Intranet.Web.Background
             try
             {
                 string To = staffemails.Substring(0, staffemails.Length - 1);
-                string From = "MediaLibrary_DoNotReply@ura.gov.sg"; //_appSettings.SMTPSenderEmail;  
+                string From = "MediaLibrary_DoNotReply@ura.gov.sg"; //_appSettings.SMTPSenderEmail; 
 
                 //Setting
                 var smtpClient = new SmtpClient()
                 {
-                    Host = _appSettings.SMTPHost, //"smtp.gmail.com", 
-                    Port = 25, //587,
+                    Host = _appSettings.SMTPHost, //"smtp.gmail.com"
+                    Port = _appSettings.SMTPPort, //587
                     EnableSsl = true,
-                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // in ura intranet ,this one is not needed.
-                    UseDefaultCredentials = true, // in ura intranet should set to true, devt false
+                    //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // not needed in intranet
+                    UseDefaultCredentials = true, // in intranet should set to true, in devt false
                 };
 
                 if (jobstatus == true)
@@ -747,129 +746,147 @@ namespace MediaLibrary.Intranet.Web.Background
 
         private async Task syncUIAMData(SqlConnection conn)
         {
+            string sql = "";
             try
             {
-                //Get all the data and stored in a list
-                string sql = ACMQueries.Queries.GetUIAMInfo;
-                List<UIAMInfo> AllInfoList = await GetUIAMInfo(sql, conn);
-
-                // append data to group table if not there
+                //================================================
+                //Append data to group table if not there
+                //================================================
                 sql = ACMQueries.Queries.GetUIAMGroupInfo;
-                List<UIAMGroupInfo> list = await GetUIAMGroupInfo(sql, conn);
+                List<UIAMGroupInfo> ulist = await GetUIAMGroupInfo(sql, conn);
 
                 sql = ACMQueries.Queries.GetACMGroupInfo;
-                List<ACMGroupInfo> list2 = await GetACMGroupInfo(sql, conn);
+                List<ACMGroupInfo> alist = await GetACMGroupInfo(sql, conn);
 
-                //Iterate ACM/UIAM table to insert new group 
-                foreach (var group1 in list2)
+                //Iterate UIAM/ACM table to insert new group 
+                foreach (var group1 in ulist)
                 {
                     bool groupMatch = false;
-                    string groupid = "";
-                    string groupname = "";
+                    string groupname = group1.GroupName;
 
-                    foreach (var group2 in list)
+                    //Check if there is already a record of groupname in acm table,
+                    //if there is, skip adding
+                    foreach (var group2 in alist)
                     {
-                        if (group1.GroupName != group2.GroupName)
+                        if (groupname == group2.GroupName)
                         {
-                            groupMatch = true;
-                            groupid = group2.GroupID;
-                            groupname = group2.GroupName;
+                            groupMatch = true;                           
                             break;
                         }
-                        else
-                        {
-                            groupMatch = true;
-                        }
                     }
+                    //No matches, will proceed to add
                     if (groupMatch == false)
                     {
                         sql = ACMQueries.Queries.InsertGroupData;
-                        await InsertGroupData(sql, conn, groupid, groupname);
+                        await InsertGroupData(sql, conn, groupname);
                     }
                 }
 
-                // append data to dept table if not there
-                //   sql = ACMQueries.Queries.GetUIAMDeptInfo;
-                //  List<UIAMDeptInfo> deptlist1 = await GetUIAMDeptInfo(sql, conn);
+                //=================================================
+                //Append data to dept table if not there
+                //================================================
+                sql = ACMQueries.Queries.GetUIAMDeptInfo;
+                List<UIAMDeptInfo> udlist = await GetUIAMDeptInfo(sql, conn);
 
                 sql = ACMQueries.Queries.GetACMDeptInfo;
-                List<ACMDeptInfo> acmdeptlist2 = await GetACMDeptInfo(sql, conn);
+                List<ACMDeptInfo> adlist = await GetACMDeptInfo(sql, conn);
 
-                foreach (var row in acmdeptlist2)
+                //Iterate UIAM/ACM table to insert new dept
+                foreach (var dept1 in udlist)
                 {
                     bool isMatch = false;
-                    string deptid = "";
-                    string deptname = "";
-                    string groupid = "";
+                    string deptID = dept1.DeptID;
+                    string deptName = dept1.DeptName;
+                    string groupID = "";
 
-                    foreach (var row2 in AllInfoList)
+                    //Check if there is already a record of deptname in acm table,
+                    //if there is, skip adding
+                    foreach (var dept2 in adlist)
                     {
-                        if (row.DeptName != row2.SECTION_DESCRIPTION)
-                        {
-                            isMatch = false;
-                            deptid = row2.SECTION_ID;
-                            deptname = row2.SECTION_DESCRIPTION;
-                            groupid = row2.DIVISION_ID;
-                            break;
-                        }
-                        else
+                        if (deptName == dept2.DeptName)
                         {
                             isMatch = true;
+                            break;
                         }
                     }
+                    //No matches, will proceed to add
                     if (isMatch == false)
                     {
+                        //Gets the GroupID for that DeptName
+                        sql = ACMQueries.Queries.GetUIAMGroupID;
+                        groupID = await GetUIAMGroupID(sql, conn, deptID);
+
+                        //Adds dept into acmdepttable
                         sql = ACMQueries.Queries.InsertDeptData;
-                        await InsertDeptData(sql, conn, deptid, deptname, groupid);
+                        await InsertDeptData(sql, conn, deptID, deptName, groupID);
                     }
                 }
 
-                // append data to staff table if not there
+                //=================================================
+                //Append data to staff table if not there
+                //================================================
                 sql = ACMQueries.Queries.GetUIAMStaffInfo;
-                List<UIAMStaffInfo> staffinfolist1 = await GetUIAMStaffInfo(sql, conn);
+                List<UIAMStaffInfo> ustaffinfolist = await GetUIAMStaffInfo(sql, conn);
 
                 sql = ACMQueries.Queries.GetACMStaffInfo;
-                List<ACMStaffInformation1> acmstaffinfolist2 = await GetACMStaffInfo(sql, conn);
+                List<ACMStaffInformation1> astaffinfolist = await GetACMStaffInfo(sql, conn);
 
-                foreach (var staff in acmstaffinfolist2)
+                //Gets an updated GroupID list from ACMGroupInfo table (for matching operations later)
+                sql = ACMQueries.Queries.GetACMGroupInfo;
+                alist = await GetACMGroupInfo(sql, conn);
+
+                //Gets an updated DeptID list from ACMGroupInfo table (for matching operations later)
+                sql = ACMQueries.Queries.GetACMDeptInfo;
+                adlist = await GetACMDeptInfo(sql, conn);
+
+                foreach (var staff1 in ustaffinfolist)
                 {
-                    bool staffinfoMatch = false;
-                    string userid = "";
-                    string emailid = "";
-                    string fullname = "";
-                    string designation = "";
-                    string del_ind = "";
-                    string staffgroupid = "";
-                    string staffdeptid = "";
-                    DateTime lastservicedate = default;
+                    bool staffExists = false;
+                    string userid = staff1.USER_ID;
+                    string emailid = staff1.EMAIL_ID;
+                    string fullname = staff1.FULL_NAME;
+                    string designation = staff1.DESIGNATION;
+                    string del_ind = staff1.DEL_IND;
+                    DateTime lastservicedate = staff1.LAST_SERVICE_DATE;
 
-                    foreach (var staff2 in staffinfolist1)
+                    //Check if there is already a record of deptname in acm table,
+                    //if there is, skip adding
+                    foreach (var staff2 in astaffinfolist)
                     {
-                        if (staff.UserID != staff2.USER_ID)
+                        if (userid == staff2.UserID)
                         {
-                            staffinfoMatch = false;
-                            userid = staff2.USER_ID;
-                            emailid = staff2.EMAIL_ID;
-                            fullname = staff2.FULL_NAME;
-                            designation = staff2.DESIGNATION;
-                            del_ind = staff2.DEL_IND;
-                            staffgroupid = staff2.DIVISION_ID;
-                            staffdeptid = staff2.SECTION_ID;
-                            lastservicedate = staff2.LAST_SERVICE_DATE;
+                            staffExists = true;
                             break;
                         }
-                        else
-                        {
-                            staffinfoMatch = true;
-                        }
-                    }
-
-                    if (staffinfoMatch == false)
+                    }                    
+                    if (staffExists == false)
                     {
+                        int staffgroupid = 0;
+                        int staffdeptid = 0;
+
+                        //For Group
+                        foreach (var groupRow in alist)
+                        {
+                            if (groupRow.GroupName == staff1.DIVISION_DESCRIPTION)
+                            {
+                                //Gets matching GroupID from ACMGroupInfo table
+                                staffgroupid = groupRow.GroupID;
+                            }
+                        }
+
+                        //For Dept
+                        foreach (var deptRow in adlist)
+                        {
+                            if (deptRow.DeptName == staff1.SECTION_DESCRIPTION)
+                            {
+                                //Gets matching DeptID from ACMGroupInfo table
+                                staffdeptid = deptRow.DeptID;
+                            }
+                        }
+
                         sql = ACMQueries.Queries.InsertStaffData;
                         await InsertStaffInfoData(sql, conn, userid, emailid, fullname, designation, del_ind, lastservicedate, staffgroupid, staffdeptid);
                     }
-
                     else // update existing staff table data if there is change
                     {
                         if (del_ind != "A")
@@ -885,6 +902,7 @@ namespace MediaLibrary.Intranet.Web.Background
                 _logger.LogError(ex.ToString());
             }
         }
+
         private async Task<List<UIAMInfo>> GetUIAMInfo(string sql, SqlConnection conn)
         {
             List<UIAMInfo> UIAMAlllist = new List<UIAMInfo>();
@@ -905,6 +923,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         EmailID = reader.GetString(1);
                     }
+
                     string FullName = "";
                     if (reader[2] != DBNull.Value)
                     {
@@ -916,6 +935,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         DESIGNATION = reader.GetString(3);
                     }
+
                     string DEL_IND = "";
                     if (reader[4] != DBNull.Value)
                     {
@@ -943,13 +963,13 @@ namespace MediaLibrary.Intranet.Web.Background
                     string SECTION_ID = "";
                     if (reader[8] != DBNull.Value)
                     {
-                        SECTION_ID = reader.GetString(7);
+                        SECTION_ID = reader.GetString(8);
                     }
 
                     string SECTION_DESCRIPTION = "";
                     if (reader[9] != DBNull.Value)
                     {
-                        SECTION_DESCRIPTION = reader.GetString(7);
+                        SECTION_DESCRIPTION = reader.GetString(9);
                     }
                     //Adds to list
                     UIAMAlllist.Add(new UIAMInfo(UserID, EmailID, FullName, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID, DIVISION_DESCRIPTION, SECTION_ID, SECTION_DESCRIPTION));
@@ -964,18 +984,15 @@ namespace MediaLibrary.Intranet.Web.Background
 
         }
 
-
         private async Task<List<UIAMGroupInfo>> GetUIAMGroupInfo(string sql, SqlConnection conn)
         {
             List<UIAMGroupInfo> UIAMGrouplist = new List<UIAMGroupInfo>();
             try
             {
-
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-
                     string GroupID = "";
                     if (reader[0] != DBNull.Value)
                     {
@@ -1004,19 +1021,23 @@ namespace MediaLibrary.Intranet.Web.Background
             List<ACMGroupInfo> ACMGrouplist = new List<ACMGroupInfo>();
             try
             {
-
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
+                    int ACMGroupID = 0;
                     string ACMGroupName = "";
                     if (reader[0] != DBNull.Value)
                     {
-                        ACMGroupName = reader.GetString(0);
+                        ACMGroupID = reader.GetInt32(0);
+                    }
+                    if (reader[1] != DBNull.Value)
+                    {
+                        ACMGroupName = reader.GetString(1);
                     }
 
                     //Adds to list
-                    ACMGrouplist.Add(new ACMGroupInfo(ACMGroupName));
+                    ACMGrouplist.Add(new ACMGroupInfo(ACMGroupID, ACMGroupName));
                 }
             }
             catch (Exception ex)
@@ -1027,12 +1048,11 @@ namespace MediaLibrary.Intranet.Web.Background
 
         }
 
-        private async Task InsertGroupData(string sql, SqlConnection conn,string groupid,string groupname)
+        private async Task InsertGroupData(string sql, SqlConnection conn,string groupname)
         {
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@groupid", groupid);
                 cmd.Parameters.AddWithValue("@groupname", groupname);
                 cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
                 cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
@@ -1049,7 +1069,6 @@ namespace MediaLibrary.Intranet.Web.Background
             List<UIAMDeptInfo> UIAMDeptlist = new List<UIAMDeptInfo>();
             try
             {
-                string groupid = "";
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -1064,9 +1083,14 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         DeptName = reader.GetString(1);
                     }
+                    string GroupID = "";
+                    if (reader[2] != DBNull.Value)
+                    {
+                        GroupID = reader.GetString(2);
+                    }
 
                     //Adds to list
-                    UIAMDeptlist.Add(new UIAMDeptInfo(DeptID, DeptName,groupid));
+                    UIAMDeptlist.Add(new UIAMDeptInfo(DeptID, DeptName,GroupID));
                 }
             }
             catch (Exception ex)
@@ -1086,14 +1110,18 @@ namespace MediaLibrary.Intranet.Web.Background
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
+                    int ACMDeptID = 0;
                     string ACMDeptName = "";
                     if (reader[0] != DBNull.Value)
                     {
-                        ACMDeptName = reader.GetString(0);
+                        ACMDeptID = reader.GetInt32(0);
                     }
-
+                    if (reader[1] != DBNull.Value)
+                    {
+                        ACMDeptName = reader.GetString(1);
+                    }
                     //Adds to list
-                    ACMDeptlist.Add(new ACMDeptInfo(ACMDeptName));
+                    ACMDeptlist.Add(new ACMDeptInfo(ACMDeptID, ACMDeptName));
                 }
             }
             catch (Exception ex)
@@ -1126,7 +1154,6 @@ namespace MediaLibrary.Intranet.Web.Background
             List<UIAMStaffInfo> UIAMStafflist = new List<UIAMStaffInfo>();
             try
             {
-
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -1165,20 +1192,19 @@ namespace MediaLibrary.Intranet.Web.Background
                         LAST_SERVICE_DATE = reader.GetDateTime(5);
                     }
 
-                    string DIVISION_ID = "";
+                    string DIVISION_DESCRIPTION = "";
                     if (reader[6] != DBNull.Value)
                     {
-                        DIVISION_ID = reader.GetString(6);
+                        DIVISION_DESCRIPTION = reader.GetString(6);
                     }
-                    string SECTION_ID = "";
+                    string SECTION_DESCRIPTION = "";
                     if (reader[7] != DBNull.Value)
                     {
-                        SECTION_ID = reader.GetString(7);
+                        SECTION_DESCRIPTION = reader.GetString(7);
                     }
 
-
                     //Adds to list
-                    UIAMStafflist.Add(new UIAMStaffInfo(UserID, EmailID, FullName, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_ID, SECTION_ID));
+                    UIAMStafflist.Add(new UIAMStaffInfo(UserID, EmailID, FullName, DESIGNATION, DEL_IND, LAST_SERVICE_DATE, DIVISION_DESCRIPTION, SECTION_DESCRIPTION));
                 }
             }
             catch (Exception ex)
@@ -1214,7 +1240,7 @@ namespace MediaLibrary.Intranet.Web.Background
             return ACMStafflist;
         }
 
-        private async Task InsertStaffInfoData(string sql, SqlConnection conn,string userid,string email,string name,string designation,string DEL_IND,DateTime lastservicedate,string groupid,string deptid)
+        private async Task InsertStaffInfoData(string sql, SqlConnection conn,string userid,string email,string name,string designation,string DEL_IND,DateTime lastservicedate,int groupid,int deptid)
         {
             try
             {
@@ -1260,12 +1286,13 @@ namespace MediaLibrary.Intranet.Web.Background
             }
         }
 
-        private async Task<string> GetUIAMGroupID(string sql, SqlConnection conn)
+        private async Task<string> GetUIAMGroupID(string sql, SqlConnection conn, string DeptID)
         {
             string UIAMGroupID = "";
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@SECTION_ID", DeptID);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
