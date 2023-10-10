@@ -12,6 +12,8 @@ using Microsoft.Data.SqlClient;
 using System.Net.Mail;
 using System.Net;
 using Microsoft.Graph;
+using static Org.BouncyCastle.Math.EC.ECCurve;
+using Microsoft.Extensions.Configuration;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
@@ -31,7 +33,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
         private readonly AppSettings _appSettings;
         private readonly ILogger<ACMScheduledService> _logger;
-
+        private readonly IConfiguration Config;
 
         public ACMScheduledService(IOptions<AppSettings> appSettings, ILogger<ACMScheduledService> logger)
         {
@@ -73,7 +75,8 @@ namespace MediaLibrary.Intranet.Web.Background
             _logger.LogInformation("Initializing querying UIAM view and seeding staff data into ACMStaffInfo");
             try
             {
-                string uiamConnectionString = _appSettings.intranetmlizconndb;
+                //string uiamConnectionString = _appSettings.intranetmlizconndb;
+                string uiamConnectionString = Config.GetConnectionString("intranetmlizconndb");
                 using SqlConnection conn = new SqlConnection(uiamConnectionString);
                 conn.Open();
                 await syncUIAMData(conn);
@@ -93,7 +96,8 @@ namespace MediaLibrary.Intranet.Web.Background
                 string userid = "";
                 List<string> allStaffInfo = new List<string>(); //will hold list of all active staff userid's
 
-                string acmConnectionString = _appSettings.intranetmlizconndb;
+                //string acmConnectionString = _appSettings.intranetmlizconndb;
+                string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
 
                 conn.Open();
@@ -143,7 +147,8 @@ namespace MediaLibrary.Intranet.Web.Background
             _logger.LogInformation("Initializing checking staff for inactivity");
             try
             {
-                string acmConnectionString = _appSettings.intranetmlizconndb;
+                //string acmConnectionString = _appSettings.intranetmlizconndb;
+                string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 bool jobstatus = true;
                 conn.Open();

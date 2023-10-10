@@ -13,6 +13,7 @@ using Microsoft.Graph;
 using static System.Net.WebRequestMethods;
 using Microsoft.Extensions.Logging;
 using MediaLibrary.Intranet.Web.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace MediaLibrary.Intranet.Web.Configuration
 {
@@ -23,11 +24,14 @@ namespace MediaLibrary.Intranet.Web.Configuration
     {
         private string mlizConnectionString = "";
         private readonly ILogger<UserRoleClaimsTransformation> _logger;
+        private readonly IConfiguration Config;
 
-        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<UserRoleClaimsTransformation> logger)
+        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<UserRoleClaimsTransformation> logger, IConfiguration config)
         {
-            mlizConnectionString = appSettings.Value.intranetmlizconndb;
             _logger = logger;
+            Config = config;
+            //mlizConnectionString = appSettings.Value.intranetmlizconndb;
+            mlizConnectionString = Config.GetConnectionString("intranetmlizconndb");
         }
 
         public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)

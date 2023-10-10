@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using System.Diagnostics;
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using SqlKata;
 using System.Linq;
 using Microsoft.Graph;
-
+using Microsoft.Extensions.Configuration;
 
 namespace MediaLibrary.Intranet.Web.Services
 {
@@ -18,17 +17,20 @@ namespace MediaLibrary.Intranet.Web.Services
     {
         private readonly AppSettings _appSettings;
         private readonly ILogger<ACMUserRoleService> _logger;
+        private readonly IConfiguration Config;
 
 
-        public ACMUserRoleService(IOptions<AppSettings> appSettings, ILogger<ACMUserRoleService> logger)
+        public ACMUserRoleService(IOptions<AppSettings> appSettings, ILogger<ACMUserRoleService> logger, IConfiguration config)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
+            Config = config;
         }
 
         public Tuple<List<ACMStaffRoleResult>,int> GetAllUsersRoleByPage(UserRoleQuery user)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<ACMStaffRoleResult> ACMStaffRoleResults = new List<ACMStaffRoleResult>();
             int totalPage = 1;
             string searchQuery = user.SearchQuery;
@@ -246,7 +248,8 @@ namespace MediaLibrary.Intranet.Web.Services
         }
             public Tuple<List<string>, List<string>,List<string>> ACMDropdownOptions(UserRoleQuery userRole)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             dropdownoptions dropdownoptions = new dropdownoptions();
 
             List<string> options = new List<string>();
@@ -327,7 +330,8 @@ namespace MediaLibrary.Intranet.Web.Services
         }
         public List<DownloadUserRoleReport> GetUsersRoleReport(UserRoleQuery user)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<DownloadUserRoleReport> ACMStaffRoleResults = new List<DownloadUserRoleReport>();
      
             string searchQuery = user.SearchQuery;
@@ -425,7 +429,8 @@ namespace MediaLibrary.Intranet.Web.Services
         
         public void DeleteRoleById(string lastupdatedby, string userid,string userrole)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
             try
             {
@@ -450,7 +455,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void assignedRoleById(string lastupdatedby, string userid, string addrole)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
      
             try
@@ -513,7 +519,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         private int ACMGetRoleID(string rolename)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             int roleMstrID = 0;
             try
             {
@@ -541,8 +548,9 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public List<string> RoleOptions()
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
- 
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+
             List<string> roleOptions = new List<string>();
 
             try
@@ -568,7 +576,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void UpdateAuditLog(string email,string useraction ,DateTime date)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
 
             try
@@ -602,7 +611,8 @@ namespace MediaLibrary.Intranet.Web.Services
         }
         private string ACMGetUserID(string email)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             string userid = "";
             try
             {
@@ -627,7 +637,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public List<string> getuserrole(string email)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<string> userRole = new List<string>();
             try
             {

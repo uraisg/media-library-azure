@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using SqlKata;
 using System.Linq;
-
+using Microsoft.Extensions.Configuration;
 
 namespace MediaLibrary.Intranet.Web.Services
 {
@@ -19,16 +19,19 @@ namespace MediaLibrary.Intranet.Web.Services
     {
         private readonly AppSettings _appSettings;
         private readonly ILogger<UserService> _logger;
+        private readonly IConfiguration Config;
 
-    public UserService(IOptions<AppSettings> appSettings, ILogger<UserService> logger)
+    public UserService(IOptions<AppSettings> appSettings, ILogger<UserService> logger, IConfiguration config)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
+            Config = config;
         }
 
         public Tuple<List<ACMStaffInfoResult>,int>  GetAllUsersByPage(UserQuery user)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            // string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             ACMPage pagination = new ACMPage();
             List<ACMStaffInfoResult> staffInfoResults = new List<ACMStaffInfoResult>();
             string searchQuery = user.SearchQuery;
@@ -275,7 +278,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void updateStatusById(string status, DateTime todayDate, string lastupdatedby, string userid,string email)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
             try
             {
@@ -327,7 +331,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void UpdateAuditLog(string email,string status, DateTime date)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
 
             try
@@ -363,7 +368,8 @@ namespace MediaLibrary.Intranet.Web.Services
         }
         private string ACMGetUserID(string email)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             string userid = "";
             try
             {
@@ -389,7 +395,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public Tuple<List<string>, List<string>> ACMDropdownOptions(UserQuery userquery)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             dropdownoptions dropdownoptions = new dropdownoptions();
 
             List<string> options = new List<string>();
@@ -457,7 +464,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public List<DownloadUserReport> GetAllUsers(UserQuery user)
         {
-            string acmConnectionString = _appSettings.AzureSQLConnectionString;
+            //string acmConnectionString = _appSettings.intranetmlizconndb;
+            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<DownloadUserReport> data = new List<DownloadUserReport>();
             string searchQuery = user.SearchQuery;
 

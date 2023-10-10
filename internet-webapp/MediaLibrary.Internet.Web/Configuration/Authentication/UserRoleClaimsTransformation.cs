@@ -9,6 +9,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using System.Net;
+using Microsoft.Graph;
+using Microsoft.Extensions.Configuration;
 
 namespace MediaLibrary.Internet.Web.Configuration
 {
@@ -22,13 +24,14 @@ namespace MediaLibrary.Internet.Web.Configuration
         private string mlezSelectConn = "";
         private string mlezInsertConn = "";
         private readonly ILogger<UserRoleClaimsTransformation> _logger;
+        private readonly IConfiguration Config;
 
-        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<UserRoleClaimsTransformation> logger)
+        public UserRoleClaimsTransformation(IOptions<AppSettings> appSettings, ILogger<UserRoleClaimsTransformation> logger, IConfiguration config)
         {
-
-            mlezSelectConn = appSettings.Value.mlezappconn;
-            mlezInsertConn = appSettings.Value.mlezbatchconn;
             _logger = logger;
+            Config = config;
+            mlezSelectConn = Config.GetConnectionString("mlezappconn"); //appSettings.Value.mlezappconn;
+            mlezInsertConn = Config.GetConnectionString("mlezbatchconn"); //appSettings.Value.mlezbatchconn;           
         }
 
         public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
