@@ -35,12 +35,13 @@ namespace MediaLibrary.Intranet.Web.Background
         private readonly ILogger<ACMScheduledService> _logger;
         private readonly IConfiguration Config;
 
-        public ACMScheduledService(IOptions<AppSettings> appSettings, ILogger<ACMScheduledService> logger)
+        public ACMScheduledService(IOptions<AppSettings> appSettings, ILogger<ACMScheduledService> logger, IConfiguration config)
         {
             _schedule = CrontabSchedule.Parse(Schedule);
             _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
             _appSettings = appSettings.Value;
             _logger = logger;
+            Config = config;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -802,7 +803,8 @@ namespace MediaLibrary.Intranet.Web.Background
                     bool isMatch = false;
                     string deptID = dept1.DeptID;
                     string deptName = dept1.DeptName;
-                    string groupID = "";
+                    int groupID = 0;
+                    string groupname = "";
 
                     //Check if there is already a record of deptname in acm table,
                     //if there is, skip adding
@@ -817,9 +819,13 @@ namespace MediaLibrary.Intranet.Web.Background
                     //No matches, will proceed to add
                     if (isMatch == false)
                     {
-                        //Gets the GroupID for that DeptName
-                        sql = ACMQueries.Queries.GetUIAMGroupID;
-                        groupID = await GetUIAMGroupID(sql, conn, deptID);
+                        //Gets Group name
+                        sql = ACMQueries.Queries.GetUIAMGroupName;
+                        groupname = await GetUIAMGroupName(sql,conn,deptName);
+
+                        //Gets the Group ID (from ACMDB), based off group name
+                        sql = ACMQueries.Queries.GetACMGroupID;
+                        groupID = await GetACMGroupID(sql, conn, groupname);
 
                         //Adds dept into acmdepttable
                         sql = ACMQueries.Queries.InsertDeptData;
@@ -1136,7 +1142,7 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             return ACMDeptlist;
         }
-        private async Task InsertDeptData(string sql, SqlConnection conn,string deptid,string deptname, string groupid)
+        private async Task InsertDeptData(string sql, SqlConnection conn,string deptid,string deptname, int groupid)
         {
             try
             {
@@ -1290,18 +1296,18 @@ namespace MediaLibrary.Intranet.Web.Background
                 _logger.LogError(ex.ToString());
             }
         }
-
-        private async Task<string> GetUIAMGroupID(string sql, SqlConnection conn, string DeptID)
+        
+        private async Task<string> GetUIAMGroupName(string sql, SqlConnection conn, string deptname)
         {
-            string UIAMGroupID = "";
+            string uiamgroupname ="";
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@SECTION_ID", DeptID);
+                cmd.Parameters.AddWithValue("@deptname", deptname);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    UIAMGroupID = reader.GetString(0);
+                    uiamgroupname = reader.GetString(0);
                 }
             }
             catch (Exception ex)
@@ -1309,7 +1315,28 @@ namespace MediaLibrary.Intranet.Web.Background
                 _logger.LogError(ex.ToString());
             }
 
-            return UIAMGroupID;
+            return uiamgroupname;
+        }
+
+        private async Task<int> GetACMGroupID(string sql, SqlConnection conn, string groupname)
+        {
+            int acmgroupid = 0;
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@groupname", groupname);
+                using SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    acmgroupid = reader.GetInt32(0);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+
+            return acmgroupid;
         }
 
         private async Task<string> GetStaffIdByEmail(string sql, SqlConnection conn,string staffemail)
@@ -1337,18 +1364,8 @@ namespace MediaLibrary.Intranet.Web.Background
 
         private async Task seedLoginInfoSession(string sql, SqlConnection conn, string userid)
         {
-            DateTime lastlogin;
+            DateTime lastlogin = DateTime.Now;
             DateTime lastlogout = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
-
-            //If before 1 Oct 2023, will insert lastlogin as is, to allow users 3mths 1-time access
-            if (DateTime.Now < DateTime.Parse("30/09/2023")) //20230930 00:00:00.000
-            {
-                lastlogin = DateTime.Parse("30/09/2023");
-            }
-            else
-            {
-                lastlogin = DateTime.Now;
-            }
 
             try
             {
@@ -1356,10 +1373,10 @@ namespace MediaLibrary.Intranet.Web.Background
                 cmd.Parameters.AddWithValue("@userid", userid);
                 cmd.Parameters.AddWithValue("@sessionid", "N/A");
                 cmd.Parameters.AddWithValue("@ipaddress", "N/A");
-                cmd.Parameters.AddWithValue("lastlogin", lastlogin);
-                cmd.Parameters.AddWithValue("lastlogout", lastlogout);
-                cmd.Parameters.AddWithValue("createdby", "SYSTEM");
-                cmd.Parameters.AddWithValue("createddate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@lastlogin", lastlogin);
+                cmd.Parameters.AddWithValue("@lastlogout", lastlogout);
+                cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
+                cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
                 using SqlDataReader reader = cmd.ExecuteReader();
 
                 _logger.LogInformation("Seeded login session for staffid: " + userid);
@@ -1381,8 +1398,8 @@ namespace MediaLibrary.Intranet.Web.Background
                 cmd.Parameters.AddWithValue("@thirdremindersent", "");
                 cmd.Parameters.AddWithValue("@suspendeddate", "");
                 cmd.Parameters.AddWithValue("@lastupdatedby", "");
-                cmd.Parameters.AddWithValue("createdby", "SYSTEM");
-                cmd.Parameters.AddWithValue("createddate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
+                cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
                 using SqlDataReader reader = cmd.ExecuteReader();
 
             }
