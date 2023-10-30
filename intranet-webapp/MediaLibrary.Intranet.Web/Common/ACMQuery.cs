@@ -39,19 +39,19 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetRoleBasedOfUser = "select rolename from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = (select userid from mlizmgr.ACMStaffInfo where StaffEmail = @email)";
 
             //UIAM - group table
-            public const string GetUIAMGroupInfo = "select distinct DIVISION_ID, DIVISION_DESCRIPTION from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF";
+            public const string GetUIAMGroupInfo = "select distinct DIVISION_ID, DIVISION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF";
             public const string GetACMGroupInfo = "select distinct groupID, groupName from mlizmgr.ACMGroupMaster";
             public const string InsertGroupData = "insert into mlizmgr.acmGroupMaster values(@groupname, @createdby, @createddate)";
 
             //UIAM - dept table
-            public const string GetUIAMDeptInfo = "select distinct SECTION_ID, SECTION_DESCRIPTION from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF";
+            public const string GetUIAMDeptInfo = "select distinct SECTION_ID, SECTION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF";
             public const string GetACMDeptInfo = "select distinct deptID, deptName from mlizmgr.ACMDeptMaster";
             public const string InsertDeptData = "insert into mlizmgr.acmDeptMaster values(@deptid, @deptname, @groupid, @createdby, @createddate)";
             public const string GetACMGroupID = "select groupid from mlizmgr.acmgroupmaster where groupname = @groupname";
-            public const string GetUIAMGroupName = "select distinct division_description from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where section_description = @deptname";
+            public const string GetUIAMGroupName = "select distinct division_name from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where section_name = @deptname";
 
             //UIAM - staffinfo table
-            public const string GetUIAMStaffInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, DIVISION_DESCRIPTION, SECTION_DESCRIPTION from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%' and DIVISION_ID is not null";
+            public const string GetUIAMStaffInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, DIVISION_NAME, SECTION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%' and DIVISION_ID is not null";
             public const string GetACMStaffInfo = "select userid from mlizmgr.acmstaffinfo";
             public const string InsertStaffData = "insert into mlizmgr.acmstaffinfo values(@USER_ID, @EMAIL_ID, @FULL_NAME, @DESIGNATION, @DEL_IND, @LAST_SERVICE_DATE, @DIVISION_ID, @SECTION_ID, @createdby, @createddate)";
             public const string UpdateStaffData = "update mlizmgr.acmstaffinfo set status = @del_ind, lastservicedate = @last_service_date where userid = @user_id";
@@ -60,13 +60,15 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetAdminRole = "select rolename from mlizmgr.acmrolemaster rm left join mlizmgr.acmroleuser ru on rm.rolemstrid = ru.rolemstrid left join mlizmgr.ACMStaffInfo si on si.UserID = ru.UserID where si.userid = @userid and status = @status";
             public const string GetUserID = "SELECT UserID FROM mlizmgr.acmStaffInfo where staffEmail=@staffEmail";
 
+            //UIAM - resignedstaff table
             public const string GetLastServiceDate = "select last_service_date from UIAMIZDB.UIAM2.UIAM2_RESIGNED_STAFF where user_id = @userid";
+            public const string GetResignedStaffInfo = "select USER_ID, DEL_IND, LAST_SERVICE_DATE from UIAMIZDB.UIAM2.UIAM2_RESIGNED_STAFF where DIVISION_ID is not null";
 
             //check if user exist in the acmstaffinfo table
             public const string CheckUserExist = "select * from mlizmgr.ACMStaffInfo where staffemail = @email";
 
             //UIAM - All info table
-            public const string GetUIAMInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, DIVISION_ID,DIVISION_DESCRIPTION, SECTION_ID,SECTION_DESCRIPTION from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%'";
+            public const string GetUIAMInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, DIVISION_ID,DIVISION_NAME, SECTION_ID,SECTION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%'";
 
             public const string GettUserID = "select userid from mlizmgr.acmstaffinfo where staffemail =@email";
 
@@ -240,6 +242,11 @@ namespace MediaLibrary.Intranet.Web.Common
         public string GetLastServiceDate()
         {
             return Queries.GetLastServiceDate;
+        }
+
+        public string GetResignedStaffInfo()
+        {
+            return Queries.GetResignedStaffInfo;
         }
     }
 }

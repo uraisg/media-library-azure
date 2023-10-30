@@ -25,8 +25,8 @@ namespace MediaLibrary.Intranet.Web.Background
         private CrontabSchedule _schedule;
         private DateTime _nextRun;
 
-        // Run at 10:00 pm every day
-        private static readonly string Schedule = "0 22 * * *";
+        // Run at 7:00 pm every day
+        private static readonly string Schedule = "0 19 * * *";
 
         //for testing, every 3mins
         //private static readonly string Schedule = "*/3 * * * *";
@@ -379,7 +379,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
         private async Task<DateTime> GetLastLogin(string sql, SqlConnection conn)
         {
-            DateTime? lastlogin = null;
+            DateTime lastlogin = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
@@ -475,7 +475,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         userid = reader.GetString(0);
                     }
                     //LastLogin (max)
-                    DateTime lastlogin = default;
+                    DateTime lastlogin = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
                     if (reader[1] != DBNull.Value)
                     {
                         lastlogin = reader.GetDateTime(1);
@@ -850,6 +850,11 @@ namespace MediaLibrary.Intranet.Web.Background
                 sql = ACMQueries.Queries.GetACMDeptInfo;
                 adlist = await GetACMDeptInfo(sql, conn);
 
+                //Gets current resigned staff list
+                sql = ACMQueries.Queries.GetResignedStaffInfo;
+                List<UIAMResignedStaffInfo> rslist = await GetResignedStaffInfo(sql, conn); //holds userid
+
+                //Inserts new staff
                 foreach (var staff1 in ustaffinfolist)
                 {
                     bool staffExists = false;
@@ -858,8 +863,8 @@ namespace MediaLibrary.Intranet.Web.Background
                     string fullname = staff1.FULL_NAME;
                     string designation = staff1.DESIGNATION;
                     string del_ind = staff1.DEL_IND;
-                    DateTime lastservicedate = default;
-                    string deptname = staff1.SECTION_DESCRIPTION;
+                    DateTime lastservicedate = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
+                    string deptname = staff1.SECTION_NAME;
 
                     //Check if there is already a record of deptname in acm table,
                     //if there is, skip adding
@@ -879,7 +884,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         //For Group
                         foreach (var groupRow in alist)
                         {
-                            if (groupRow.GroupName == staff1.DIVISION_DESCRIPTION)
+                            if (groupRow.GroupName == staff1.DIVISION_NAME)
                             {
                                 //Gets matching GroupID from ACMGroupInfo table
                                 staffgroupid = groupRow.GroupID;
@@ -887,6 +892,7 @@ namespace MediaLibrary.Intranet.Web.Background
                             }
                         }
 
+                        //To handle staff with no dept listed (GD)
                         if (string.IsNullOrEmpty(deptname))
                         {
                             //For Dept
@@ -904,7 +910,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         sql = ACMQueries.Queries.InsertStaffData;
                         await InsertStaffInfoData(sql, conn, userid, emailid, fullname, designation, del_ind, lastservicedate, staffgroupid, staffdeptid);
                     }
-                    else // update existing staff table data if there is change
+                 /* else // update existing staff table data if there is change
                     {
                         if (del_ind != "A")
                         {
@@ -916,8 +922,24 @@ namespace MediaLibrary.Intranet.Web.Background
                             sql = ACMQueries.Queries.UpdateStaffData;
                             await UpdateStaffData(sql, conn, del_ind, lastservicedate, userid);
                         }
-                    }
+                    }*/
 
+                }
+
+                //Updates status, lastservicedate (if valid) for staff in acm staff table; based off uiam's resignedstaff table
+                foreach (var resignedstaff in rslist)
+                {
+                    foreach (var acmstaff in astaffinfolist)
+                    {
+                        //checks for match
+                        if (resignedstaff.userid == acmstaff.UserID)
+                        {
+                            //Update staff info
+                            sql = ACMQueries.Queries.UpdateStaffData;
+                            await UpdateStaffData(sql, conn, resignedstaff.del_ind, resignedstaff.lastservicedate, resignedstaff.userid);
+                            break;
+                        }
+                    }
                 }
             }
             catch(Exception ex) {
@@ -970,10 +992,10 @@ namespace MediaLibrary.Intranet.Web.Background
                         DIVISION_ID = reader.GetString(5);
                     }
 
-                    string DIVISION_DESCRIPTION = "";
+                    string DIVISION_NAME = "";
                     if (reader[6] != DBNull.Value)
                     {
-                        DIVISION_DESCRIPTION = reader.GetString(6);
+                        DIVISION_NAME = reader.GetString(6);
                     }
 
                     string SECTION_ID = "";
@@ -982,13 +1004,13 @@ namespace MediaLibrary.Intranet.Web.Background
                         SECTION_ID = reader.GetString(7);
                     }
 
-                    string SECTION_DESCRIPTION = "";
+                    string SECTION_NAME = "";
                     if (reader[8] != DBNull.Value)
                     {
-                        SECTION_DESCRIPTION = reader.GetString(8);
+                        SECTION_NAME = reader.GetString(8);
                     }
                     //Adds to list
-                    UIAMAlllist.Add(new UIAMInfo(UserID, EmailID, FullName, DESIGNATION, DEL_IND, DIVISION_ID, DIVISION_DESCRIPTION, SECTION_ID, SECTION_DESCRIPTION));
+                    UIAMAlllist.Add(new UIAMInfo(UserID, EmailID, FullName, DESIGNATION, DEL_IND, DIVISION_ID, DIVISION_NAME, SECTION_ID, SECTION_NAME));
                 }
             }
 
@@ -1099,14 +1121,9 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         DeptName = reader.GetString(1);
                     }
-                    string GroupID = "";
-                    if (reader[2] != DBNull.Value)
-                    {
-                        GroupID = reader.GetString(2);
-                    }
 
                     //Adds to list
-                    UIAMDeptlist.Add(new UIAMDeptInfo(DeptID, DeptName,GroupID));
+                    UIAMDeptlist.Add(new UIAMDeptInfo(DeptID, DeptName));
                 }
             }
             catch (Exception ex)
@@ -1200,19 +1217,19 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         DEL_IND = reader.GetString(4);
                     }
-                    string DIVISION_DESCRIPTION = "";
+                    string DIVISION_NAME = "";
                     if (reader[5] != DBNull.Value)
                     {
-                        DIVISION_DESCRIPTION = reader.GetString(5);
+                        DIVISION_NAME = reader.GetString(5);
                     }
-                    string SECTION_DESCRIPTION = "";
+                    string SECTION_NAME = "";
                     if (reader[6] != DBNull.Value)
                     {
-                        SECTION_DESCRIPTION = reader.GetString(6);
+                        SECTION_NAME = reader.GetString(6);
                     }
 
                     //Adds to list
-                    UIAMStafflist.Add(new UIAMStaffInfo(UserID, EmailID, FullName, DESIGNATION, DEL_IND, DIVISION_DESCRIPTION, SECTION_DESCRIPTION));
+                    UIAMStafflist.Add(new UIAMStaffInfo(UserID, EmailID, FullName, DESIGNATION, DEL_IND, DIVISION_NAME, SECTION_NAME));
                 }
             }
             catch (Exception ex)
@@ -1247,6 +1264,43 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             return ACMStafflist;
         }
+        
+        private async Task<List<UIAMResignedStaffInfo>> GetResignedStaffInfo(string sql, SqlConnection conn)
+        {
+            //this will hold list of all resigned staff user ids, status and lastservicedate
+            List<UIAMResignedStaffInfo> rslist = new List<UIAMResignedStaffInfo>();
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                using SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string userid = "";
+                    if (reader[0] != DBNull.Value)
+                    {
+                        userid = reader.GetString(0);
+                    }
+                    string del_ind = "";
+                    if (reader[1] != DBNull.Value)
+                    {
+                        del_ind = reader.GetString(1);
+                    }
+                    DateTime lastservicedate = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
+                    if (reader[2] != DBNull.Value)
+                    {
+                        lastservicedate = reader.GetDateTime(2);
+                    }
+
+                    //Adds to list
+                    rslist.Add(new UIAMResignedStaffInfo(userid, del_ind, lastservicedate));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+            return rslist;
+        }
 
         private async Task InsertStaffInfoData(string sql, SqlConnection conn, string userid, string email, string name, string designation, string DEL_IND, DateTime lastservicedate, int groupid, int deptid)
         {
@@ -1273,7 +1327,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
         private async Task <DateTime> GetLastServiceDate(string sql, SqlConnection conn,string userid)
         {
-            DateTime lastservicedate = default;
+            DateTime lastservicedate = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
