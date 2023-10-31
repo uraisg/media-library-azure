@@ -908,21 +908,21 @@ namespace MediaLibrary.Intranet.Web.Background
                         }
 
                         sql = ACMQueries.Queries.InsertStaffData;
-                        await InsertStaffInfoData(sql, conn, userid, emailid, fullname, designation, del_ind, lastservicedate, staffgroupid, staffdeptid);
+                        await InsertStaffInfoData(sql, conn, userid, emailid, fullname, designation, del_ind, staffgroupid, staffdeptid);
                     }
-                 /* else // update existing staff table data if there is change
-                    {
-                        if (del_ind != "A")
-                        {
-                            //Gets Lastservicedate from resigned view
-                            sql = ACMQueries.Queries.GetLastServiceDate;
-                            lastservicedate = await GetLastServiceDate(sql, conn, userid);
+                    /* else // update existing staff table data if there is change
+                       {
+                           if (del_ind != "A")
+                           {
+                               //Gets Lastservicedate from resigned view
+                               sql = ACMQueries.Queries.GetLastServiceDate;
+                               lastservicedate = await GetLastServiceDate(sql, conn, userid);
 
-                            //Update staff info
-                            sql = ACMQueries.Queries.UpdateStaffData;
-                            await UpdateStaffData(sql, conn, del_ind, lastservicedate, userid);
-                        }
-                    }*/
+                               //Update staff info
+                               sql = ACMQueries.Queries.UpdateStaffData;
+                               await UpdateStaffData(sql, conn, del_ind, lastservicedate, userid);
+                           }
+                       }*/
 
                 }
 
@@ -1302,7 +1302,7 @@ namespace MediaLibrary.Intranet.Web.Background
             return rslist;
         }
 
-        private async Task InsertStaffInfoData(string sql, SqlConnection conn, string userid, string email, string name, string designation, string DEL_IND, DateTime lastservicedate, int groupid, int deptid)
+        private async Task InsertStaffInfoData(string sql, SqlConnection conn, string userid, string email, string name, string designation, string DEL_IND, int groupid, int deptid)
         {
             try
             {
@@ -1312,7 +1312,6 @@ namespace MediaLibrary.Intranet.Web.Background
                 cmd.Parameters.AddWithValue("@FULL_NAME", name);
                 cmd.Parameters.AddWithValue("@DESIGNATION", designation);
                 cmd.Parameters.AddWithValue("@DEL_IND", DEL_IND);
-                cmd.Parameters.AddWithValue("@LAST_SERVICE_DATE", lastservicedate);
                 cmd.Parameters.AddWithValue("@DIVISION_ID", groupid);
                 cmd.Parameters.AddWithValue("@SECTION_ID", deptid);
                 cmd.Parameters.AddWithValue("@createdby", "SYSTEM");

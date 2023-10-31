@@ -53,7 +53,7 @@ namespace MediaLibrary.Intranet.Web.Common
             //UIAM - staffinfo table
             public const string GetUIAMStaffInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, DIVISION_NAME, SECTION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%' and DIVISION_ID is not null";
             public const string GetACMStaffInfo = "select userid from mlizmgr.acmstaffinfo";
-            public const string InsertStaffData = "insert into mlizmgr.acmstaffinfo values(@USER_ID, @EMAIL_ID, @FULL_NAME, @DESIGNATION, @DEL_IND, @LAST_SERVICE_DATE, @DIVISION_ID, @SECTION_ID, @createdby, @createddate)";
+            public const string InsertStaffData = "insert into mlizmgr.acmstaffinfo values(@USER_ID, @EMAIL_ID, @FULL_NAME, @DESIGNATION, @DEL_IND, @DIVISION_ID, @SECTION_ID, @createdby, @createddate)";
             public const string UpdateStaffData = "update mlizmgr.acmstaffinfo set status = @del_ind, lastservicedate = @last_service_date where userid = @user_id";
 
             public const string InsertLoginSession = "INSERT INTO mlizmgr.acmSession (UserID, SessionID, IPAddress, LastLogin, LastLogout, CreatedBy, CreatedDate) VALUES (@userid, @sessionid, @ipaddress, @lastlogin, @lastlogout, @createdby, @createddate)";
