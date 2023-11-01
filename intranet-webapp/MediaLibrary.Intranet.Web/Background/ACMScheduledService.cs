@@ -865,6 +865,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     string del_ind = staff1.DEL_IND;
                     DateTime lastservicedate = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
                     string deptname = staff1.SECTION_NAME;
+                    string groupname = staff1.DIVISION_NAME;
 
                     //Check if there is already a record of deptname in acm table,
                     //if there is, skip adding
@@ -884,7 +885,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         //For Group
                         foreach (var groupRow in alist)
                         {
-                            if (groupRow.GroupName == staff1.DIVISION_NAME)
+                            if (groupRow.GroupName == groupname)
                             {
                                 //Gets matching GroupID from ACMGroupInfo table
                                 staffgroupid = groupRow.GroupID;
@@ -892,38 +893,20 @@ namespace MediaLibrary.Intranet.Web.Background
                             }
                         }
 
-                        //To handle staff with no dept listed (GD)
-                        if (string.IsNullOrEmpty(deptname))
+                        //For Dept
+                        foreach (var deptRow in adlist)
                         {
-                            //For Dept
-                            foreach (var deptRow in adlist)
+                            if (deptRow.DeptName == deptname)
                             {
-                                if (deptRow.DeptName == deptname)
-                                {
-                                    //Gets matching DeptID from ACMGroupInfo table
-                                    staffdeptid = deptRow.DeptID;
-                                    break;
-                                }
+                                //Gets matching DeptID from ACMGroupInfo table
+                                staffdeptid = deptRow.DeptID;
+                                break;
                             }
                         }
 
                         sql = ACMQueries.Queries.InsertStaffData;
                         await InsertStaffInfoData(sql, conn, userid, emailid, fullname, designation, del_ind, staffgroupid, staffdeptid);
                     }
-                    /* else // update existing staff table data if there is change
-                       {
-                           if (del_ind != "A")
-                           {
-                               //Gets Lastservicedate from resigned view
-                               sql = ACMQueries.Queries.GetLastServiceDate;
-                               lastservicedate = await GetLastServiceDate(sql, conn, userid);
-
-                               //Update staff info
-                               sql = ACMQueries.Queries.UpdateStaffData;
-                               await UpdateStaffData(sql, conn, del_ind, lastservicedate, userid);
-                           }
-                       }*/
-
                 }
 
                 //Updates status, lastservicedate (if valid) for staff in acm staff table; based off uiam's resignedstaff table
