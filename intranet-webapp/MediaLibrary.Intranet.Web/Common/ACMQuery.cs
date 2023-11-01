@@ -17,7 +17,7 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string UpdateReminderSent1 = "UPDATE mlizmgr.acmstafflogin SET FirstReminderSent = 'Yes' FROM mlizmgr.acmstafflogin sp left join mlizmgr.acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
             public const string UpdateReminderSent2 = "UPDATE mlizmgr.acmstafflogin SET SecondReminderSent = 'Yes' FROM mlizmgr.acmstafflogin sp left join mlizmgr.acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
             public const string UpdateReminderSent3 = "UPDATE mlizmgr.acmstafflogin SET ThirdReminderSent = 'Yes' FROM mlizmgr.acmstafflogin sp left join mlizmgr.acmStaffInfo si ON sp.Userid = si.UserID WHERE staffEmail = @staffEmail";
-            public const string InsertJobHistory = "insert into mlizmgr.ACMJobHistory values(@jobname,@jobstatus,@jobstart,@jobend,@createdby,@createddate)";
+            public const string InsertJobHistory = "insert into mlizmgr.ACMJobHistory (JobName, JobStatus, JobStart, JobEnd, CreatedBy, CreatedDate) values(@jobname,@jobstatus,@jobstart,@jobend,@createdby,@createddate)";
             public const string GetAdminEmails = "select staffemail from mlizmgr.ACMStaffInfo si left join mlizmgr.acmroleuser ru on si.userid = ru.userid where ru.RoleMstrID =1 ";
             public const string UpdateServiceSuspendedDate = "UPDATE mlizmgr.acmstafflogin SET suspendeddate = @suspendedDate,LastUpdatedBy = @lastupdated WHERE userid = @userid";
             public const string updateServiceStatus = "UPDATE mlizmgr.ACMStaffInfo SET status = 'Suspended' WHERE staffEmail = @staffEmail";
@@ -28,32 +28,32 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string GetAllUsers = "select si.userid, staffname, staffemail, deptname, groupname, status, lastlogin, suspendeddate from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMSession ses on si.UserID = ses.UserID inner join mlizmgr.ACMGroupMaster gm on si.GroupID = gm.GroupID inner join mlizmgr.ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID";
             public const string UpdateSuspendedDate = "UPDATE mlizmgr.acmstafflogin SET suspendeddate = @suspendedDate,LastUpdatedBy = @lastupdated WHERE UserID = @userid";
             public const string UpdateStatus = "UPDATE mlizmgr.ACMStaffInfo SET status = @status WHERE UserID = @userid";
-            public const string UpdateAuditLog = "Insert into mlizmgr.ACMAuditlog values (@userid,@userlastaction, @createdby , @createddate)";
+            public const string UpdateAuditLog = "Insert into mlizmgr.ACMAuditlog (UserID, UserLastAction, CreatedBy, CreatedDate) values (@userid,@userlastaction, @createdby , @createddate)";
 
             //User role page
             public const string GetAllUserRole = "select si.userid, staffname, staffemail, deptname, groupname,rolename, lastlogin from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMSession ses on si.UserID = ses.UserID inner join mlizmgr.ACMGroupMaster gm on si.GroupID = gm.GroupID inner join mlizmgr.ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
             public const string GetTotalCountUserRole = "SELECT COUNT(*) AS total_count from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMSession ses on si.UserID = ses.UserID inner join mlizmgr.ACMGroupMaster gm on si.GroupID = gm.GroupID inner join mlizmgr.ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID";
             public const string CheckuserRole = "select rolename from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = @userid";
-            public const string AddRoleUser = "Insert into mlizmgr.ACMRoleUser values (@userid,@rolemstrid, @createdby , @createddate)";
+            public const string AddRoleUser = "Insert into mlizmgr.ACMRoleUser (UserID, RoleMstrID, CreatedBy, CreatedDate) values (@userid,@rolemstrid, @createdby , @createddate)";
 
             public const string GetRoleBasedOfUser = "select rolename from mlizmgr.ACMStaffInfo si inner join mlizmgr.ACMStaffLogin sl on si.UserID = sl.UserID inner join mlizmgr.ACMRoleUser ru on si.userid = ru.UserID inner join mlizmgr.ACMRoleMaster rm on ru.RoleMstrID =rm.RoleMstrID where si.userid = (select userid from mlizmgr.ACMStaffInfo where StaffEmail = @email)";
 
             //UIAM - group table
             public const string GetUIAMGroupInfo = "select distinct DIVISION_ID, DIVISION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF";
             public const string GetACMGroupInfo = "select distinct groupID, groupName from mlizmgr.ACMGroupMaster";
-            public const string InsertGroupData = "insert into mlizmgr.acmGroupMaster values(@groupname, @createdby, @createddate)";
+            public const string InsertGroupData = "insert into mlizmgr.acmGroupMaster (GroupName, CreatedBy, CreatedDate) values (@groupname, @createdby, @createddate)";
 
             //UIAM - dept table
             public const string GetUIAMDeptInfo = "select distinct SECTION_ID, SECTION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF";
             public const string GetACMDeptInfo = "select distinct deptID, deptName from mlizmgr.ACMDeptMaster";
-            public const string InsertDeptData = "insert into mlizmgr.acmDeptMaster values(@deptid, @deptname, @groupid, @createdby, @createddate)";
+            public const string InsertDeptData = "insert into mlizmgr.acmDeptMaster (DeptName, GroupID, CreatedBy, CreatedDate) values (@deptname, @groupid, @createdby, @createddate)";
             public const string GetACMGroupID = "select groupid from mlizmgr.acmgroupmaster where groupname = @groupname";
             public const string GetUIAMGroupName = "select distinct division_name from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where section_name = @deptname";
 
             //UIAM - staffinfo table
             public const string GetUIAMStaffInfo = "select USER_ID, EMAIL_ID, FULL_NAME, DESIGNATION, DEL_IND, DIVISION_NAME, SECTION_NAME from UIAMIZDB.UIAM2.UIAM2_ALL_STAFF where user_id not like '%@%' and DIVISION_ID is not null";
             public const string GetACMStaffInfo = "select userid from mlizmgr.acmstaffinfo";
-            public const string InsertStaffData = "insert into mlizmgr.acmstaffinfo values(@USER_ID, @EMAIL_ID, @FULL_NAME, @DESIGNATION, @DEL_IND, @DIVISION_ID, @SECTION_ID, @createdby, @createddate)";
+            public const string InsertStaffData = "insert into mlizmgr.acmstaffinfo (UserID, StaffEmail, StaffName, StaffDesn, Status, GroupID, DeptID, CreatedBy, CreatedDate) values(@USER_ID, @EMAIL_ID, @FULL_NAME, @DESIGNATION, @DEL_IND, @DIVISION_ID, @SECTION_ID, @createdby, @createddate)";
             public const string UpdateStaffData = "update mlizmgr.acmstaffinfo set status = @del_ind, lastservicedate = @last_service_date where userid = @user_id";
 
             public const string InsertLoginSession = "INSERT INTO mlizmgr.acmSession (UserID, SessionID, IPAddress, LastLogin, LastLogout, CreatedBy, CreatedDate) VALUES (@userid, @sessionid, @ipaddress, @lastlogin, @lastlogout, @createdby, @createddate)";

@@ -829,7 +829,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
                         //Adds dept into acmdepttable
                         sql = ACMQueries.Queries.InsertDeptData;
-                        await InsertDeptData(sql, conn, deptID, deptName, groupID);
+                        await InsertDeptData(sql, conn, deptName, groupID);
                     }
                 }
 
@@ -1164,12 +1164,11 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             return ACMDeptlist;
         }
-        private async Task InsertDeptData(string sql, SqlConnection conn,string deptid,string deptname, int groupid)
+        private async Task InsertDeptData(string sql, SqlConnection conn,string deptname, int groupid)
         {
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@deptid", deptid);
                 cmd.Parameters.AddWithValue("@deptname", deptname);
                 cmd.Parameters.AddWithValue("@groupid", groupid);
                 cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
