@@ -11,7 +11,7 @@
         public string ThumbHeight { get; set; }
         public string ThumbWidth { get; set; }
         public string UploadTimeZone { get; set; }
-        public string mlezbatchconn { get; set; }
-        public string mlezappconn { get; set; }
+        public string eServicemlezbatchconndb { get; set; }
+        public string eServicemlezconndb { get; set; }
     }
 }

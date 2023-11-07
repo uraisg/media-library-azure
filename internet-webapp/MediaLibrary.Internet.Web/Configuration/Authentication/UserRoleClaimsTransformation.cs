@@ -30,8 +30,8 @@ namespace MediaLibrary.Internet.Web.Configuration
         {
             _logger = logger;
             Config = config;
-            mlezSelectConn = Config.GetConnectionString("mlezappconn"); //appSettings.Value.mlezappconn;
-            mlezInsertConn = Config.GetConnectionString("mlezbatchconn"); //appSettings.Value.mlezbatchconn;           
+            mlezSelectConn = Config.GetConnectionString("eServicemlezconndb"); //appSettings.Value.eServicemlezconndb;
+            mlezInsertConn = Config.GetConnectionString("eServicemlezbatchconndb"); //appSettings.Value.eServicemlezbatchconndb;           
         }
 
         public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
