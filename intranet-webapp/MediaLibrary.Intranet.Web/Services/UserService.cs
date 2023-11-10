@@ -30,13 +30,13 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public Tuple<List<ACMStaffInfoResult>,int>  GetAllUsersByPage(UserQuery user)
         {
-            // string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             ACMPage pagination = new ACMPage();
             List<ACMStaffInfoResult> staffInfoResults = new List<ACMStaffInfoResult>();
             string searchQuery = user.SearchQuery;
             string sortOption = user.SortOption;
-            string sql2 = "SELECT COUNT(*) AS total_count from ACMStaffInfo si\r\ninner join ACMStaffLogin sl on si.UserID = sl.UserID\r\ninner join ACMSession ses on si.UserID = ses.UserID\r\ninner join ACMGroupMaster gm on si.GroupID = gm.GroupID\r\ninner join ACMDeptMaster dm on si.DeptID = dm.DeptID and gm.GroupID = dm.GroupID";
+            string sql2 = ACMQueries.Queries.GetTotalUsers;
             
             try
             {
@@ -50,7 +50,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     DateTime startDate = Convert.ToDateTime(user.StartDate);
                     DateTime endDate = Convert.ToDateTime(user.EndDate);
-                    string newsql = string.Format("lastlogin >= '{0}' and lastlogin <= '{1}'", startDate.ToString(dateFormat), endDate.ToString(dateFormat));
+                    string newsql = string.Format("MAX(lastlogin) >= '{0}' and MAX(lastlogin) <= '{1}'", startDate.ToString(dateFormat), endDate.ToString(dateFormat));
                     filterConditions.Add(newsql);
                 }
 
@@ -95,7 +95,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     string filteruser = "";
                     filteruser += String.Join(" and ", filterConditions);
-                    sql = string.Format("{0} where {1} ", sql, filteruser);
+                    sql = string.Format("{0} having {1} ", sql, filteruser);
                     sql2 = string.Format("{0} where {1} ", sql2, filteruser);
 
                 }
@@ -215,7 +215,7 @@ namespace MediaLibrary.Intranet.Web.Services
                         staffInfoResult.Department = reader.GetString(3);
                         staffInfoResult.group = reader.GetString(4);
 
-                        if (reader.GetString(5) == "A")
+                        if (reader.GetString(5) == "A" || reader.GetString(5) == "Active")
                         {
                             staffInfoResult.Status = "Active";
                         }
@@ -278,8 +278,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void updateStatusById(string status, DateTime todayDate, string lastupdatedby, string userid,string email)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
             try
             {
@@ -298,7 +298,7 @@ namespace MediaLibrary.Intranet.Web.Services
                     }
                     else
                     {
-                        status = "Suspended";
+                        status = "D";
                         cmd.Parameters.AddWithValue("@suspendedDate", todayDate.ToString(dateFormat));
                     }
 
@@ -331,8 +331,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void UpdateAuditLog(string email,string status, DateTime date)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
 
             try
@@ -368,14 +368,14 @@ namespace MediaLibrary.Intranet.Web.Services
         }
         private string ACMGetUserID(string email)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             string userid = "";
             try
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 conn.Open();
-                string sql = String.Format("SELECT userid FROM ACMStaffInfo WHERE staffemail = '{0}'", email);
+                string sql = String.Format("SELECT userid FROM mlizmgr.ACMStaffInfo WHERE staffemail = '{0}'", email);
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -395,8 +395,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public Tuple<List<string>, List<string>> ACMDropdownOptions(UserQuery userquery)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             dropdownoptions dropdownoptions = new dropdownoptions();
 
             List<string> options = new List<string>();
@@ -412,7 +412,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 string filterGroups = getFilterResult(userquery.filterbygroup);
                 if (!string.IsNullOrEmpty(filterGroups))
                 {
-                    string sql = String.Format("select deptname from ACMGroupMaster gm inner join ACMDeptMaster dm on gm.GroupID = dm.GroupID where groupname in {0}", filterGroups);
+                    string sql = String.Format("select deptname from mlizmgr.ACMGroupMaster gm inner join mlizmgr.ACMDeptMaster dm on gm.GroupID = dm.GroupID where groupname in {0}", filterGroups);
                     using SqlCommand cmd = new SqlCommand(sql, conn);
                     using SqlDataReader reader = cmd.ExecuteReader();
 
@@ -425,7 +425,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 conn.Close();
 
                 conn.Open();
-                string sql2 = String.Format("Select groupname from ACMGroupMaster ");
+                string sql2 = String.Format("Select groupname from mlizmgr.ACMGroupMaster ");
                 using SqlCommand cmd2 = new SqlCommand(sql2, conn);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
                 while (reader2.Read())
@@ -464,8 +464,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public List<DownloadUserReport> GetAllUsers(UserQuery user)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<DownloadUserReport> data = new List<DownloadUserReport>();
             string searchQuery = user.SearchQuery;
 
@@ -526,7 +526,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     string filteruser = "";
                     filteruser += String.Join(" and ", filterConditions);
-                    sql = string.Format("{0} where {1} ", sql, filteruser);
+                    sql = string.Format("{0} having {1} ", sql, filteruser);
 
                 }
                     using (SqlCommand cmd = new SqlCommand(sql, conn))

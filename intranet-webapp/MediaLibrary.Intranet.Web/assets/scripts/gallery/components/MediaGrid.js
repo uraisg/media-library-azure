@@ -65,7 +65,7 @@ const ImageDiv = styled.div`
 
 const AlignRightDiv = styled.div`
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   pointer-events: auto;
 `
 
@@ -74,7 +74,7 @@ const PageCount = styled.p`
 `
 
 const DetailsDiv = styled.div`
-  display: flex;
+  display: flex-end;
   flex-flow: column wrap;
   margin-left: 20px;
 `

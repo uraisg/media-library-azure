@@ -29,8 +29,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public Tuple<List<ACMStaffRoleResult>,int> GetAllUsersRoleByPage(UserRoleQuery user)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<ACMStaffRoleResult> ACMStaffRoleResults = new List<ACMStaffRoleResult>();
             int totalPage = 1;
             string searchQuery = user.SearchQuery;
@@ -51,7 +51,7 @@ namespace MediaLibrary.Intranet.Web.Services
                    {
                      DateTime startDate = Convert.ToDateTime(user.StartDate);
                      DateTime endDate = Convert.ToDateTime(user.EndDate);
-                     string newsql = string.Format("lastlogin >= '{0}' and lastlogin <= '{1}'", startDate.ToString(dateFormat), endDate.ToString(dateFormat));
+                     string newsql = string.Format("MAX(lastlogin) >= '{0}' and MAX(lastlogin) <= '{1}'", startDate.ToString(dateFormat), endDate.ToString(dateFormat));
                     
                       filterConditions.Add(newsql);
                     }
@@ -87,7 +87,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     string filteruser = "";
                     filteruser += String.Join(" and ", filterConditions);
-                    sql = string.Format("{0} where {1} ", sql, filteruser);
+                    sql = string.Format("{0} having {1} ", sql, filteruser);
                     sql2 = string.Format("{0} where {1} ", sql2, filteruser);
                    
                 }
@@ -248,8 +248,8 @@ namespace MediaLibrary.Intranet.Web.Services
         }
             public Tuple<List<string>, List<string>,List<string>> ACMDropdownOptions(UserRoleQuery userRole)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             dropdownoptions dropdownoptions = new dropdownoptions();
 
             List<string> options = new List<string>();
@@ -267,7 +267,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 string filterGroups = getFilterResult(userRole.filterbygroup);
                 if (!string.IsNullOrEmpty(filterGroups))
                 {
-                    string sql = String.Format("select deptname from ACMGroupMaster gm inner join ACMDeptMaster dm on gm.GroupID = dm.GroupID where groupname in {0}", filterGroups);
+                    string sql = String.Format("select deptname from mlizmgr.ACMGroupMaster gm inner join mlizmgr.ACMDeptMaster dm on gm.GroupID = dm.GroupID where groupname in {0}", filterGroups);
                     using SqlCommand cmd = new SqlCommand(sql, conn);
                     using SqlDataReader reader = cmd.ExecuteReader();
 
@@ -280,7 +280,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 conn.Close();
 
                 conn.Open();
-                string sql2 = String.Format("Select groupname from ACMGroupMaster ");
+                string sql2 = String.Format("Select groupname from mlizmgr.ACMGroupMaster ");
                 using SqlCommand cmd2 = new SqlCommand(sql2, conn);
                 using SqlDataReader reader2 = cmd2.ExecuteReader();
                 
@@ -291,7 +291,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 }
                 conn.Close();
                 conn.Open();
-                string sql3 = "select rolename from ACMRoleMaster";
+                string sql3 = "select rolename from mlizmgr.ACMRoleMaster";
                 using SqlCommand cmd3 = new SqlCommand(sql3, conn);
                 using SqlDataReader reader3 = cmd3.ExecuteReader();
                 while (reader3.Read())
@@ -330,8 +330,8 @@ namespace MediaLibrary.Intranet.Web.Services
         }
         public List<DownloadUserRoleReport> GetUsersRoleReport(UserRoleQuery user)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<DownloadUserRoleReport> ACMStaffRoleResults = new List<DownloadUserRoleReport>();
      
             string searchQuery = user.SearchQuery;
@@ -348,7 +348,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     DateTime startDate = Convert.ToDateTime(user.StartDate);
                     DateTime endDate = Convert.ToDateTime(user.EndDate);
-                    string newsql = string.Format("lastlogin >= '{0}' and lastlogin <= '{1}'", startDate.ToString(dateFormat), endDate.ToString(dateFormat));
+                    string newsql = string.Format("MAX(lastlogin) >= '{0}' and MAX(lastlogin) <= '{1}'", startDate.ToString(dateFormat), endDate.ToString(dateFormat));
                     filterConditions.Add(newsql);
                 }
 
@@ -383,7 +383,7 @@ namespace MediaLibrary.Intranet.Web.Services
                 {
                     string filteruser = "";
                     filteruser += String.Join(" and ", filterConditions);
-                    sql = string.Format("{0} where {1} ", sql, filteruser);
+                    sql = string.Format("{0} having {1} ", sql, filteruser);
                 }
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -429,14 +429,14 @@ namespace MediaLibrary.Intranet.Web.Services
         
         public void DeleteRoleById(string lastupdatedby, string userid,string userrole)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
             try
             {
                 conn.Open();
                 int roleid = ACMGetRoleID(userrole);
-                string queryStr = "DELETE FROM ACMRoleUser WHERE UserID=@ID and rolemstrid=@rolemstrid";
+                string queryStr = "DELETE FROM mlizmgr.ACMRoleUser WHERE UserID=@ID and rolemstrid=@rolemstrid";
   
                 SqlCommand cmd = new SqlCommand(queryStr, conn);
                 cmd.Parameters.AddWithValue("@ID", userid);
@@ -455,8 +455,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void assignedRoleById(string lastupdatedby, string userid, string addrole)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
      
             try
@@ -519,14 +519,14 @@ namespace MediaLibrary.Intranet.Web.Services
 
         private int ACMGetRoleID(string rolename)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             int roleMstrID = 0;
             try
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 conn.Open();
-                string sql = "select roleMstrid from ACMRoleMaster where rolename =@role";
+                string sql = "select roleMstrid from mlizmgr.ACMRoleMaster where rolename =@role";
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@role", rolename);
                 using SqlDataReader reader = cmd.ExecuteReader();
@@ -548,8 +548,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public List<string> RoleOptions()
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
 
             List<string> roleOptions = new List<string>();
 
@@ -557,7 +557,7 @@ namespace MediaLibrary.Intranet.Web.Services
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 conn.Open();
-                string sql3 = "select rolename from ACMRoleMaster";
+                string sql3 = "select rolename from mlizmgr.ACMRoleMaster";
                 using SqlCommand cmd3 = new SqlCommand(sql3, conn);
                 using SqlDataReader reader3 = cmd3.ExecuteReader();
                 while (reader3.Read())
@@ -576,8 +576,8 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public void UpdateAuditLog(string email,string useraction ,DateTime date)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             using SqlConnection conn = new SqlConnection(acmConnectionString);
 
             try
@@ -611,14 +611,14 @@ namespace MediaLibrary.Intranet.Web.Services
         }
         private string ACMGetUserID(string email)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             string userid = "";
             try
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 conn.Open();
-                string sql = String.Format("SELECT userid FROM ACMStaffInfo WHERE staffemail = '{0}'", email);
+                string sql = String.Format("SELECT userid FROM mlizmgr.ACMStaffInfo WHERE staffemail = '{0}'", email);
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -637,14 +637,14 @@ namespace MediaLibrary.Intranet.Web.Services
 
         public List<string> getuserrole(string email)
         {
-            //string acmConnectionString = _appSettings.intranetmlizconndb;
-            string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
+            string acmConnectionString = _appSettings.intranetmlizconndb;
+            //string acmConnectionString = Config.GetConnectionString("intranetmlizconndb");
             List<string> userRole = new List<string>();
             try
             {
                 using SqlConnection conn = new SqlConnection(acmConnectionString);
                 conn.Open();
-                string sql = String.Format("select rolename from acmroleuser su inner join ACMStaffInfo si on su.UserID = si.UserID inner join ACMRoleMaster rm on rm.RoleMstrID = su.RoleMstrID where StaffEmail='{0}'", email);
+                string sql = String.Format("select rolename from mlizmgr.acmroleuser su inner join mlizmgr.ACMStaffInfo si on su.UserID = si.UserID inner join mlizmgr.ACMRoleMaster rm on rm.RoleMstrID = su.RoleMstrID where StaffEmail='{0}'", email);
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())

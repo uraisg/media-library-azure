@@ -1,7 +1,7 @@
 import React from 'react'
 import { styled } from '@linaria/react'
 import { Container } from 'react-bootstrap'
-import { SearchUser } from './@/../../../ucm/components/searchuser'
+import SearchUser from './@/../../../ucm/components/searchuser'
 import Users from './@/../../../ucm/components/users'
 import { FilterProvider } from './context'
 import Page from './@/../../../ucm/components/Pagination'

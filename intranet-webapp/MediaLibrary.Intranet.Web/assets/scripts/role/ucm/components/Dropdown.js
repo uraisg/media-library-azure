@@ -83,6 +83,8 @@ export const Filteruser = () => {
 
   const handlerole = (newSelectedOptions) => {
     setrole(newSelectedOptions.map((o) => o.value))
+    const temp = { ...filterContext.active, "filterbyrole": newSelectedOptions.map((o) => o.value) }
+    filterContext.setActive(temp)
   };
 
   const [date, setDate] = useState({ "StartDate": "", "EndDate": "" })

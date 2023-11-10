@@ -69,7 +69,7 @@ export function formatDate(date) {
    const statusoption = [
      { label: ' Active', value: 'A' },
     // { label: 'Inactive', value: 'Inactive' },
-     { label: 'Suspended', value: 'Suspended' },
+     { label: 'Suspended', value: 'D' },
    ]
 
    const handleStartDate = (e) => {
@@ -100,6 +100,8 @@ export function formatDate(date) {
 
    const handlestatuschange = (newSelectedOptions) => {
      setvalue(newSelectedOptions.map((o) => o.value))
+     const temp = { ...filterContext.active, "filterbystatus": newSelectedOptions.map((o) => o.value) }
+     filterContext.setActive(temp)
   
    };
 
