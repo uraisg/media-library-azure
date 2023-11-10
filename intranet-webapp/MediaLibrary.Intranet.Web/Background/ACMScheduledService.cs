@@ -232,7 +232,7 @@ namespace MediaLibrary.Intranet.Web.Background
                             }
 
                             bool isReminder = true;
-                            if (status == "Active")
+                            if (status == "A")
                             {
                                 string sql = "";
                                 // Checks remindersent - if null, send smtp and update table. if all not null, update a 'suspended'
@@ -514,7 +514,7 @@ namespace MediaLibrary.Intranet.Web.Background
                         status = reader.GetString(4);
                     }
 
-                    if (status == "Active")
+                    if (status == "A")
                     {
                         //Gets UserID
                         if (reader[0] != DBNull.Value)
@@ -1331,14 +1331,6 @@ namespace MediaLibrary.Intranet.Web.Background
         }
         private async Task UpdateStaffData(string sql, SqlConnection conn,string del_ind,DateTime lastservicedate,string userid)
         {
-            if (del_ind == "A")
-            {
-                del_ind = "Active";
-            }
-            else //T or D, which would mean temp disabled or disabled
-            {
-                del_ind = "Suspended";
-            }
             try
             {
                 using SqlCommand cmd = new SqlCommand(sql, conn);
