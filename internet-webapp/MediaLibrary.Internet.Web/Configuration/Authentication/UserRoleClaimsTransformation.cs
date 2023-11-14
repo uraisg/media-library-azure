@@ -55,9 +55,10 @@ namespace MediaLibrary.Internet.Web.Configuration
                 }
 
                 //Checks status
-                //returns a true value if status = 'Active'
+                //returns a true value if status = 'A' (Active)
                 bool CheckUserStatus = await Checkstatus(conn, email);
                 conn.Close();
+                _logger.LogInformation("User {email} current status is: {checkuserstatus}", email, CheckUserStatus);
 
                 using SqlConnection conn2 = new SqlConnection(mlezInsertConn);
                 conn2.Open();
@@ -71,6 +72,8 @@ namespace MediaLibrary.Internet.Web.Configuration
                     //sh.insertSession();
                     await InsertLoginSession(conn, userid, ssid);
                     await InsertAuditlog(conn, userid);
+
+                    _logger.LogInformation("Inserted a login session and login log for: {userid}", userid);
                 }
                 catch (Exception ex)
                 {
@@ -99,7 +102,7 @@ namespace MediaLibrary.Internet.Web.Configuration
                 string sql = ACMQueries.Queries.Checkstatus;
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@email", email);
-                cmd.Parameters.AddWithValue("@status", "Active");
+                cmd.Parameters.AddWithValue("@status", "A");
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
