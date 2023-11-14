@@ -76,6 +76,7 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string SeedLoginInfoSession = "INSERT INTO mlizmgr.acmSession (UserID, SessionID, IPAddress, LastLogin, LastLogout, CreatedBy, CreatedDate) VALUES (@userid, @sessionid, @ipaddress, @lastlogin, @lastlogout, @createdby, @createddate)";
             public const string GetAllStaffInfo = "select * from mlizmgr.ACMStaffInfo";
             public const string QueryStaffSessionRecords = "select count(*) from mlizmgr.ACMSession where userid = @userid";
+            public const string QueryStaffSLRecords = "select count(*) from mlizmgr.ACMStaffLogin where userid = @userid";
 
             //ACMAuditLog related
             public const string InsertAuditLog = "insert into mliz.acmauditlog (UserID, UserLastAction, CreatedBy, CreatedDate) VALUES (@userid, @userlastaction, @createdby, @createddate)";
@@ -247,6 +248,11 @@ namespace MediaLibrary.Intranet.Web.Common
         public string GetResignedStaffInfo()
         {
             return Queries.GetResignedStaffInfo;
+        }
+
+        public string QueryStaffSLRecords()
+        {
+            return Queries.QueryStaffSLRecords;
         }
     }
 }

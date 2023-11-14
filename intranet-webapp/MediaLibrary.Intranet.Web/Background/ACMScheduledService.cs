@@ -113,28 +113,45 @@ namespace MediaLibrary.Intranet.Web.Background
 
                     //Queries acmsession if this staff entry is already present
                     sql = ACMQueries.Queries.QueryStaffSessionRecords;
-                    bool doesRecordExist = await queryStaffSessionRecords(sql, conn, userid);
-                    _logger.LogInformation("Value of doesrecordexist for " + userid + ": " + doesRecordExist);
+                    bool doesSSRecordExist = await queryStaffSessionRecords(sql, conn, userid);
+                    _logger.LogInformation("Value of doesSSrecordexist for " + userid + ": " + doesSSRecordExist);
 
-                    //Seeds in session and login profile for this staff if entry is not present
-                    if (doesRecordExist == false)
+                    //Queries acmstafflogin if this staff entry is already present
+                    sql = ACMQueries.Queries.QueryStaffSLRecords;
+                    bool doesSLRecordExist = await queryStaffSLRecords(sql, conn, userid);
+                    _logger.LogInformation("Value of doesSLrecordexist for " + userid + ": " + doesSLRecordExist);
+
+                    //Seeds in staff session for this staff if entry is not present
+                    if (doesSSRecordExist == false)
                     {
                         try
                         {
-                            _logger.LogInformation("Staff entry (session, login) does not exist for: " + userid + ". Seeding staff in..");
+                            _logger.LogInformation("Staff entry (session) does not exist for: " + userid + ". Seeding staff in..");
                             sql = ACMQueries.Queries.SeedLoginInfoSession;
                             await seedLoginInfoSession(sql, conn, userid);
-
-                            sql = ACMQueries.Queries.SeedLoginProfile;
-                            await SeedLoginProfile(sql, conn, userid);
-                            _logger.LogInformation("Seeded "+userid+" in session and login.");
+                            _logger.LogInformation("Seeded "+ userid +" in session.");
                         }
                         catch(Exception ex)
                         {
                             _logger.LogError(ex.ToString());
                         }
                     }
-                    
+
+                    //Seeds in staff session for this staff if entry is not present
+                    if (doesSLRecordExist == false)
+                    {
+                        try
+                        {
+                            _logger.LogInformation("Staff entry (login) does not exist for: " + userid + ". Seeding staff in..");
+                            sql = ACMQueries.Queries.SeedLoginProfile;
+                            await SeedLoginProfile(sql, conn, userid);
+                            _logger.LogInformation("Seeded " + userid + " in login.");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex.ToString());
+                        }
+                    }
                 }
                 conn.Close();
                 _logger.LogInformation("Successfully seeded missing stafflogin per every entry in acmstaffinfo");
@@ -226,7 +243,7 @@ namespace MediaLibrary.Intranet.Web.Background
 
                                     //Get remindersent3
                                     thirdReminderSent = y.ThirdReminderSent;
-
+                                     
                                     break;
                                 }
                             }
@@ -339,6 +356,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     string sql = ACMQueries.Queries.GetAdminEmails;
                     string emails = await GetAdminEmails(sql, conn);
                     //send email to admin for info that job has finish running
+                    _logger.LogInformation("Will be sending emails to the following admins for notification of job completion: " + emails);
                     await sendAdminNotification(jobstatus, emails);
                     _logger.LogInformation("Successfully sent admin-role users notification on scheduled job completion");
                 }
@@ -646,12 +664,14 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 string To = staffEmail;
                 string From = "MediaLibrary_DoNotReply@ura.gov.sg"; //_appSettings.SMTPSenderEmail; 
+                string smtpHost = _appSettings.SMTPHost;
+                int smtpPort = _appSettings.SMTPPort;
 
                 //Setting
                 var smtpClient = new SmtpClient()
                 {
-                    Host = _appSettings.SMTPHost, //"smtp.gmail.com" 
-                    Port = _appSettings.SMTPPort, //587
+                    Host = smtpHost, //"smtp.gmail.com" 
+                    Port = smtpPort, //587
                     EnableSsl = true,
                     //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // not needed in intranet
                     UseDefaultCredentials = true, // in intranet should set to true, in devt false
@@ -703,12 +723,17 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 string To = staffemails.Substring(0, staffemails.Length - 1);
                 string From = "MediaLibrary_DoNotReply@ura.gov.sg"; //_appSettings.SMTPSenderEmail; 
+                string smtpHost = _appSettings.SMTPHost;
+                int smtpPort = _appSettings.SMTPPort;
+
+                _logger.LogInformation("SMTP Host for email sending: " + smtpHost);
+                _logger.LogInformation("SMTP Port for email sending: " + smtpPort);
 
                 //Setting
                 var smtpClient = new SmtpClient()
                 {
-                    Host = _appSettings.SMTPHost, //"smtp.gmail.com"
-                    Port = _appSettings.SMTPPort, //587
+                    Host = smtpHost, //"smtp.gmail.com"
+                    Port = smtpPort, //587
                     EnableSsl = true,
                     //Credentials = new NetworkCredential(From, _appSettings.SMTPPW), // not needed in intranet
                     UseDefaultCredentials = true, // in intranet should set to true, in devt false
@@ -1480,7 +1505,32 @@ namespace MediaLibrary.Intranet.Web.Background
                 _logger.LogError(ex.ToString());
             }
             return result;
-        }  
+        }
+
+        private async Task<bool> queryStaffSLRecords(string sql, SqlConnection conn, string userid)
+        {
+            bool result = true;
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@userid", userid);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int countResult = reader.GetInt32(0);
+                    if (countResult == 0)
+                    {
+                        result = false; // means entry not there 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+            return result;
+        }       
 
     }
 }
