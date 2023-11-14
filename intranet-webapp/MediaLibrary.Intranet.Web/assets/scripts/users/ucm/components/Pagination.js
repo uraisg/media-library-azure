@@ -1,4 +1,4 @@
-import { React } from "react";
+import React from "react";
 import { useState, useEffect } from "react";
 import { useFilter } from './@/../../../ucm/components/context'
 import ReactPaginate from 'react-paginate';

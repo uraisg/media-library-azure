@@ -42,6 +42,7 @@ const SelectTableComponent = () => {
   };
 
 
+
   const [statusCheck, setStatusCheck] = useState("");
   const handleCheckboxChange = (itemId) => {
     const { id, checked } = itemId.target;
@@ -100,23 +101,15 @@ const SelectTableComponent = () => {
         <LeftDiv>
           <div>
 
-            {isCheck.length > 0 && statusCheck != "Active" ? (
               <Button align="right" size="sm" id="activateButton" className="mr-2 btn-success" onClick={activateUser}>
                 Activate User
-              </Button>) :
+              </Button>
 
-              <Button disabled align="right" size="sm" className="mr-2 btn-success" >
-                Activate User
-              </Button>}
 
-            {isCheck.length > 0 && statusCheck !="Suspended" ? (
               <Button align="right" size="sm" id="suspendButton" className="mr-2 btn-danger" onClick={activateUser} >
                 Suspend User
-              </Button>) :
+              </Button>
 
-              <Button disabled align="right" size="sm" className="mr-2 btn-danger" >
-                Suspend User
-              </Button>}
 
             </div>
         </LeftDiv>
@@ -128,24 +121,11 @@ const SelectTableComponent = () => {
           <thead>
             <tr>
               <th scope="col">
-   
-                
-                  {( isCheck.length == 0 ) ? (
                     <input
                       type="checkbox"
                       onChange={handleSelectAll}
                       checked={isCheckAll}
-                      className="d-none"
-                    />
-
-                  )
-                    :
-                    <input
-                      type="checkbox"
-                      onChange={handleSelectAll}
-                      checked={isCheckAll}
-                    />
-                  }      
+                    /> 
               </th>
             <th scope="col">
               Name
@@ -165,24 +145,12 @@ const SelectTableComponent = () => {
             <tr key={index}>
             
               <td>
-                {(item.Status == "Inactive" || isCheck.length > 0 && item.Status != statusCheck) ? (
-                    <input
-                    type="checkbox"
-                    id={item.id}
-                    onChange={handleCheckboxChange}
-                    checked={isCheck.includes(item.id)}
-                    className="d-none"
-                  />
-              
-                )
-                  :
                   <input
                     type="checkbox"
                     id={item.id}
                     onChange={handleCheckboxChange}
                     checked={isCheck.includes(item.id)}
-                  />
-            }               
+                  />              
                 </td>
                 <td>{item.name}</td>
                 <td>{item.email}</td>
