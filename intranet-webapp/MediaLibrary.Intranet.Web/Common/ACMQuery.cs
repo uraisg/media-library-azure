@@ -83,7 +83,7 @@ namespace MediaLibrary.Intranet.Web.Common
             public const string QueryStaffSLRecords = "select count(*) from mlizmgr.ACMStaffLogin where userid = @userid";
 
             //ACMAuditLog related
-            public const string InsertAuditLog = "insert into mliz.acmauditlog (UserID, UserLastAction, CreatedBy, CreatedDate) VALUES (@userid, @userlastaction, @createdby, @createddate)";
+            public const string InsertAuditLog = "insert into mlizmgr.acmauditlog (UserID, UserLastAction, CreatedBy, CreatedDate) VALUES (@userid, @userlastaction, @createdby, @createddate)";
         }
 
         public string GetUGettUserIDIAMInfo()
