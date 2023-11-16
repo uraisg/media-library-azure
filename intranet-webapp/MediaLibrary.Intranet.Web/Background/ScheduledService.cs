@@ -20,6 +20,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.Spatial;
 using NCrontab;
 using Newtonsoft.Json;
+using Microsoft.Data.SqlClient;
+using System.Diagnostics;
+using System.Net.Mail;
+using System.Net;
 
 namespace MediaLibrary.Intranet.Web.Background
 {
@@ -37,6 +41,7 @@ namespace MediaLibrary.Intranet.Web.Background
         private readonly AppSettings _appSettings;
         private readonly ILogger<ScheduledService> _logger;
         private readonly IHttpClientFactory _clientFactory;
+
 
         public ScheduledService(IOptions<AppSettings> appSettings, ILogger<ScheduledService> logger, IHttpClientFactory clientFactory)
         {
@@ -61,6 +66,7 @@ namespace MediaLibrary.Intranet.Web.Background
                     {
                         await Process();
                         _nextRun = _schedule.GetNextOccurrence(DateTime.Now);
+
                     }
                 }
                 catch (Exception ex)
@@ -75,6 +81,7 @@ namespace MediaLibrary.Intranet.Web.Background
         private async Task Process()
         {
             _logger.LogInformation("Starting background processing");
+
 
             string storageConnectionString = _appSettings.MediaStorageConnectionString;
             string storageAccountName = _appSettings.MediaStorageAccountName;
@@ -228,6 +235,7 @@ namespace MediaLibrary.Intranet.Web.Background
             }
             else
             {
+            
                 throw new Exception($"API response is not successful, the status code is {response.StatusCode} with content {await response.Content.ReadAsStringAsync()}");
             }
         }

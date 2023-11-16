@@ -15,5 +15,10 @@
         public string ApiDomain { get; set; }
         public string ApiKey { get; set; }
         public string AdminUsers { get; set; }
+        public string intranetmlizconndb { get; set; }
+        public string SMTPSenderEmail { get; set; }
+        public string SMTPPW { get; set; }
+        public string SMTPHost { get; set; }
+        public int SMTPPort { get; set; }
     }
 }

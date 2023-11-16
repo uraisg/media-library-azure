@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Routing;
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+	ViewData["Title"] = "Users";
+	var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<div id="root"></div>
+<input id="RequestVerificationToken" type="hidden" value="@requestToken">
+@section Scripts {
+	<script src="~/scripts/users.js"></script>
+}
