@@ -100,6 +100,10 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 {
                     if (roleList.Count > 0)
                     {
+                        if (roleList.Contains(UserRole.User))
+                        {
+                            ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.User));
+                        }
                         if (roleList.Contains(UserRole.Curator))
                         {
                             ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.Curator));
@@ -109,15 +113,8 @@ namespace MediaLibrary.Intranet.Web.Configuration
                             ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.Admin));
                         }
                     }
-                    else
-                    {
-                        ci.AddClaim(new Claim(ClaimTypes.Role, UserRole.User));
-                    }
                     principal.AddIdentity(ci);
                 }
-
-                var claims = ClaimsPrincipal.Current.Identities.First().Claims.ToList();
-                _logger.LogInformation("Claims for user: {claims}", claims);
             }
             return principal;
         }

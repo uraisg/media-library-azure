@@ -121,6 +121,11 @@ namespace MediaLibrary.Intranet.Web.Background
                     bool doesSLRecordExist = await queryStaffSLRecords(sql, conn, userid);
                     _logger.LogInformation("Value of doesSLrecordexist for " + userid + ": " + doesSLRecordExist);
 
+                    //Queries acmroleuser if this staff entry is already present
+                    sql = ACMQueries.Queries.QueryStaffRoleRecords;
+                    bool doesRoleRecordExist = await queryStaffRoleRecords(sql, conn, userid);
+                    _logger.LogInformation("Value of doesRoleRecordExist for " + userid + ": " + doesRoleRecordExist);
+
                     //Seeds in staff session for this staff if entry is not present
                     if (doesSSRecordExist == false)
                     {
@@ -146,6 +151,22 @@ namespace MediaLibrary.Intranet.Web.Background
                             sql = ACMQueries.Queries.SeedLoginProfile;
                             await SeedLoginProfile(sql, conn, userid);
                             _logger.LogInformation("Seeded " + userid + " in login.");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex.ToString());
+                        }
+                    }
+
+                    //Seeds in user role for this staff if entry is not present
+                    if (doesRoleRecordExist == false)
+                    {
+                        try
+                        {
+                            _logger.LogInformation("User role does not exist for: " + userid + ". Seeding user role in..");
+                            sql = ACMQueries.Queries.SeedUserRole;
+                            await SeedUserRole(sql, conn, userid);
+                            _logger.LogInformation("Seeded " + userid + " a [User] role.");
                         }
                         catch (Exception ex)
                         {
@@ -1480,7 +1501,25 @@ namespace MediaLibrary.Intranet.Web.Background
             {
                 _logger.LogError(ex.ToString());
             }
-        }       
+        }
+        
+        private async Task SeedUserRole(string sql, SqlConnection conn, string userid)
+        {
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@userid", userid);
+                cmd.Parameters.AddWithValue("@rolemstrid", 2);
+                cmd.Parameters.AddWithValue("@createdby", "SYSTEM");
+                cmd.Parameters.AddWithValue("@createddate", DateTime.Now);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+        }
 
         private async Task <bool> queryStaffSessionRecords(string sql, SqlConnection conn, string userid)
         {
@@ -1530,7 +1569,34 @@ namespace MediaLibrary.Intranet.Web.Background
                 _logger.LogError(ex.ToString());
             }
             return result;
-        }       
+        }
+
+        private async Task<bool> queryStaffRoleRecords(string sql, SqlConnection conn, string userid)
+        {
+            //query if the staff have a 'User' Role
+            bool result = true;
+            try
+            {
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@userid", userid);
+                cmd.Parameters.AddWithValue("@rolemstrid", 2);
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int countResult = reader.GetInt32(0);
+                    if (countResult == 0)
+                    {
+                        result = false; // means entry not there 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+            return result;
+        }  
 
     }
 }
