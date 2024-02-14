@@ -31,8 +31,8 @@ namespace MediaLibrary.Intranet.Web.Configuration
                 _hasTransformed = true;
 
                 // Skip adding roles if user's email address format is unexpected
-                if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
-                {
+                //if (!principal.GetUserGraphEmail().ToLower().Contains("from.") && (principal.GetUserGraphEmail().ToLower().EndsWith("@ura.gov.sg")))
+                //{
                     // Check if user's email address is in list of admins
                     string role = _adminUsers.Contains(principal.GetUserGraphEmail())
                         ? UserRole.Admin
@@ -40,7 +40,7 @@ namespace MediaLibrary.Intranet.Web.Configuration
                     var ci = new ClaimsIdentity();
                     ci.AddClaim(new Claim(ClaimTypes.Role, role));
                     principal.AddIdentity(ci);
-                }
+                //}
             }
 
             return Task.FromResult(principal);
