@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
+using System;
+using System.Threading;
 
 namespace MediaLibrary.Intranet.Web
 {
@@ -45,6 +48,16 @@ namespace MediaLibrary.Intranet.Web
             });
             services.AddCustomMvcConfig();
 
+            //For Session
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+                options.IdleTimeout = TimeSpan.FromMinutes(60);
+            });
+            services.AddHttpContextAccessor();
+
             services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
             services.AddOptions<AppSettings>().Bind(Configuration.GetSection("AppSettings"));
             services.AddHttpClient();
@@ -74,6 +87,10 @@ namespace MediaLibrary.Intranet.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles(new StaticFileOptions()
             {
+                ContentTypeProvider = new FileExtensionContentTypeProvider
+                {
+                    Mappings = { [".js"] = "application/javascript" }
+                },
                 OnPrepareResponse = (context) =>
                 {
                     context.Context.Response.Headers["Cache-Control"] = "no-cache";
@@ -96,6 +113,10 @@ namespace MediaLibrary.Intranet.Web
 
                 await next();
             });
+
+            //For Session
+            app.UseSession();
+
 
             app.UseEndpoints(endpoints =>
             {

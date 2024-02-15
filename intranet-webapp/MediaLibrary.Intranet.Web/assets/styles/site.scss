@@ -107,3 +107,120 @@ a.navbar-brand {
   color: $red;
   margin-left: 0.1rem;
 }
+
+.roletable {
+    border-collapse: collapse;
+    width: 50%;
+    overflow-x: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+.roletable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.roletable td, .roletable th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.rowalign {
+    margin-top:10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.alignpar {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}
+
+
+
+/*------------------------------Tab Styles------------------------------*/
+
+.tab-menu {
+    max-width: 800px;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tab {
+    font-size: 1em;
+    padding: 0.5em 2em;
+    background: #efefef;
+    transition: 0.3s;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 0;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    width: 200px;
+}
+
+.tab:not(.active):hover {
+    background: #dfdede;
+}
+
+.active {
+    background: #fff;
+}
+
+.content {
+    background: #fff;
+    position: relative;
+    width: 100%;
+    border-radius: 0 5px 5px 5px;
+    border: 1px solid #ccc;
+    overflow: hidden;
+}
+
+.content-container {
+    height: calc(100vh - 11.5em);
+    overflow-y: scroll;
+}
+
+/*width*/
+.content-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+/*Track*/
+.content-container::-webkit-scrollbar-track {
+    
+}
+
+/*Handle*/
+.content-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 5px;
+}
+
+/*Handle on hover*/
+.content::-webkit-scrollbar-thumb:hover {
+    background: #c4c4c4;
+}
+
+.content img {
+    width: 10em;
+    margin-right: 0.5em;
+}
+
+.panel {
+    padding: 1.5em;
+}
+
+.panel-fade-enter {
+    opacity: 0;
+}
+
+.panel-fade-enter-active {
+    opacity: 1;
+    transition: opacity 400ms;
+}
+
+/*------------------------------Tab Styles------------------------------*/

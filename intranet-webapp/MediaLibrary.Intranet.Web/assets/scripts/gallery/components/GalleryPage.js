@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useHistory } from 'react-router-dom'
 import { styled } from '@linaria/react'
@@ -13,6 +13,7 @@ import {
   selectSearchResult,
   setGridView,
 } from '@/slices/gallerySlice'
+import TabsMenu from '@/components/folder/TabsMenu'
 
 const LayoutContainer = styled.div`
   height: calc(100vh - 4.5625rem);
@@ -164,6 +165,12 @@ const GalleryPage = () => {
     dispatch(getSearchResults(q, filters, page))
   }, [location])
 
+ /* const [activeTab, setActiveTab] = useState('public'); // State to manage active tab
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };*/
+
   return (
     <LayoutContainer>
       <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
@@ -176,14 +183,16 @@ const GalleryPage = () => {
             gridView={gridView}
             onSetView={handleSetView}
           />
-          <SearchResultsView
-            isFetching={isFetching}
-            results={results}
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            gridView={gridView}
-          />
+          <TabsMenu/>
+          {/*<SearchResultsView
+                isFetching={isFetching}
+                results={results}
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                gridView={gridView}
+              />*/}
+
         </Sidebar>
         <NotSidebar>
           <Map

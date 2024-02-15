@@ -42,3 +42,8 @@ mix
 mix
   .js('assets/scripts/gallery/main.js', 'scripts/gallery.js')
   .react({ extractStyles: true })
+
+  // Add your new React bundle here
+  .js('assets/scripts/folder/main.js', 'scripts/folder.js')
+  .react()
+
