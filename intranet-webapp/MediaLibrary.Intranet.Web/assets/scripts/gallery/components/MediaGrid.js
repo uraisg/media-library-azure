@@ -65,7 +65,7 @@ const ImageDiv = styled.div`
 
 const AlignRightDiv = styled.div`
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   pointer-events: auto;
 `
 
