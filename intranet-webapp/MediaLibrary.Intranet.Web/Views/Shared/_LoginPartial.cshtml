@@ -1,4 +1,11 @@
 ﻿@using MediaLibrary.Intranet.Web.Common
+@{
+    bool? showusers = (bool?)ViewData["userRole"];
+    if (showusers == null)
+    {
+        showusers = false;
+    }
+}
 @if (User.Identity.IsAuthenticated)
 {
     <ul class="navbar-nav ml-md-auto">
